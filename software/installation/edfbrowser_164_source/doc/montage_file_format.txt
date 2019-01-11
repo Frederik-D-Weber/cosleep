@@ -1,0 +1,451 @@
+
+This document describes the format used by EDFbrowser to write montage files.
+-----------------------------------------------------------------------------
+
+
+The montage file uses only basic XML elements. XML attributes are not allowed.
+
+The first line of the file must contain:
+
+<?xml version="1.0"?>
+
+
+The root element must be "EDFbrowser_montage", like:
+
+<EDFbrowser_montage>
+
+</EDFbrowser_montage>
+
+
+Inside the root element "EDFbrowser_montage", there will be a child element for every signal composition.
+A signal composition represents one trace or curve on the screen.
+The name of this element must be "signalcomposition", like:
+
+<signalcomposition>
+
+</signalcomposition>
+
+
+Inside every element "signalcomposition", there must be one element with the name "num_of_signals", like:
+
+<num_of_signals>2</num_of_signals>
+
+The value of this element must be an integer within the range 1 to 512. (The example has a value of 2.)
+
+The value represents from how many signals it is derived i.e. if it's monopolar, bipolar or tripolar, etc.
+
+Note: all signals in the same signalcomposition must share the same samplerate and sensitivity.
+
+
+
+
+Inside every element "signalcomposition", there must be one element with the name "voltpercm", like:
+
+<voltpercm>100.000000</voltpercm>
+
+The value of this element must be a floating point number. (The example has a value of 100.0.)
+
+The value represents the amplitude of the signal expressed in it's physical dimension per cm (vertical).
+
+
+
+Inside every element "signalcomposition", there must be one element with the name "screen_offset", like:
+
+<screen_offset>0</screen_offset>
+
+The value of this element must be an integer or floating point number. (The example has a value of 0.)
+
+The value represents the vertical offset compared to the baseline.
+
+
+
+Inside every element "signalcomposition", there must be one element with the name "polarity", like:
+
+<polarity>1</polarity>
+
+The value of this element must be either 1 or -1. (The example has a value of 1.)
+
+The value has the following meanings:
+
+ 1 :  normal presentation (not inverted)
+
+-1 :  signal will be drawn inverted (upside down)
+
+
+
+Inside every element "signalcomposition", there must be one element with the name "color", like:
+
+<color>2</color>
+
+The value of this element must be an integer within the range 2 to 18. (The example has a value of 2.)
+
+The value represents the color of the signalcomposition on the screen i.e. the trace or curve.
+
+Colortable:
+
+2   Black
+3   White
+4   Dark gray
+5   Gray
+6   Light gray
+7   Red
+8   Green
+9   Blue
+10  Cyan
+11  Magenta
+12  Yellow
+13  Dark red
+14  Dark green
+15  Dark blue
+16  Dark cyan
+17  Dark magenta
+18  Dark Yellow
+
+
+
+Inside every element "signalcomposition", there can be one element with the name "alias", like:
+
+<alias>average</alias>
+
+An alias, if used, replaces the signalcomposition label on the screen. It does not influence the montages.
+Only 7-bit ASCII characters are allowed. Max 16 characters.
+
+
+
+Inside every element "signalcomposition", there can be one element with the name "fidfilter_cnt", like:
+
+<fidfilter_cnt>0</fidfilter_cnt>
+
+The value of this element must be an integer within the range 0 to 8. (The example has a value of 0.)
+
+The value represents the number of fid filters applied to the signalcomposition.
+
+
+
+Inside every element "signalcomposition", there can be one element with the name "ravg_filter_cnt", like:
+
+<ravg_filter_cnt>0</ravg_filter_cnt>
+
+The value of this element must be an integer within the range 0 to 8. (The example has a value of 0.)
+
+The value represents the number of running average filters applied to the signalcomposition.
+
+
+
+Inside every element "signalcomposition", there must be at least one element with the name "signal", like:
+
+<signal>
+
+</signal>
+
+The number of elements "signal" must be equal to the value of the element "num_of_signals".
+
+Note: all signals in the same signalcomposition must have the same samplerate and sensitivity.
+
+
+
+
+Inside every element "signal", there must be one element with the name "label", like:
+
+<label>FP1</label>
+
+The value of this element must be a string containing only 7-bit ASCII characters. (The example has a value of "FP1".)
+The decimal value of every character must be in the range 32 to 126. This avoids the use of control-codes.
+The maximum amount of characters allowed is 16. There must be no termination character (like zero).
+
+The value represents the label of the signal in the file which must be used for this signalcomposition.
+
+Exception:
+
+Instead of an element "label", an element "edfindex" can be used:
+
+<edfindex>4</edfindex>
+
+The value of this element must be an integer within the range 0 to 511. (The example has a value of 4.)
+
+The value represents the number of the signal in the file which must be used for this signalcomposition.
+The first signal in an EDF-file has number 0, the second signal has number 1, the third signal has number 2, etc.
+
+
+
+
+Inside the element "signal", there must be one element with the name "factor", like:
+
+<factor>1</factor>
+
+The value of this element must be an integer in the range -128 to 128. 0 is not allowed. (The example has a value of 1.)
+
+The value of this element represents a multiplying factor. During the drawing of the samples of the respective signal
+on the screen, the values of the samples will be multiplied with this factor.
+
+
+
+
+If the value of element "fidfilter_cnt" is higher than zero, there must be at least one element with name "fidfilter", like:
+
+<fidfilter>
+
+</fidfilter>
+
+The number of elements "fidfilter" must be equal to the value of the element "fidfilter_cnt".
+
+
+
+Inside every element "fidfilter", there must be one element with the name "type", like:
+
+<type>0</type>
+
+The value of this element must be an integer in the range 0 to 4. (The example has a value of 0.)
+
+filtertype table:
+
+0   higpass
+1   lowpass
+2   notch
+3   bandpass
+4   bandstop
+
+Note: when type = 2 (notch), element "model" must be 0 (Butterworth).
+
+
+
+Inside every element "fidfilter", there must be one element with the name "frequency", like:
+
+<frequency>0.5</frequency>
+
+The value of this element must be a floating point number. (The example has a value of 0.5 Hz.)
+
+The value represents the cut-off or notch frequency expressed in Hz.
+
+
+
+Inside every element "fidfilter", there must be one element with the name "frequency2", like:
+
+<frequency2>100.0</frequency2>
+
+The value of this element must be a floating point number. (The example has a value of 100.0 Hz.)
+
+The value represents the second cut-off frequency of a bandpass or bandstop filter expressed in Hz and
+must be higher than the value of "frequency".
+
+
+
+Inside every element "fidfilter", there must be one element with the name "ripple", like:
+
+<ripple>3.0</ripple>
+
+The value of this element must be a floating point number. (The example has a value of 3.0 dB.)
+
+The value represents the bandpass ripple expressed in dB.
+
+
+
+Inside every element "fidfilter", there must be one element with the name "order", like:
+
+<order>1</order>
+
+The value of this element must be an integer number within the range 1 to 100. (The example has a value of 1.)
+
+The value represents the filters order e.g. 1th order.
+
+Note: when type = 2 (notch), order must be in the range 3 to 100 and represents the Q-factor of the notch-filter.
+
+
+
+
+Inside every element "fidfilter", there must be one element with the name "model", like:
+
+<model>0</model>
+
+The value of this element must be an integer number within the range 0 to 2. (The example has a value of 0.)
+
+The value represents the filters model.
+
+filter model table:
+
+0   Butterworth
+1   Chebyshev
+2   Bessel
+
+Note: when type = 2 (notch), element "model" must be 0 (Butterworth).
+
+
+
+
+Note:
+
+Not all filter parameters are applicabel to all types of filters. Despite, the parameters must be present.
+If a parameter is not applicabel e.g. frequency2 when using a highpassfilter, fill in some value.
+The value will be ignored but must be present in the file.
+
+
+
+
+
+Inside every element "signalcomposition", there can be one element with the name "ecg_filter", like:
+
+<ecg_filter>1</ecg_filter>
+
+The value of this element must be an integer with the value 1. (The example has a value of 1.)
+
+The value represents the activation of the heartrate detection.
+
+
+
+
+If the value of element "ravg_filter_cnt" is higher than zero, there must be at least one element with name "ravg_filter", like:
+
+<ravg_filter>
+
+</ravg_filter>
+
+The number of elements "ravg_filter" must be equal to the value of the element "ravg_filter_cnt".
+
+
+
+Inside every element "ravg_filter", there must be one element with the name "type", like:
+
+<type>0</type>
+
+The value of this element must be an integer in the range 0 to 1. (The example has a value of 0.)
+
+filtertype table:
+
+0   higpass running average filter (also called: moving average filter)
+1   lowpass running average filter
+
+
+
+Inside every element "ravg_filter", there must be one element with the name "size", like:
+
+<size>16</size>
+
+The value of this element must be an integer in the range 2 to 10000. (The example has a value of 16.)
+
+The value represents the size of the running average filterbuffer expressed in samples.
+
+
+
+
+Inside the root element "EDFbrowser_montage", there must be one element with the name "pagetime", like:
+
+<pagetime>100000000</pagetime>
+
+
+The value of this element must be an integer with a minimum value of 10000.  (The example has a value of 100000000.)
+
+The value represents the timescale (pagetime) expressed in units of 100 nanoSeconds.
+Thus, a value of 100000000 means a timescale of 10 seconds.
+
+
+
+An example of the content of a montage file.
+---------------------------------------------
+
+It contains three signalcompositions.
+All of them are derivatives of two signals: F4 - FP2, C4 - F4 and X1 - X2.
+
+The first signalcomposition has two filters: a 1th order highpass Butterworth filter at 0.1 Hz
+and a 1th order lowpass Butterworth filter at 35.0 Hz.
+("frequency2" and "ripple" are not applicabel to this type of filter)
+
+The second signalcomposition has one filter: a notch filter at 50.0 Hz with a Q-factor of 20.
+
+The third signalcomposition has the heartrate detection activated.
+
+The timescale is set to 10 seconds.
+
+
+
+<?xml version="1.0"?>
+<EDFbrowser_montage>
+  <signalcomposition>
+    <num_of_signals>2</num_of_signals>
+    <voltpercm>50.000000</voltpercm>
+    <screen_offset>0.000000</screen_offset>
+    <color>2</color>
+    <fidfilter_cnt>2</fidfilter_cnt>
+    <ravg_filter_cnt>0</ravg_filter_cnt>
+    <signal>
+      <label>F4</label>
+      <factor>1</factor>
+    </signal>
+    <signal>
+      <label>FP2</label>
+      <factor>-1</factor>
+    </signal>
+    <fidfilter>
+      <type>0</type>
+      <frequency>0.1000000000000000</frequency>
+      <frequency2>0.1120000000000000</frequency2>
+      <ripple>-1.0000000000000000</ripple>
+      <order>1</order>
+      <model>0</model>
+    </fidfilter>
+    <fidfilter>
+      <type>1</type>
+      <frequency>35.0000000000000000</frequency>
+      <frequency2>39.2000000000000028</frequency2>
+      <ripple>-1.0000000000000000</ripple>
+      <order>1</order>
+      <model>0</model>
+    </fidfilter>
+  </signalcomposition>
+  <signalcomposition>
+    <num_of_signals>2</num_of_signals>
+    <voltpercm>50.000000</voltpercm>
+    <screen_offset>0.000000</screen_offset>
+    <color>2</color>
+    <fidfilter_cnt>1</fidfilter_cnt>
+    <ravg_filter_cnt>0</ravg_filter_cnt>
+    <signal>
+      <label>C4</label>
+      <factor>1</factor>
+    </signal>
+    <signal>
+      <label>F4</label>
+      <factor>-1</factor>
+    </signal>
+    <fidfilter>
+      <type>2</type>
+      <frequency>50.0000000000000000</frequency>
+      <frequency2>0.0001000000000000</frequency2>
+      <ripple>-1.0000000000000000</ripple>
+      <order>20</order>
+      <model>0</model>
+    </fidfilter>
+  </signalcomposition>
+  <signalcomposition>
+    <num_of_signals>2</num_of_signals>
+    <voltpercm>5.000000</voltpercm>
+    <screen_offset>415.748031</screen_offset>
+    <color>7</color>
+    <fidfilter_cnt>0</fidfilter_cnt>
+    <ravg_filter_cnt>0</ravg_filter_cnt>
+    <signal>
+      <label>X1</label>
+      <factor>1</factor>
+    </signal>
+    <signal>
+      <label>X2</label>
+      <factor>-1</factor>
+    </signal>
+    <ecg_filter>
+      <type>1</type>
+    </ecg_filter>
+  </signalcomposition>
+  <pagetime>100000000</pagetime>
+</EDFbrowser_montage>
+
+
+
+
+
+
+
+
+
+
+
+
+

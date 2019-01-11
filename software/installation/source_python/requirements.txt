@@ -1,0 +1,10 @@
+pyqtgraph==0.10.0
+#numpy==1.9.2
+numpy==1.15.4
+pygame==1.9.2
+#scipy==0.18.1
+scipy==1.1.0
+Yapsy==1.11.23
+#PyQt4==4.11.4
+pyserial==3.4
+pyedflib==0.1.14

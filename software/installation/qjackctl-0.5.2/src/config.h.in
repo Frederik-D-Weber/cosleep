@@ -1,0 +1,160 @@
+/* src/config.h.in.  Generated from configure.ac by autoheader.  */
+
+/* Define if ALSA library is available. */
+#undef CONFIG_ALSA_SEQ
+
+/* Default executable binary path. */
+#undef CONFIG_BINDIR
+
+/* Build version string. */
+#undef CONFIG_BUILD_VERSION
+
+/* Define if CoreAudio/CoreAudio.h is available (Mac OS X). */
+#undef CONFIG_COREAUDIO
+
+/* Default arch-idependent data path. */
+#undef CONFIG_DATADIR
+
+/* Define if D-Bus interface is enabled. */
+#undef CONFIG_DBUS
+
+/* Define if debugging is enabled. */
+#undef CONFIG_DEBUG
+
+/* Define if JACK library is available. */
+#undef CONFIG_JACK
+
+/* Define if jack_free is available. */
+#undef CONFIG_JACK_FREE
+
+/* Define if jack_get_max_delayed_usecs is available. */
+#undef CONFIG_JACK_MAX_DELAY
+
+/* Define if JACK metadata support is available. */
+#undef CONFIG_JACK_METADATA
+
+/* Define if JACK MIDI support is available. */
+#undef CONFIG_JACK_MIDI
+
+/* Define if jack_port_get_aliases is available. */
+#undef CONFIG_JACK_PORT_ALIASES
+
+/* Define if jack_set_port_rename_callback is available. */
+#undef CONFIG_JACK_PORT_RENAME
+
+/* Define if jack_is_realtime is available. */
+#undef CONFIG_JACK_REALTIME
+
+/* Define if JACK session support is available. */
+#undef CONFIG_JACK_SESSION
+
+/* Define if jack/statistics.h is available. */
+#undef CONFIG_JACK_STATISTICS
+
+/* Define if jack_tranport_query is available. */
+#undef CONFIG_JACK_TRANSPORT
+
+/* Define if jack_get_version_string is available. */
+#undef CONFIG_JACK_VERSION
+
+/* Define if jack_get_xrun_delayed_usecs is available. */
+#undef CONFIG_JACK_XRUN_DELAY
+
+/* Default object library path. */
+#undef CONFIG_LIBDIR
+
+/* Default man page path. */
+#undef CONFIG_MANDIR
+
+/* Default installation prefix. */
+#undef CONFIG_PREFIX
+
+/* Define if round is available. */
+#undef CONFIG_ROUND
+
+/* Define if debugger stack-trace is enabled. */
+#undef CONFIG_STACKTRACE
+
+/* Define if system tray is enabled. */
+#undef CONFIG_SYSTEM_TRAY
+
+/* Version string. */
+#undef CONFIG_VERSION
+
+/* Define if X11 unique/single instance is enabled. */
+#undef CONFIG_XUNIQUE
+
+/* Define to 1 if you have the <fcntl.h> header file. */
+#undef HAVE_FCNTL_H
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the `m' library (-lm). */
+#undef HAVE_LIBM
+
+/* Define to 1 if you have the `X11' library (-lX11). */
+#undef HAVE_LIBX11
+
+/* Define to 1 if you have the `Xext' library (-lXext). */
+#undef HAVE_LIBXEXT
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the <poll.h> header file. */
+#undef HAVE_POLL_H
+
+/* Define to 1 if you have the <signal.h> header file. */
+#undef HAVE_SIGNAL_H
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the `system' function. */
+#undef HAVE_SYSTEM
+
+/* Define to 1 if you have the <sys/ioctl.h> header file. */
+#undef HAVE_SYS_IOCTL_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have <sys/wait.h> that is POSIX.1 compatible. */
+#undef HAVE_SYS_WAIT_H
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS

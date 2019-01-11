@@ -1,0 +1,38 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>images/edf.png</file>
+    <file>images/splash.png</file>
+    <file>images/ok.png</file>
+    <file>images/go-down-symbolic.symbolic.png</file>
+    <file>images/go-next-symbolic-rtl.symbolic.png</file>
+    <file>images/go-next-symbolic.symbolic.png</file>
+    <file>images/go-up-symbolic.symbolic.png</file>
+    <file>images/media-playback-pause-symbolic.symbolic.png</file>
+    <file>images/media-playback-start-symbolic.symbolic.png</file>
+    <file>images/media-playback-stop-symbolic.symbolic.png</file>
+    <file>images/go-first-symbolic.symbolic.png</file>
+    <file>images/go-first-symbolic-rtl.symbolic.png</file>
+    <file>images/zoom-in-symbolic.symbolic.png</file>
+    <file>images/zoom-out-symbolic.symbolic.png</file>
+    <file>images/filter_lowpass_small.png</file>
+    <file>images/black_icon_16x16.png</file>
+    <file>images/darkcyan_icon_16x16.png</file>
+    <file>images/darkred_icon_16x16.png</file>
+    <file>images/lightgray_icon_16x16.png</file>
+    <file>images/yellow_icon_16x16.png</file>
+    <file>images/blue_icon_16x16.png</file>
+    <file>images/darkgray_icon_16x16.png</file>
+    <file>images/darkyellow_icon_16x16.png</file>
+    <file>images/magenta_icon_16x16.png</file>
+    <file>images/cyan_icon_16x16.png</file>
+    <file>images/darkgreen_icon_16x16.png</file>
+    <file>images/gray_icon_16x16.png</file>
+    <file>images/red_icon_16x16.png</file>
+    <file>images/darkblue_icon_16x16.png</file>
+    <file>images/darkmagenta_icon_16x16.png</file>
+    <file>images/green_icon_16x16.png</file>
+    <file>images/white_icon_16x16.png</file>
+    <file>images/media-seek-forward.png</file>
+    <file>images/media-seek-backward.png</file>
+</qresource>
+</RCC>

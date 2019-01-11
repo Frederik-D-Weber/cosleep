@@ -1,0 +1,555 @@
+<ui version="4.0" >
+ <author>rncbc aka Rui Nuno Capela</author>
+ <comment>JACK Audio Connection Kit - Qt GUI Interface.
+
+   Copyright (C) 2003-2014, rncbc aka Rui Nuno Capela. All rights reserved.
+
+   This program is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public License
+   as published by the Free Software Foundation; either version 2
+   of the License, or (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with this program; if not, write to the Free Software Foundation, Inc.,
+   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+ </comment>
+ <class>qjackctlPatchbayForm</class>
+ <widget class="QWidget" name="qjackctlPatchbayForm" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>520</width>
+    <height>320</height>
+   </rect>
+  </property>
+  <property name="sizePolicy" >
+   <sizepolicy>
+    <hsizetype>1</hsizetype>
+    <vsizetype>1</vsizetype>
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="font" >
+   <font/>
+  </property>
+  <property name="windowTitle" >
+   <string>Patchbay - JACK Audio Connection Kit</string>
+  </property>
+  <property name="windowIcon" >
+   <iconset resource="qjackctl.qrc" >:/images/patchbay1.png</iconset>
+  </property>
+  <layout class="QGridLayout" >
+   <property name="margin" >
+    <number>4</number>
+   </property>
+   <property name="spacing" >
+    <number>4</number>
+   </property>
+   <item row="1" column="0" colspan="3" >
+    <widget class="Line" name="line" >
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="2" >
+    <spacer>
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType" >
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" >
+      <size>
+       <width>80</width>
+       <height>8</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="2" column="0" colspan="3" >
+    <layout class="QGridLayout" >
+     <property name="margin" >
+      <number>4</number>
+     </property>
+     <property name="spacing" >
+      <number>4</number>
+     </property>
+     <item rowspan="7" row="0" column="1" >
+      <widget class="qjackctlPatchbayView" native="1" name="PatchbayView" >
+       <property name="sizePolicy" >
+        <sizepolicy>
+         <hsizetype>7</hsizetype>
+         <vsizetype>7</vsizetype>
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="focusPolicy" >
+        <enum>Qt::TabFocus</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="2" >
+      <widget class="QPushButton" name="ISocketMoveDownPushButton" >
+       <property name="toolTip" >
+        <string>Move currently selected output socket down one position</string>
+       </property>
+       <property name="text" >
+        <string>Down</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="qjackctl.qrc" >:/images/down1.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0" >
+      <widget class="QPushButton" name="OSocketAddPushButton" >
+       <property name="toolTip" >
+        <string>Create a new output socket</string>
+       </property>
+       <property name="text" >
+        <string>Add...</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="qjackctl.qrc" >:/images/add1.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="2" >
+      <spacer>
+       <property name="orientation" >
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType" >
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+       <property name="sizeHint" >
+        <size>
+         <width>8</width>
+         <height>42</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="1" column="2" >
+      <widget class="QPushButton" name="ISocketEditPushButton" >
+       <property name="toolTip" >
+        <string>Edit currently selected input socket properties</string>
+       </property>
+       <property name="text" >
+        <string>Edit...</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="qjackctl.qrc" >:/images/edit1.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0" >
+      <spacer>
+       <property name="orientation" >
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType" >
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+       <property name="sizeHint" >
+        <size>
+         <width>8</width>
+         <height>42</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="5" column="2" >
+      <widget class="QPushButton" name="ISocketMoveUpPushButton" >
+       <property name="toolTip" >
+        <string>Move currently selected output socket up one position</string>
+       </property>
+       <property name="text" >
+        <string>Up</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="qjackctl.qrc" >:/images/up1.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0" >
+      <widget class="QPushButton" name="OSocketRemovePushButton" >
+       <property name="toolTip" >
+        <string>Remove currently selected output socket</string>
+       </property>
+       <property name="text" >
+        <string>Remove</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="qjackctl.qrc" >:/images/remove1.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0" >
+      <widget class="QPushButton" name="OSocketCopyPushButton" >
+       <property name="toolTip" >
+        <string>Duplicate (copy) currently selected output socket</string>
+       </property>
+       <property name="text" >
+        <string>Copy...</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="qjackctl.qrc" >:/images/copy1.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0" >
+      <widget class="QPushButton" name="OSocketMoveDownPushButton" >
+       <property name="toolTip" >
+        <string>Move currently selected output socket down one position</string>
+       </property>
+       <property name="text" >
+        <string>Down</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="qjackctl.qrc" >:/images/down1.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2" >
+      <widget class="QPushButton" name="ISocketRemovePushButton" >
+       <property name="toolTip" >
+        <string>Remove currently selected input socket</string>
+       </property>
+       <property name="text" >
+        <string>Remove</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="qjackctl.qrc" >:/images/remove1.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2" >
+      <widget class="QPushButton" name="ISocketCopyPushButton" >
+       <property name="toolTip" >
+        <string>Duplicate (copy) currently selected input socket</string>
+       </property>
+       <property name="text" >
+        <string>Copy...</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="qjackctl.qrc" >:/images/copy1.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2" >
+      <widget class="QPushButton" name="ISocketAddPushButton" >
+       <property name="toolTip" >
+        <string>Create a new input socket</string>
+       </property>
+       <property name="text" >
+        <string>Add...</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="qjackctl.qrc" >:/images/add1.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0" >
+      <widget class="QPushButton" name="OSocketEditPushButton" >
+       <property name="toolTip" >
+        <string>Edit currently selected output socket properties</string>
+       </property>
+       <property name="text" >
+        <string>Edit...</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="qjackctl.qrc" >:/images/edit1.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0" >
+      <widget class="QPushButton" name="OSocketMoveUpPushButton" >
+       <property name="toolTip" >
+        <string>Move currently selected output socket up one position</string>
+       </property>
+       <property name="text" >
+        <string>Up</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="qjackctl.qrc" >:/images/up1.png</iconset>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="3" column="0" >
+    <spacer>
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType" >
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" >
+      <size>
+       <width>80</width>
+       <height>8</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="3" column="1" >
+    <layout class="QHBoxLayout" >
+     <property name="margin" >
+      <number>4</number>
+     </property>
+     <property name="spacing" >
+      <number>4</number>
+     </property>
+     <item>
+      <widget class="QPushButton" name="ConnectPushButton" >
+       <property name="toolTip" >
+        <string>Connect currently selected sockets</string>
+       </property>
+       <property name="text" >
+        <string>&amp;Connect</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="qjackctl.qrc" >:/images/connect1.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="DisconnectPushButton" >
+       <property name="toolTip" >
+        <string>Disconnect currently selected sockets</string>
+       </property>
+       <property name="text" >
+        <string>&amp;Disconnect</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="qjackctl.qrc" >:/images/disconnect1.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="DisconnectAllPushButton" >
+       <property name="toolTip" >
+        <string>Disconnect all currently connected sockets</string>
+       </property>
+       <property name="text" >
+        <string>Disconnect &amp;All</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="qjackctl.qrc" >:/images/disconnect1.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer>
+       <property name="orientation" >
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType" >
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+       <property name="sizeHint" >
+        <size>
+         <width>8</width>
+         <height>8</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="ExpandAllPushButton" >
+       <property name="toolTip" >
+        <string>Expand all items</string>
+       </property>
+       <property name="text" >
+        <string>E&amp;xpand All</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="qjackctl.qrc" >:/images/expandall1.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer>
+       <property name="orientation" >
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType" >
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+       <property name="sizeHint" >
+        <size>
+         <width>8</width>
+         <height>8</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="RefreshPushButton" >
+       <property name="toolTip" >
+        <string>Refresh current patchbay view</string>
+       </property>
+       <property name="text" >
+        <string>&amp;Refresh</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="qjackctl.qrc" >:/images/refresh1.png</iconset>
+       </property>
+       <property name="default" >
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="0" column="0" colspan="3" >
+    <layout class="QHBoxLayout" >
+     <property name="margin" >
+      <number>4</number>
+     </property>
+     <property name="spacing" >
+      <number>4</number>
+     </property>
+     <item>
+      <widget class="QPushButton" name="NewPatchbayPushButton" >
+       <property name="toolTip" >
+        <string>Create a new patchbay profile</string>
+       </property>
+       <property name="text" >
+        <string>&amp;New</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="qjackctl.qrc" >:/images/new1.png</iconset>
+       </property>
+       <property name="autoDefault" >
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="LoadPatchbayPushButton" >
+       <property name="toolTip" >
+        <string>Load patchbay profile</string>
+       </property>
+       <property name="text" >
+        <string>&amp;Load...</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="qjackctl.qrc" >:/images/open1.png</iconset>
+       </property>
+       <property name="autoDefault" >
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="SavePatchbayPushButton" >
+       <property name="toolTip" >
+        <string>Save current patchbay profile</string>
+       </property>
+       <property name="text" >
+        <string>&amp;Save...</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="qjackctl.qrc" >:/images/save1.png</iconset>
+       </property>
+       <property name="autoDefault" >
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="PatchbayComboBox" >
+       <property name="sizePolicy" >
+        <sizepolicy>
+         <hsizetype>7</hsizetype>
+         <vsizetype>5</vsizetype>
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="font" >
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="toolTip" >
+        <string>Current (recent) patchbay profile(s)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="ActivatePatchbayPushButton" >
+       <property name="toolTip" >
+        <string>Toggle activation of current patchbay profile</string>
+       </property>
+       <property name="text" >
+        <string>Acti&amp;vate</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="qjackctl.qrc" >:/images/apply1.png</iconset>
+       </property>
+       <property name="checkable" >
+        <bool>true</bool>
+       </property>
+       <property name="autoDefault" >
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="4" margin="4" />
+ <customwidgets>
+  <customwidget>
+   <class>qjackctlPatchbayView</class>
+   <extends>QWidget</extends>
+   <header>qjackctlPatchbay.h</header>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>NewPatchbayPushButton</tabstop>
+  <tabstop>LoadPatchbayPushButton</tabstop>
+  <tabstop>SavePatchbayPushButton</tabstop>
+  <tabstop>PatchbayComboBox</tabstop>
+  <tabstop>ActivatePatchbayPushButton</tabstop>
+  <tabstop>OSocketAddPushButton</tabstop>
+  <tabstop>OSocketEditPushButton</tabstop>
+  <tabstop>OSocketCopyPushButton</tabstop>
+  <tabstop>OSocketRemovePushButton</tabstop>
+  <tabstop>OSocketMoveUpPushButton</tabstop>
+  <tabstop>OSocketMoveDownPushButton</tabstop>
+  <tabstop>PatchbayView</tabstop>
+  <tabstop>ISocketAddPushButton</tabstop>
+  <tabstop>ISocketEditPushButton</tabstop>
+  <tabstop>ISocketCopyPushButton</tabstop>
+  <tabstop>ISocketRemovePushButton</tabstop>
+  <tabstop>ISocketMoveUpPushButton</tabstop>
+  <tabstop>ISocketMoveDownPushButton</tabstop>
+  <tabstop>ConnectPushButton</tabstop>
+  <tabstop>DisconnectPushButton</tabstop>
+  <tabstop>DisconnectAllPushButton</tabstop>
+  <tabstop>ExpandAllPushButton</tabstop>
+  <tabstop>RefreshPushButton</tabstop>
+ </tabstops>
+ <resources>
+  <include location="qjackctl.qrc" />
+ </resources>
+ <connections/>
+</ui>

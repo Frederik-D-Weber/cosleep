@@ -1,0 +1,5 @@
+subject,condition,subject_condition_code
+subj1,sham,newton
+subj2,stim,leibniz
+subj3,stim,yellow
+subj4,sham,red

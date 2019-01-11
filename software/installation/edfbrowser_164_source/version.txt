@@ -1,0 +1,1021 @@
+
+ version 1.64      June 2, 2018
+ --------------
+
+ - EMSA to EDF converter: fixed a bug that could cause a crash due to invalid free-ing of memory.
+   Fixed a bug that could cause to write an invalid character into the EDF header when a signallabel
+   name is shorter than 16 bytes.
+
+ - Export filtered signals: include Z-ratio filter.
+
+ - Spectrum Analyzer: added the possibility to change the DFT block size on the fly.
+
+ - Spectrum Analyzer: added the possibility to apply a Hamming or Blackman window.
+
+ - Annotations markers now show also the duration of the event (if present).
+   This can be switched off in the settings control panel.
+
+ - Header editor: in case the physical maximum or minimum fields contains a comma as a decimal separator,
+   replace the comma with a dot.
+
+ - Update the videoplayer to work with VLC version 3
+
+ - Enable the videoplayer on windows
+
+ - Fixed a bug in the Z-ratio filter (Z-EEG).
+
+ - Annotation editor: added a keyboard shortcut for the delete button.
+
+
+
+ version 1.63      March 10, 2018
+ --------------
+
+ - Fixed a bug in the mit2edf converter.
+
+ - mit2edf converter: make sure there's always enough storage space in the file for annotations.
+
+ - Powerspectrum dock: fixed a bug that caused the percentage of the first frequency region always 0%.
+
+ - Signalcurve & filtercurve: set font to a fixed pixelsize.
+
+ - Import annotations: added support for annotations in MIT / WFDB (physionet) format.
+
+ - Added a Mortara ECG XML to EDF converter.
+
+ - Print to EDF/BDF & Export Filtered Signals: check polarity of the signals.
+
+
+
+ version 1.62      January 7, 2018
+ --------------
+
+ - Improve speed when processing annotations for heart rate variability.
+
+ - Update EDFlib.
+
+ - Fixed some memory leaks.
+
+ - Fixed some of-by-one out of boundary memory readings that potentially could cause a segfault.
+
+ - Bugfixes.
+
+
+
+ version 1.61      November 1, 2017
+ --------------
+
+ - Fixed a bug that caused a freeze/lockup when using the annotationlist filter.
+
+ - Added the possibility to filter annotations based on minimum and maximum interval time.
+
+ - Fixed a regression bug that could cause a crash when using the "reduce signals" tool
+   with an EDF+ file.
+
+ - Added a tool to export filtered and or derived signals to a new file.
+
+ - Added the possibility to view the Heart Rate Variability using the annotation list.
+
+
+
+ version 1.60      September 16, 2017
+ --------------
+
+ - Improve parameter checking for signal composition when loading a montage file.
+
+ - Added a powerline interference removal filter for ECG signals.
+
+ - Added the possibility to fix the EDF-header in case the value for digital maximum
+   is lower than or equal to digital minimum.
+
+ - When "whole recording" is selected for the Timescale and multiple files are opened,
+   make sure all recordings are completely visible.
+
+ - Fix erroneous reading of the datarecord duration field in the header
+   when the number has a sign.
+
+ - Annotations: show the duration using an overlay in the background color.
+
+ - Annotations: show the date when "relative" is unchecked in the annotations list and
+   viewtime/fileposition indicator is set to "date real (relative)" in the Settings dialog.
+
+ - Added a workaround for KDE Plasma 5 bug 345023.
+
+
+
+ version 1.59      May 8, 2017
+ --------------
+
+ - Improved memory management of annotations and annotations sorting algorithm,
+   which results in faster processing when a file contains many annotations (> 10000).
+
+ - Fixed a bug with the realtime playback function that caused to playback only the
+   first file when multiple files were opened.
+
+ - Fixed a bug in the Timesync -> Jump to dialog.
+
+ - Bugfix in MIT (PhysioBank) converter: use default gain of 200 when adc gain is set to 0.
+   From now on, all PhysioBank files can be converted to EDF+ including events/annotations.
+
+ - Don't update the onset time in the annotation editor when changing file position.
+
+ - Solved a bug that that could cause the creation of an incompatible montage file.
+
+ - Don't invert the heartrate trace when the parent trace is inverted.
+
+ - Fixed a bug in the EDF header editor.
+
+ - Fixed a bug that resetted some settings of the program to the standard settings.
+
+
+
+ version 1.58      July 10, 2016
+ --------------
+
+ - Solved a bug that could display a wrong trace when opening three or more files and
+   when re-arranging the order of the traces.
+
+ - Reduce memory usage.
+
+ - SCP-ECG (EN 1064:2005+A1:2007) to EDF+ converter: added support for bimodal compression
+   and reference beat subtraction.
+
+ - Make it possible to use the mouse to drag horizontally by keeping the
+   middle mousebutton pressed.
+
+ - Fixed a bug in the spectrumanalyzer for files with very high samplerate (>=5GHz).
+
+ - Fixed a bug that could cause a crash when changing file position when no file was opened.
+
+
+
+ version 1.57      January 16, 2016
+ --------------
+
+ - Update annotation markers when switching between real and relative time.
+
+ - Added an EDF converter for the Biox CB-1305-C 3-channel ambulatory ECG recorder/holter.
+
+ - Spectrumanalyzer: make numbers like frequency more "human readable"
+   by using suffix like K(ilo), M(ega), etc.
+
+ - Increase the maximum DFT blocksize to 16777216 (2^24) samples.
+
+ - Don't use the native menubar.
+
+ - Realtime playback function added.
+
+ - Added the possibility to choose between "stairsteps" or linear interpolation
+   between two consecutive samples for drawing the traces when number of samples on
+   the screen is less than number of horizontal screen pixels.
+   You can select it in the settings menu, tab "Other" (Tools -> Options).
+
+ - Added the possibility to open a streaming file from the commandline.
+
+
+
+ version 1.56      June 25, 2015
+ --------------
+
+ - Fixed a bug that caused the Unisens converter to fail.
+
+ - Added a tool that converts an audiorecording containing an FM modulated ECG waveform to EDF.
+
+ - Added an anti-aliasing filter to the samplerate divider/decimator
+   in the file reducer tool. The order of this filter can be choosen.
+
+ - Make it possible to remove just one filter.
+   (Before, you could only remove all filters.)
+
+ - Make it possible to close just one file.
+   (Before, you could only close all files.)
+
+ - Make the Nihon Kohden converter work with "EEG-1100A V02.00" files.
+
+ - Changed licence to GPLv3.
+
+ - Added a new setting in the settings menu. Now you can set the default amplitude
+   that will be applied when you add new signals. Before the default was always 100.
+
+ - Qt has been updated to 4.8.7.
+
+
+
+ version 1.55      February 7, 2015
+ ------------
+
+ - Added a MIT to EDF+ converter (to convert files from PhysioBank at physionet.org).
+   At this moment it supports the "Format 212" and "Format 16".
+   Most of the signal files in PhysioBank are written in format 212.
+   Other formats will be probably added in future.
+   Annotations (in the *.atr or *.ari file) will be read and converted to EDF+ as well.
+
+ - docked Power Spectrum: show percentage when using colorbars,
+   in the settingsmenu, it's now possible to select between auto-gain or manual
+   sensitivity for the colorbars.
+
+ - Allow to open multiple docked Power Spectrum windows.
+
+ - Correct the screen-offset when inverting a signal that contains a dc-offset.
+
+ - Removed a bug in the "Organize signals" dialog that caused a crash when selecting
+   signals in reverse order.
+
+ - Removed a bug that caused a crash when selecting a bessel bandstop/pass filter with
+   an order > 10.
+
+ - Increased the maximum number of filters from 8 to 16.
+
+ - Added a Spike filter which can be used to filter out spikes, glitches, fast transients or
+   pacemaker impulses.
+
+
+
+ version 1.54      October 11, 2014
+ ------------
+
+ - The Unisens to EDF converter now supports also files with binary format
+   double, int64 or uint64.
+
+ - The Power Spectrum now can plot a logarithmic vertical scale.
+
+ - The docked Power Spectrum now auto-adjust the y-scale only once.
+
+ - The docked Power Spectrum now can also be used in streaming mode.
+
+ - The settings of the docked Power Spectrum will be stored in the montage as well.
+
+ - EDFbrowser can now play video's (Linux version only). Have a look at the manual for the details.
+
+ - Fixed a bug in the filter dialog that could cause some widgets not being shown.
+
+ - Removed compile-errors when using Qt5 (due to bugs in Qt5, it's not advised to use Qt5 yet).
+
+ - From now on, the Mingw-w64 compiler needs to be used for Windows. (see README.txt)
+
+ - Qt has been updated to 4.8.6.
+
+
+
+ version 1.53      December 10, 2013
+ ------------
+
+ - The activity of the floating ruler will now be stored in the montages as well.
+
+ - Added a filter to the annotationslist.
+
+ - Modified the BI9800 to EDF converter to make it work with 48-hour recordings.
+
+ - Made the viewtime (fileposition) indicator configurable.
+   Added the date to the viewtime indicator in the left down corner of the screen.
+   This can be configured in the settings menu.
+
+ - Made the window title bar configurable.
+   This can be configured in the settings menu.
+
+ - fixed a bug in the EDF+D to EDF+C converter.
+
+ - Added the possibility to save and load different color schemas.
+
+ - Added support for the Unisens fileformat. You will find the converter in the Tools menu.
+
+ - Added the possibility to save and load colorschemas.
+
+
+
+ version 1.52      September 7, 2013
+ ------------
+
+ - Added an SCP-ECG file to EDF+ converter. Bimodal compression or customized Hufmanntables
+   are not supported. Lossless compression using default Hufmanntable and/or 1th/2th differences
+   is supported. Character-encoding other than ASCII/Latin-1 is not supported.
+
+ - Added two shortcuts (Plus and Minus keys) to increase or decrease the amplitude
+   of the signals (sensitivity).
+
+ - Added the possibility to choose between little endian or big endian encoding in the
+   binary/raw to EDF converter tool.
+
+ - Increased the number of pre-defined montage shortcuts from 8 to 12 (keys F1 to F12).
+
+ - Added the possibility to use aliases for the signallabels on the screen.
+
+ - Qt has been updated to 4.8.5.
+
+
+ version 1.51      May 11, 2013
+ ------------
+
+ - Added a Manscan MICROAMPS binary file to EDF+ converter.
+
+ - Solved another bug in the sorting algorithm used for the annotationlist.
+
+
+ version 1.50      April 20, 2013
+ ------------
+
+ - Fixed a bug in the ECG heartrate detection algorithm when a high samplerate was used.
+
+ - Improved the sorting algorithm used for the annotationlist, it was very slow when the annotationlist contains more than 10000 annotations.
+
+ - Added the possibility to adjust the samplerate divider for all signals at once in the reducer/decimator tool.
+
+ - EDFbrowser now checks online for a newer version during startup. This can be switched off in the settings menu.
+
+
+ version 1.49      February 5, 2013
+ ------------
+
+ - Added a binary/raw to EDF converter tool.
+
+ - Solved a bug in the "Import annotations" tool.
+   When importing from ascii, wrong onset-times were created
+   when there were more than 7 digits after the decimal point.
+
+ - Added a scrollbar to the options- / settingsdialog in order to make it fit
+   on screens with low vertical height (modern laptops with 16:9 screen).
+
+ - Removed GTK-style support because it's broken.
+
+ - Updated Qt to 4.8.4
+
+
+ version 1.48      June 8, 2012
+ ------------
+
+ - Added sub-second precision for annotations when using
+   the Nihon Kohden converter. (Before, the onsettimes of the
+   annotations were rounded to seconds.)
+
+ - Added Z-EEG measurement.
+
+ - Improved the header editor/fixer. Now it accepts files with a maximum of 2048 signals.
+   (Before it was limited to files with a maximum of 256 signals.)
+   Now, it can also fix the digital minimum/maximum fields in the header
+   (e.g. when a broken number was written instead of an integer number).
+
+ - Updated Qt to 4.8.2
+
+
+ version 1.47      May 7, 2012
+ ------------
+
+ - Solved a bug that caused a crash when saving an EDF- or BDF-file
+   after importing annotations.
+
+ - Changed the "Export ECG RR-interval" tool in such a way that you can easily
+   export the whole recording.
+   Also, now it's possible to import them as annotations directly.
+
+ - The tool "Import annotations/events" can now also import the duration
+   of an annotation/event (from ASCII- or XML-files).
+
+ - Added the possibility to hide or unhide annotations from the screen.
+   (Right-click on an annotation in the annotationswindow.)
+
+
+ version 1.46      April 13, 2012
+ ------------
+
+ - Solved a bug that caused a crash when the "Abort" button was clicked
+   when opening a BDF-file.
+
+ - Solved some small bugs and made some enhancements.
+
+ - Updated Qt to 4.8.1.
+
+
+ version 1.45      March 31, 2012
+ ------------
+
+ - Added the possibility to disable scanning for annotations or triggers
+   when opening a file, depending of the filesize.
+   This can be useful when working with big files that take
+   a lot of time to read-in annotations, events or triggers.
+   (Due to the nature of the EDF-format, the annotations-channel(s)
+   needs to be read from the beginning till the end of the file.)
+   In the "Settings -> other" dialog you can adjust the filesize
+   which above EDFbrowser will not scan the file for annotations.
+   (between 100 MB and 10 GB)
+
+ - extended the capabilities of the header-editor. Now it can also fix
+   files that have a wrong number of datarecords written in the header
+   or when the file does not end at the boundary of a datarecord.
+   See the manual for the details.
+
+ - Improved the ECG heartrate detection algorithm.
+
+ - Fixed some bugs related to signals with inversed polarity
+   (i.e. when physical maximum is lower than physical minimum).
+
+
+ version 1.44      March 4, 2012
+ ------------
+
+ - Fixed a bug that caused the "print to PDF / Postscript / Image" to fail
+   when non-ascii characters where present in the new filename.
+
+ - Fixed a bug that caused "printing to image" drawing the signals too thick
+   and wrong rulers.
+
+ - Fixed a bug in the ECG heartrate detection algorithm that could cause wrong
+   measurements with high heartrates (more than 120 bpm).
+
+ - Added Mousewheel zoom-in/out by pressing the Ctrl-key.
+
+
+ version 1.43      Februari 17, 2012
+ ------------
+
+ - Fixed multiple bugs related to annotationmarkers and EDFplus feature to use subsecondprecision in the starttime
+   of the file. (Only affects files that uses the subsecond starttime offset EDF+ feature.)
+
+
+ version 1.42      Februari 1, 2012
+ ------------
+
+ - Fixed a problem with EDFbrowser not capable to
+   handle filenames and/or directories that contain
+   non-ascii characters. From now on, filenames/paths
+   will be handled and saved using the local 8-bit
+   encoding.
+
+ - Added multi-threading capabilities to the drawing engine.
+   EDFbrowser will now use all available cpu-cores in your system
+   to speedup the drawing of the signals.
+
+
+ version 1.41      December 4, 2011
+ ------------
+
+ - Fixed a bug (introduced with ver. 1.40) that caused a long time to open
+   an EDF+ or BDF+ file when it contains many annotations.
+
+ - Improved printing quality. On some printers or pdf-readers, the signals
+   and rulers were hardly visible because the linewidth was too small.
+
+ - Added the possibility to set the colors of the averaging window to black/white.
+
+ - Added the possibility to check for and remove duplicate annotations (Tools menu).
+
+
+ version 1.40      December 1, 2011
+ ------------
+
+ - Added the possibility to reduce the samplerate of one or more signals in the
+   tool "Reduce signals, duration or samplerate" (Tools menu).
+
+ - Added the possibility to change/edit the starttime/date of a file with the
+   EDF/BDF header editor (Tools menu).
+
+ - The Statistics dialog shows also the number of zero-crossings and the frequency
+   of a signal.
+
+ - The Nihon Kohden to EDF+ converter now processes also the Trigger/Marker channel.
+   For example, photo- or dc-triggers will be processed by the converter and can be
+   displayed by EDFbrowser.
+
+ - Fixed a bug in the signalcurve (graph) of the averaging window, when "invert" was selected,
+   the vertical ruler could disappear.
+
+ - Fixed a bug in the floating ruler.
+
+ - Raised the maximum amount of signals per file limit from 256 to 512.
+
+
+ version 1.39      September 20, 2011
+ ------------
+
+ - Fixed another bug related to annotationmarkers and EDFplus feature to use subsecondprecision in the starttime
+   of the file.
+
+ - Updated Qt to 4.7.4
+
+
+ version 1.38      August 24, 2011
+ ------------
+
+ - Fixed lots of regression bugs introduced with version 1.37.
+
+ - Fixed a bug related to annotationmarkers and EDFplus feature to use subsecondprecision in the starttime
+   of the file.
+
+ - Fixed a bug in the ascii to edf converter that caused to produce an invalid edf file when
+   all samples in have value "0.0".
+
+
+ version 1.37      August 17, 2011
+ ------------
+
+ - Removed the limitation that no more annotations can be saved than the amount of datarecords.
+   EDFbrowser could only write one annotation per datarecord. From now on, if there are more
+   annotations than datarecords, the size (smpls/record) of the annotationchannel will increase
+   automatically in order to fit multiple annotations as needed.
+
+
+ version 1.36      June 16, 2011
+ ------------
+
+ - Solved a bug when importing events/annotations from an ascii-file.
+
+
+ version 1.35      June 16, 2011
+ ------------
+
+ - Changed the selectionbehaviour of the signallist in Signals -> Organize.
+   Now you can select multiple signals when organizing the signals on the screen.
+
+ - Solved a bug that caused showing the wrong signal when there are duplicate signalnames in a file.
+
+ - Solved a bug that caused a cryptic error message "avg_cnt is ..." when averaging a signal using
+   a trigger/annotation which was not inside the selected timewindow.
+
+ - Now it is possible to start/open multiple averagingwindows applied on the same signal.
+
+ - Added the possibility to invert te waveform of the averagingwindow.
+
+ - Solved a bug that caused an errormessage when trying to open a large file (>2.1GB) on a Mac.
+
+ - Removed some bugs in the heartrate detection code.
+
+ - Now you can choose between different kinds of data (R onset or RR-interval or both) when exporting
+   the heartrate data.
+
+
+ version 1.34      May 9, 2011
+ ------------
+
+ - Added ECG heartrate detection (it calculates beats per minute from the ECG-waveform).
+
+ - Added the possibility to import annotations, also from discontinues EDF+D or BDF+D files.
+
+ - Added mousewheel scrolling.
+
+ - Added the possibility to save the data from averaging as EDF/BDF.
+
+ - Added the possibility to (re-)organize (re-order and/or invert) the signals on the screen in an easy way
+   via Menu -> Signals -> Organize.
+
+ - Modified the annotation editor, from now on annotations with an onsettime more than
+   24 hours can be edited as well.
+
+ - Solved a bug that prevented a messagebox to appear when trying to open
+   a BDF+D file.
+
+ - Changed the way the onsettime of the annotations are presented.
+
+
+ version 1.33      March 22, 2011
+ ------------
+
+ - Added the possibility to import/extract triggers/events from/recorded on a dc-coupled channel.
+
+ - Added the possibility to perform "averaging" (evoked potentials or other triggers)
+   using (imported) annotations, events or other kind of triggers.
+
+ - Added a WAV to EDF converter.
+
+ - Modified the Nihon Kohden to EDF converter so that it will use the electrodenames defined
+   by the user in the aquisition software.
+
+ - Fixed a bug that caused writing a wrong value in the datarecorddurationfield of the header
+   when saving annotations and when the number in the datarecorddurationfield of the sourcefile
+   has more than six digits after the dot.
+
+ - Fixed a bug related to a rarely used EDFplus feature to use subsecondprecision in the starttime
+   of the file. Some tools ignored this feature, this has been fixed.
+
+ - Updated Qt to 4.7.2
+
+
+ version 1.32      December 16, 2010
+ ------------
+
+ - Fixed a bug that prevented from updating the screen when in streaming mode
+   and after all signals were removed.
+
+ - Fixed a bug in EDFlib.
+
+
+
+ version 1.31      December 8, 2010
+ ------------
+
+ - Added a streaming mode. The stream must be a "growing" file.
+   This mode can be used when you have an aquisitionprogram running that writes EDF or BDF.
+   While the aquisitionprogram writes the data to the file, you can use EDFbrowser to watch
+   (follow) the actual data. EDFbrowser will regularly check the actual filesize and show the
+   last part of the file i.e. the most actual/recent data.
+
+ - Added a "moving average" filtermodel (high- and lowpass).
+
+ - The "View montage" dialogs got a facelift.
+
+
+
+ version 1.30      November 24, 2010
+ ------------
+
+ - Added the possibility to import events/annotations from a text/csv or XML file.
+
+ - Enhanced the "Export annotations/events" tool. Now you can choose the
+   separator character (comma or tab) and you can choose different ISO
+   time (and date) timestamps encodings. XML export is possible as well.
+
+ - Solved a bug in de the "adjust filter" dialogue. When using a notchfilter,
+   the "order" widget was shown instead of the "Q-factor" widget.
+
+ - Updated Qt to version 4.7.1.
+
+
+
+ version 1.29      November 9, 2010
+ ------------
+
+ - Added the possibility to adjust the filter settings while watching the result (realtime).
+
+ - Fixed a bug that caused the program to remember the wrong montage.
+
+ - Added a possibility in the ASCII to EDF converter to detect the physical maximum values
+   of the signals automatically.
+
+ - The ASCII to EDF converter can also convert to BDF (24-bit).
+
+
+
+
+version 1.28      October 27, 2010
+ ------------
+
+ - Added support for reading the "Status" signal in Biosemi data files.
+   This can be switched on/off in the settings menu.
+
+ - Added a Biosemi to BDF+ converter.
+   It converts the Biosemi trigger inputs to annotations which can be
+   read and processed by EDFbrowser.
+
+ - Added an EDF-converter for the Bmeye Nexfin / FrameInspector csv-output
+   (beat-to-beat data, bloodpressure waveform, analog inputs).
+
+ - Added zoom-in/zoom-out function using Ctrl++ and Ctrl--.
+
+ - Added keyboard shortcuts and accelerators to the menu's.
+
+ - From now on, the timescale will be saved in montages as well.
+
+ - When opening a file, the last used montage (with that file) will be applied automatically.
+   This behaviour can be switched off in the settingsmenu.
+
+
+
+ version 1.27      September 27, 2010
+ ------------
+
+ - Made all the file-open/save dialogs native.
+   This improves the speed in file-listing on some windows-pc's.
+
+
+
+ version 1.26      September 7, 2010
+ ------------
+
+ - Added an header-editor.
+
+ - Added a file reducer/cropper.
+
+ - Added the possibility to clip the signals to their pane.
+
+ - Solved a bug that rendered the settingsmenu invisible on the Mac.
+
+
+
+ version 1.25      August 2, 2010
+ ------------
+
+ - Solved a bug that caused writing invalid files and/or caused to reject
+   opening a file because of an incompatibility while in reality the file was valid.
+   This was caused by a localizationproblem which occured only on systems where
+   countrysettings are used that uses a comma as a decimal separator.
+
+ - Changed the name of the "Display" menu to "Timescale".
+
+ - Added the entry "3 cm/sec" to the the Timescale menu.
+
+ - From now on EDFbrowser will use the DPI-settings from the underlying windowmanager
+   in order to calibrate the screen. If this doesn't work well in your situation,
+   you can still calibrate the screen manually in the settingsmenu.
+
+ - Solved a bug that caused malformed waveforms when opening large files (>4 GB)
+   and when navigating to the end of the file. This was caused by an integer overflow.
+
+ - Solved a bug in the ASCII to EDF converter (couldn't open templates).
+
+ - Changed the sourcecode to improve Mac compatibility.
+
+
+
+ version 1.24      June 28, 2010
+ ------------
+
+ - Solved a bug in the Nihon Kohden to EDF+ converter that caused
+   a message "Can not open file *.log for reading,".
+
+
+ version 1.23      June 23, 2010
+ ------------
+
+ - Changed the DFT-algorithm of the powerspectrum to an FFT-algorithm
+   in order to avoid long computation times.
+
+ - Added the possibility to adjust the blocksize for the powerspectrum (FFT).
+
+ - Added an extra option to the Annotations export tool.
+   Now you can choose to save the annotations in a comma separated
+   textfile or in the EDFplus format.
+
+ - Changed the position of the widgets in the annotation-editor window.
+   The "Create" button will not be cut-off anymore when a monitor with
+   a resolution of 1024 x 768 is used.
+
+ - Qt has been updated to version 4.6.3 (windows version has still 4.6.2).
+
+
+
+ version 1.22      june 4, 2010
+ ------------
+
+ - Added a docked powerspectrum which updates automatically when you navigate
+   throug a file (PgUp,PgDn, etc,).
+
+ - Added the possibility to use different backgroundcolors for different frequencyregions
+   in the docked powerspectrum (colorbars).
+
+ - Added an export function for the powerspectrum. This will export
+   the data of the powerspectrum to a textfile.
+
+ - Added a cursor to the powerspectrum.
+
+ - Improved the way filters run-in.
+
+ - Added an export function for annotations. This will export
+   the annotations to a comma separated textfile.
+
+ - Added a possibility to bind keys F1 ... F8 to predefined montages.
+   This way you can quickly switch between different montages by
+   pressing F1, F2, etc.
+
+ - Removed a bug in the EDF+D to EDF+C converter that could cause a crash.
+
+ - Removed a bug in the BDF+ to ASCII converter.
+
+
+ version 1.21      may 11, 2010
+ ------------
+
+ - The Powerspectrum window will not block the mainwindow anymore.
+   Now you can open multiple Powerspectrum windows (for example,
+   to compare different blocks of data and/or different signals).
+
+ - Made a printing option for the Powerspectrum. you can print
+   the Powerspectrum to a printer, Postscript, PDF or an image
+   by rightclicking on the curve of the Powerspectrum.
+
+ - The ASCII to EDF converter now has a multiplierfactor.
+   Cleaned up the code of the converter as well.
+
+ - Fixed a bug that caused writing to a freed memory area
+   which could cause a crash when closing the program (mainly
+   noticeable on windows).
+
+ - Fixed a memoryleak.
+
+
+ version 1.20      may 4, 2010
+ ------------
+
+ - Added a power spectrum analyzer (Discrete Fourier Transform).
+
+ - Removed a bug that caused wrong vertical ruler values during printing.
+
+ - Removed a bug that caused a wrong screenoffset when changing the offset
+   in the signalproperties dialog.
+
+
+ version 1.19      april 20, 2010
+ ------------
+
+ - Added extra filter options: lowpass, highpass, notch, bandpass, bandstop,
+   Butterworth, Chebyshev, Bessel, 1,2,3,...8 th order, adjustable bandpassripple
+   or Q-factor.
+
+ - Removed a bug in the BDF to EDF converter,
+   clicking on "Select all signals" or "Deselect all signals"
+   without a selected file, caused a crash.
+
+ - Fixed a bug in the "Print to EDF" and "Print to BDF" function.
+   Filter description in header was wrong (i.e. "LPF:" instead of "LP:").
+
+ - Fixed a bug in the Filter Dialog. When adding a new filter when signals have
+   different samplerates, initialisation of the new filter could happen with wrong
+   samplerate, causing a wrong frequency of the filter.
+
+ - Updated Qt to version 4.6.2
+
+
+ version 1.18      januari 12, 2010
+ ------------
+
+ - added an annotation editor
+
+ - solved a bug that could cause an errormessage "can not open file for reading"
+
+ - solved a bug that could cause a false positive when checking the EDF-header
+   of an EDFplus file (patientfield)
+
+
+ version 1.17      november 4, 2009
+ ------------
+
+ - solved a bug in load_montage_dialog.cpp that caused a crash when
+   loading a montage and a label was not found
+
+
+ version 1.16      october 28, 2009
+ ------------
+
+ - solved a bug in the BDF+ to EDF+ converter
+
+ - solved a bug in the XML parser
+
+ - solved a memoryleak when using filters
+
+ - solved some minor bugs
+
+ - added a floating ruler
+
+ - made some minor cosmetic changes
+
+ - updated Qt to version 4.5.3
+
+
+ version 1.15       june 18, 2009
+  -----------
+
+  - solved a bug that could cause a crash when using crosshairs
+
+
+ version 1.14       april 27, 2009
+  -----------
+
+  - solved a bug & optimized the code in the BDF to EDF converter
+
+  - updated Qt to version 4.5.1
+
+
+ version 1.13       april 20, 2009
+  -----------
+
+  - added a BDF(+) to EDF(+) converter
+
+
+ version 1.12       april 2, 2009
+  -----------
+
+  - bugfix release, solved a crash when removing a signal or a filter
+
+
+ version 1.11       march 31, 2009
+  -----------
+
+  - added an EDF+D to EDF+C converter, it can convert discontinues files
+    to continues files (interrupted recordings to un-interrupted recordings),
+    can be used for BDF+D files as well
+
+ - added an Emsa (*.PLG) EEG to EDF+ format converter
+
+ - updated Qt to version 4.5.0 which has better GTK-style support when Gnome is used
+
+
+ version 1.10       februari 13, 2009
+  -----------
+
+  - solved a bug that generated a false "read error" message
+    when using filters at the start of the file
+    (this bug appeared in version 1.09)
+
+
+ version 1.09       februari 11, 2009
+  -----------
+
+  - solved a bug in the "Print to EDF/BDF" tools
+    which could cause a crash
+
+  - solved compilerwarnings in GCC 4.3.2 (warn_unused_result)
+
+
+ version 1.08       december 15, 2008
+  -----------
+
+  - added a slider for navigating
+
+  - solved a bug in the BDF+ compatibility checker
+
+  - disabled the possibility to open discontinuous files
+    (interrupted recordings) because of technical reasons
+
+
+
+ version 1.07       november 5, 2008
+ -----------
+
+ - improved speed when a long displaytime is used
+
+ - added support for the BDF+ format. Read the details here.
+
+ - solved some minor bugs
+
+
+
+ version 1.06       october 23, 2008
+ -----------
+
+ - solved a minor issue with the built-in EDF-checker
+
+ - updated Qt to 4.4.3
+
+
+
+
+ version 1.05        september 17, 2008
+ -----------
+
+ - added a Finometer (Beatscope) to EDF format converter.
+   (Finometer is a non-invasive stationary blood measurement and beat to beat
+   haemodynamic monitoring system made by Finapres Medical Systems)
+   read the documentation for the details.
+
+ - solved a bug that causes a crash when a file was opened via the cmd-line
+   with an unknown extension.
+
+ - updated Qt to 4.4.1
+
+
+
+
+ Version 1.04          may 2, 2008
+ -----------
+
+ - added an ASCII to EDF format converter
+
+
+
+
+ Version 1.03          march 31, 2008
+ -----------
+
+ - improved printing resolution
+
+ - solved an issue with printermargins and fonts thanks to new printerframework in Qt 4.4.x
+
+ - added option to "print" to an EDF or BDF file
+   now you can extract one or more signals and write it to a new EDF file
+   or you can combine signals from several files into one new EDF file
+   printing to a BDF file is supported as well
+   read the manual for the details
+
+ - added option user defined displaytime (pagetime)
+
+ - added option jump to end of recording
+
+ - dropped the maximum datarecordblocksize of 61440 bytes requirement for EDF+ files
+   from now on EDFbrowser will accept EDF+ files with  larger blocksizes
+
+
+
+
+ Version 1.02          februari 11, 2008
+ -----------
+
+- solved a bug that potentially could crash the program when opening
+  EDF+ files with a durationfield in annotations
+
+
+
+
+ Version 1.01          januari 21, 2008
+ -----------
+
+- solved two bugs that could create errors in timesyncing between multiple files
+
+- added support for large files (>2.1GB)
+
+- updated Qt to version 4.3.3
+
+
+
+
+ Version 1.00           januari 8, 2008
+ -----------
+
+ - Initial release.
+

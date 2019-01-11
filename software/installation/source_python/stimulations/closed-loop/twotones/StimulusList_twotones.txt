@@ -1,0 +1,2 @@
+"S880","stimuli/tones/880Hz_sine_tone_16bit_integer_44.1kHz_PCM.wav"
+"S1320","stimuli/tones/1320Hz_sine_tone_16bit_integer_44.1kHz_PCM.wav"

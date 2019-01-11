@@ -1,0 +1,53 @@
+.TH QJACKCTL 1 "June 17, 2014"
+.SH NAME
+qjackctl \- User interface for controlling JACK (Jack Audio Connection Kit)
+.SH SYNOPSIS
+.B qjackctl 
+[\fIoptions\fR]
+.SH DESCRIPTION
+This manual page documents briefly the
+.B qjackctl
+command.
+.PP
+
+.PP
+\fBQjackCtl\fP is used for controlling the Jack Audio Connection
+Kit (JACK) and as a patchbay for ALSA MIDI and JACK MIDI devices.
+\fBQjackCtl\fP also has support for the JACK transport control protocol,
+so you can use it to start and stop the JACK transport. Once you
+start qjackctl, you get presented with a single GUI window, the
+buttons are self-explanatory and have tooltips. 
+.SH OPTIONS
+.HP
+\fB\-s\fR, \fB\-\-start\fR
+.IP
+Start JACK audio server immediately
+.HP
+\fB\-p\fR, \fB\-\-preset\fR=[\fIlabel\fR]
+.IP
+Set default settings preset name
+.HP
+\fB\-a\fR, \fB\-\-active\-patchbay\fR=[\fIpath\fR]
+.IP
+Set active patchbay definition file
+.HP
+\fB\-n\fR, \fB\-\-server\-name\fR=[\fIlabel\fR]
+.IP
+Set default JACK audio server name
+.HP
+\fB\-h\fR, \fB\-\-help\fR
+.IP
+Show help about command line options
+.HP
+\fB\-v\fR, \fB\-\-version\fR
+.IP
+Show version information.
+.SH SEE ALSO
+.BR jackd (1)
+.SH FILES
+Configuration settings are stored in ~/.config/rncbc.org/QjackCtl.conf
+.SH AUTHOR
+QjackCtl was written by Rui Nuno Capela.
+.PP
+This manual page was written by Guenter Geiger <geiger@debian.org>,
+for the Debian project (but may be used by others).

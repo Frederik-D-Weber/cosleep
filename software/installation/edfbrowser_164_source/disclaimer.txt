@@ -1,0 +1,9 @@
+
+This is free software, it is experimental and available under the GPL License version 3.
+
+Despite this software is intend to be useful, there is no warranty, use this software at your own risk!
+
+This software is intend to be used for education and/or research.
+
+DO NOT USE THIS SOFTWARE FOR MEDICAL PURPOSES AND/OR DIAGNOSIS!
+

@@ -1,0 +1,2 @@
+"S1","stimuli/pinknoise/pink_noise_50_ms_44.1Hz_16bit_integer.wav"
+"S2","stimuli/pinknoise/pink_noise_50_ms_44.1Hz_16bit_integer.wav"

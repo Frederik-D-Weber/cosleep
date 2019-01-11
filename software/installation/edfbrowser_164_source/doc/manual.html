@@ -1,0 +1,1850 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <title>EDFbrowser manual</title>
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="-1">
+    <meta name="description" content="EDFbrowser manual">
+</head><body>
+
+<h1>EDFbrowser 1.64 manual</h1>
+
+<p><br></p>
+
+<div>
+<a name="Table_of_Contents"></a>Table of Contents:<br>
+<ul>
+  <li><a href="#Filemenu">Filemenu</a></li>
+  <li><a href="#Streaming">Streaming mode</a></li>
+  <li><a href="#Video">Video</a></li>
+  <li><a href="#Signalsmenu">Signalsmenu</a></li>
+  <li><a href="#Timescalemenu">Timescalemenu</a></li>
+  <li><a href="#Amplitudemenu">Amplitudemenu</a></li>
+  <li><a href="#Signallabel">Signallabel</a></li>
+  <li><a href="#Alias">Alias</a></li>
+  <li><a href="#Signaldialog">Signaldialog</a></li>
+  <li><a href="#Signalproperties">Signalproperties</a></li>
+  <li><a href="#Adjusting_the_position_and_size_of_the_signals">Adjusting the position and size of the signals</a></li>
+  <li><a href="#Organize_signals">Organize signals</a></li>
+  <li><a href="#Navigation">Navigation</a></li>
+  <li><a href="#Annotations">Annotations</a></li>
+  <li><a href="#Annotations_Filter">Annotations Filter</a></li>
+  <li><a href="#Filters">Filters</a></li>
+  <li><a href="#Adjust_filters">Adjust filters</a></li>
+  <li><a href="#Powerspectrum">Powerspectrum</a></li>
+  <li><a href="#Averaging_EP">Averaging (evoked potentials or other triggers)</a></li>
+  <li><a href="#ECG_PLIF_filter">ECG powerline interference filter</a></li>
+  <li><a href="#ECG_detection">ECG heartrate detection</a></li>
+  <li><a href="#HR_statistics">Heart Rate statistics</a></li>
+  <li><a href="#Spike_filter">Spike filter</a></li>
+  <li><a href="#Zoomfunction">Zoomfunction</a></li>
+  <li><a href="#Floatingruler">Floating ruler</a></li>
+  <li><a href="#Crosshairs">Crosshairs</a></li>
+  <li><a href="#Statistics">Statistics</a></li>
+  <li><a href="#Montages">Montages</a></li>
+  <li><a href="#Keyboard_bindings_for_montages">Keyboard bindings for montages</a></li>
+  <li><a href="#Colors">Colors</a></li>
+  <li><a href="#Calibration">Calibration</a></li>
+  <li><a href="#Timelock">Timelock / File synchronisation</a></li>
+  <li><a href="#File_Info">File info / header / properties</a></li>
+  <li><a href="#Header_editor">Header editor</a></li>
+  <li><a href="#EDFBDF_to_ASCII_format_converter">EDF(+)/BDF(+) to ASCII (CSV) format converter</a></li>
+  <li><a href="#Reduce_signals">Reduce signals, duration and/or samplerate</a></li>
+  <li><a href="#Export_filtered_signals">Export filtered signals</a></li>
+  <li><a href="#Export_annotations">Export annotations/events</a></li>
+  <li><a href="#Import_annotations">Import annotations/events</a></li>
+  <li><a href="#Z_EEG">Z-EEG</a></li>
+  <li><a href="#ASCII_to_EDF_converter">ASCII (CSV) to EDF/BDF format converter</a></li>
+  <li><a href="#Nihon_Kohden_to_EDF_format_converter">Nihon Kohden to EDF(+) format converter</a></li>
+  <li><a href="#UNISENS_TO_EDFPLUS">Unisens to EDF+ format converter</a></li>
+  <li><a href="#SCP_ECG_to_EDFplus">SCP ECG to EDF+ format converter</a></li>
+  <li><a href="#MIT_to_EDFplus">MIT (PhysioBank)to EDF+ format converter</a></li>
+  <li><a href="#Manscan_to_EDFplus">Manscan to EDF+ format converter</a></li>
+  <li><a href="#Biosemi_to_BDFplus">Biosemi to BDF+ format converter</a></li>
+  <li><a href="#Fino_to_EDF">Finometer to EDF format converter</a></li>
+  <li><a href="#Wave_to_EDF">Wave to EDF format converter</a></li>
+  <li><a href="#FMaudio_to_EDF">FM Audio ECG to EDF format converter</a></li>
+  <li><a href="#Nexfin_to_EDF">Nexfin to EDF format converter</a></li>
+  <li><a href="#Emsa_to_EDF">Emsa to EDF+ format converter</a></li>
+  <li><a href="#edfd_to_edfc">EDF+D to EDF+C converter</a></li>
+  <li><a href="#bdf2edfconverter">BDF(+) to EDF(+) converter</a></li>
+  <li><a href="#EDF_and_BDF_compatibility_checker">EDF(+) and BDF(+) compatibility checker</a></li>
+  <li><a href="#Binary_to_EDF">Binary/raw to EDF</a></li>
+  <li><a href="#Print_to_PDF">Print to PDF</a></li>
+  <li><a href="#Print_to_IMG">Print to image</a></li>
+  <li><a href="#Print_to_EDF">Print to EDF(+)</a></li>
+  <li><a href="#Print_to_BDF">Print to BDF(+)</a></li>
+  <li><a href="#Annotation_editor">Annotation editor</a></li>
+  <li><a href="#Commandline_options">Commandline options</a></li>
+  <li><a href="#FAQ">FAQ</a></li>
+</ul>
+</div>
+
+<p><br></p>
+
+<h3><a name="Filemenu"></a>Filemenu</h3>
+
+<p>
+  Use the Filemenu to open or close a file. After the file has been opened,<br>
+  the <a href="#Signaldialog">signaldialog</a> will appear.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Streaming"></a>Streaming mode</h3>
+
+<p>
+  Use the Filemenu to open a stream. The stream must be a "growing" file.<br>
+  This mode is used when you have an aquisitionprogram running that writes EDF or BDF.<br>
+  While the aquisitionprogram writes the data to the file, you can use EDFbrowser to watch<br>
+  (follow) the actual data. EDFbrowser will regularly check the actual filesize and show the<br>
+  last part of the file i.e. the most actual/recent data.<br>
+  The default intervaltime between the updates is 500 milliSeconds and can be changed in the settingsmenu.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Video"></a>Video</h3>
+
+<p>
+  In order for EDFbrowser to be able to start a video, the <a href="https://www.videolan.org/">VLC mediaplayer</a> must be installed on your system.<br>
+  On windows: make sure VLC is installed in: C:\Program Files\VideoLAN\VLC\ or C:\Program Files (x86)\VideoLAN\VLC\<br><br>
+
+  Open an EDF or BDF file and select/setup your montage as usual. Then press Ctrl-Shift-v (or go to File -> Start video)<br>
+  to select a video. After the video has started, you can use the slider on the bottom to change the file position or<br>
+  use page-up/page-down.<br><br>
+
+  Also, the startdate and starttime needs to be set in the filename of the video (for synchronization).<br>
+  The following text is copied from <a href="http://www.edfplus.info/specs/video.html">http://www.edfplus.info/specs/video.html</a> :<br><br>
+<i>
+  Video filenames of the same patient must start with the same patient identification,<br>
+  followed by the start-date and -time of the video, as follows:<br>
+  NL_012348168_03-MAY-2013_14h45m49.013s_Video.ogv<br>
+  in which case the video apparently starts on May 3, 2013 at 0.013 seconds after 14:45:49hr. To be more precise,<br>
+  the patient identification is followed by an underscore (_), followed by the video startdate DD-MMM-YYYY,<br>
+  followed by an underscore, followed by the starttime  HHhMMmSS.XXXXs. The startdate days, DD, are 01, 02, 03, ... 30 or 31.<br>
+  The months, MMM, are JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV or DEC.<br>
+  The years, YYYY, obviously are 2013, 2014 and so on. The starttime is based on the 24h clock with HH ranging from 00 till 23,<br>
+  so midnight is coded as 00h00m00s. The decimal fraction of a second (noted here by .XXXX) can have any lenght and can also be omitted<br>
+  (for example in 06h37m12s). The addition _Video is not obligatory and neither do we standardize any video format such as ogv.<br>
+  So, a perfectly OK video filename would also be:<br>
+  NL_012348168_03-MAY-2013_14h45m49.013s.mpeg<br><br>
+</i>
+  Note: EDFbrowser will ignore the part of the filename directly before the startdate and directly after the starttime.<br><br>
+
+  If the filename of the video does not contain the startdate and starttime, you can still continue to use the video but<br>
+  in that case EDFbrowser will assume that the starttime of the video coincides with the starttime of the EDF file.<br><br>
+
+  You can resize the video window by dragging the bottom-right corner with the mouse.<br>
+  All other operations like stop, pause, etc. must be done by using the videoplayer controls (buttons) in EDFbrowser.<br>
+  Do not use the control interface of VLC, it will interfere with EDFbrowser.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Signalsmenu"></a>Signalsmenu</h3>
+
+<p>
+  Use the Signalsmenu to add or remove signals. If you want to remove only one particular signal,<br>
+  leftclick on the signallabel of the signal you want to remove. A small dialog will appear and gives<br>
+  you the possibility to remove that particular signal from the screen. See also <a href="#Signaldialog">signaldialog</a>.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Timescalemenu">Timescalemenu</a></h3>
+
+<p>
+  Use the Timescalemenu to choose the pagetime (the amount of seconds that must be shown on the screen).<br>
+  Be aware that a pagetime of more than five minutes slowsdown the program. Specially when there are<br>
+  many signals on the screen and/or high samplefrequencies.<br>
+  "3cm/Sec" will adjust the pagetime so that one second equals 3 cm horizontally. In case you get a different<br>
+  result, calibrate your screen in Menu -&gt; Settings -&gt; Calibration.<br>
+  The timescale can also be changed with the keyboard shortcuts Ctl++ and Ctl+-,<br>
+  or by turning the mousewheel while keeping the Ctl-key pressed.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Amplitudemenu">Amplitudemenu</a></h3>
+
+<p>
+  Use the Amplitudemenu to adjust the amplitude (size/gain/sensitivity) of all signals on the screen.<br>
+  If you want to adjust the amplitude of one particular signal, use <a href="#Signalproperties">Signalproperties</a>.<br>
+  "Fit to pane" will adjust the height and size of all signals so that they will fit on the screen.<br>
+  "Adjust offset" will adjust the height only (of all signals so that they will fit on the screen).<br>
+  "Offset -&gt; 0" will set the offset on the screen of all signals to zero.<br>
+  Use the "+" or "-" keys on your keyboard to increase or decrease the amplitude of all signals.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Signallabel">Signallabel</a></h3>
+
+<p>  The signallabel is the name of the signal which is printed on the screen at the start of the trace.<br>
+  This little piece of text has some "hidden" functions. When you leftclick on it, the <a href="#Signalproperties">Signalproperties</a><br>
+  dialog will be opened. You can also drag this label with the left or right mousebutton to change<br>
+  the offset or amplitude of the signal, see also <a href="#Adjusting_the_position_and_size_of_the_signals">Adjusting the position and size of the signals</a>.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Alias">Alias</a></h3>
+
+<p>  The alias, if used, is an alternative signallabel which is printed on the screen at the start of the trace.<br>
+  Aliasses can be created in the <a href="#Signalproperties">Signalproperties dialog</a> and will be stored in your <a href="#Montages">montage</a>.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Signaldialog">Signaldialog</a></h3>
+
+<p>
+  Use the signaldialog to add one or more signals to the screen. Go to Signals -&gt; Add.<br>
+  On top you will see a list of opened files.<br>
+  Select (highlight) the file from which you want to add signals. At the left part of the dialog you see a list of<br>
+  all the signals which are in the selected file. Select one or more signals and click on the "Add signal(s)"<br>
+  button. Now you will see the selected signals on the screen. You can add more signals afterwards,<br>
+  just go to Signals -&gt; Add.<br>
+<br>
+  When you want to make a combination (derivation) of two or more signals, do as follows. Open the signalsdialog.<br>
+  Select the file from which you want to add signals. In this example we choose an EEG file which contains<br>
+  the signals "P3" and "C3" and we want to subtract "C3" from "P3".<br>
+  - Select (highlight) the signal "P3".<br>
+  - Click on the "Add" button.<br>
+  - Select (highlight) the signal "C3".<br>
+  - Click on the "Subtract" button.<br>
+  - Click on the "Make derivation" button.<br>
+  - The result of "P3" minus "C3" will appear on the screen.<br>
+<br>
+  Now you can add more combinations or simply close the dialog.<br>
+<br>
+  note: It is only possible to make combinations with signals who:<br>
+  - are in the same file<br>
+  - have the same samplerate<br>
+  - have the same physical dimension (e.g. uV)<br>
+  - have the same sensitivity (e.g. uV/bit)<br>
+<br>
+  note 2: If you want to invert the signals (which is common in EEG) do as follows:<br>
+  instead of P3 - C3, use -P3 + C3 (or C3 - P3).<br>
+  You can also invert a signal afterwards, go to <a href="#Organize_signals">Signals -&gt; Organize</a>.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Signalproperties">Signalproperties</a></h3>
+
+<p>
+  You can view or adjust the properties of a specific signal by leftclicking on the signallabel.<br>
+  A small dialog will be opened and let you change the amplitude and color.<br>
+  You can also remove filters (if any) or remove the signal from the screen.<br>
+  You can also enter an alias for the signalname.<br>
+  Another option is to activate one or more <a href="#Crosshairs">crosshairs</a> for precise measurements.<br>
+<br>
+  Another way to view/change the properties of a signal is to go to Signals -&gt; Properties.<br>
+  This will show you a list of all signals which are on the screen. Simply click on the<br>
+  signal of interest.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Adjusting_the_position_and_size_of_the_signals">Adjusting the position and size of the signals</a></h3>
+
+<p>
+  Leftclick on the signallabel and move the mousepointer up or down while keeping the<br>
+  left mousebutton pressed. This will move the signal up or down on the screen i.e. it<br>
+  changes the offset of the signal.<br>
+<br>
+  Rightclick on the signallabel and move the mousepointer up or down while keeping the<br>
+  right mousebutton pressed. This will increase or decrease the amplitude (size/gain) of<br>
+  the signal on the screen.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Organize_signals">Organize signals</a></h3>
+
+<p>
+  You can organize the signals via Signals -&gt; Organize.<br>
+  Here you can change the order of the signals on the screen, remove or invert signals.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Navigation">Navigation</a></h3>
+
+<p>
+  Navigation throug a file can be done by using the PageUp/PageDown buttons on your keyboard.<br>
+  Use the Arrowkeys to shift the screen one tenth of the pagetime. The mousewheel can be used to<br>
+  scroll horizontally. The stepsize of the mousewheel can be set in the settings menu.<br>
+  A value of zero disables mousewheel scrolling.<br>
+  Keep the middle mousebutton pressed to drag horizontally.<br>
+<br>
+  You can also <a href="#Zoomfunction">zoom-in</a>.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Annotations">Annotations</a></h3>
+
+<p>
+  When a file contains annotations, the annotationwindow will appear.<br>
+  Just click on one of the annotations to jump to that position in the file.<br>
+  This window is dockable. You can change the size of the window, but also the position.<br>
+  You can make the window floating as well by dragging it with the mouse. After closing<br>
+  the annotationwindow, you can make it appear again via Window -&gt; Annotations.<br>
+<br>
+  By right-clicking on an annotation in the annotationwindow, you can hide or unhide one or more<br>
+  annotations from the screen.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Annotations_Filter">Annotations Filter</a></h3>
+
+<p>
+  The annotations list can be filtered based on the maximum and minimum interval time<br>
+  between two consegutive annotations with the same name/label.<br>
+  Right-click on the annotations list and select "Filter Interval Time".<br>
+  A dialog will appear where you can set the filter parameters.<br>
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Filters">Filters</a></h3>
+
+<p>
+  Use the filtermenu to add or remove filters. First select the type of filter: highpass, lowpass, notch, bandpass or bandstop.<br>
+  Now select the model: Butterworth, Chebyshev, Bessel or "moving average" (a notchfilter has resonator model only).<br>
+  Then set the frequency(s) of the filter (or number of samples in case of a "moving average" filter).<br>
+  Depending on the type and model of the filter, you can adjust the order, Q-factor and passbandripple.<br><br>
+
+  The curve will show the frequency and phase response of the filter (except for "moving average" filters).<br><br>
+
+  Now select one or more signals to apply to and click the "Apply" button.<br><br>
+
+  Reviewing the filters can be done in the Montage -&gt; View this montage menu.<br><br>
+
+  Algorithm for the moving average filters:<br>
+  LPF: the mean of the last n data samples.<br>
+  HPF: last-n/2 sample minus the mean of the last n data samples.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Adjust_filters">Adjust filters</a></h3>
+
+<p>
+  You can adjust or finetune the filters. Left-click on a signallabel and select "Adjust filter".<br>
+  You can adjust or finetune the frequency, order or Q-factor of a filter and watch the result at the same time.<br>
+  Use this dialog when you want to remove a filter.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Powerspectrum">Powerspectrum</a></h3>
+
+<p>
+  To view the powerspectrum of a signal, leftclick on the signallabel and choose "Spectrum".<br>
+  The Power Spectral Density of the corresponding signal will be shown (uV)<sup>2</sup>/FFT-resolution.<br>
+  The amount of datasamples used to perform the FFT equals the data which is<br>
+  shown on the screen. Increasing or decreasing the FFT blocksize affects the FFT resolution.<br>
+  The default FFT blocksize can be set in Settings menu.<br>
+  So, if the samplefrequency of the selected signal is 256Hz, the timescale is set to 10 seconds and<br>
+  the FFT-blocksize is 512, the number of FFT's performed is (10 seconds x 256 Hz) / 512 = 5.<br>
+  The output of the five FFT's are averaged.<br>
+  In case you set the FFT blocksize equal to timescale x samplefrequency, exactly one FFT will be performed.<br>
+<br>
+  This powerspectrum is static and will not update when you change the fileposition (pressing PgUp/PgDn etc.).<br>
+  This way you can compare multiple powerspectra from different signals and/or filepositions.<br>
+<br>
+  There is also a powerspectrum window available that automatically updates when you walk through a file.<br>
+  Go to Window -&gt; Power Spectrum.<br>
+  A small dialog will be opened which shows a list of signals which are on the screen.<br>
+  Click on a signal of interest and a docked Powerspectrum (FFT) will be opened.<br>
+  This Powerspectrum will be automatically updated when you navigate through the file. Clicking on the<br>
+  "ctls" button toggles the controls. Here you can switch-on colorbars to highlight different frequency-<br>
+  regions. The properties of the colorbars (number of colorbars, frequency, color, etc.) can be adjusted<br>
+  in the Settings menu. The height of the colorbar is relative to the sum, peak or average of the the<br>
+  power of all the frequency-bins in that region, according to the settings in the Settings menu.<br>
+  Use the sliders to zoom into a particular area.<br>
+  When you check the "Amplitude" checkbox, the amplitude spectrum will be shown.<br>
+  Printing can be done by clicking on the printbutton. You can print to a printer, file (PDF or Postscript)<br>
+  or as an image. It is also possible to "print" to a textfile. It exports the data to text (ASCII).<br>
+  Clicking on the cursorbutton will display a cursor. Use the mouse to drag the cursor.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Averaging_EP">Averaging (evoked potentials or other triggers)</a></h3>
+
+<p>
+  Averaging waveforms (multiple parts of a signal) can be done by rightclicking on an annotation (trigger) in<br>
+  the annotationlist. A contextmenu will be opened, now click on "Average".<br>
+  The timescale (datablocksize) of the averaging window will be equal to the <a href="#Timescalemenu">timescale</a> of the mainwindow.<br>
+  So, if you want to average 20 seconds, set the timescale to 20 first.<br>
+  A dialog will be opened where you can choose to which signal you want to apply the averaging.<br>
+  If necessary, change the "From"- and "To"-times in order to select a particular group of triggers.<br>
+  Only the triggers with an onsettime that lies between the two timevalues will be used for the averaging.<br>
+  Select the ratio of the time before and after the triggerpoint. For example, if the <a href="#Timescalemenu">timescale</a> of the mainwindow<br>
+  is set to 20 seconds and you select a 10/90 ratio, averaging will start 2 seconds before the triggerpoint and<br>
+  stops at 18 seconds after the triggerpoint.<br>
+  Now click on "Start" and a new window will be opened which will show the result of averaging<br>
+  all signalparts of all annotations (triggerpoints) with that specific name.<br>
+  The yellow colored, dashed, vertical line is the triggerpoint, i.e. the onsettime of the annotations (triggers).<br>
+  Use the sliders to zoom into the signal. The timescale is relative to the trigger (onset) point.<br>
+<br>
+  The result can be printed or exported as a new EDF/BDF file.<br>
+<br>
+  You can also use external triggers in ASCII(*.csv or *.txt) or XML format.<br>
+  See <a href="#Import_annotations">Import annotations/events</a> how to import triggers/events/annotations.<br>
+<br>
+  Note: It is also possible to change the selection of annotations/triggers for averaging, by <a href="#Annotation_editor">editing the annotationlist</a> first.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="ECG_PLIF_filter">ECG powerline interference filter</a></h3>
+
+<p>
+  The ECG powerline interference filter is inspired by the subtraction method described by:<br>
+ - Subtraction Method For Powerline Interference Removing From ECG<br>
+   Chavdar Levkov, Georgy Mihov, Ratcho Ivanov, Ivan K. Daskalov Ivaylo Christov, Ivan Dotsinsky<br>
+<br>
+ - Removal of power-line interference from the ECG: a review of the subtraction procedure<br>
+   Chavdar Levkov, Georgy Mihov, Ratcho Ivanov, Ivan Daskalov, Ivaylo Christov and Ivan Dotsinsky<br>
+<br>
+ - Accuracy of 50 Hz interference subtraction from an electrocardiogram I. A, Dotsinsky I.K. Daskalov<br>
+<br>
+ - Dynamic powerline interference subtraction from biosignals<br>
+   Ivaylo I. Christov<br>
+<br>
+  The subtraction method extracts the powerline interference noise (50/60Hz and harmonics) during a<br>
+  a linear region between two consecutive QRS complexes and stores it in a buffer.<br>
+  The reference noise from the buffer is used to subtract it from the signal outside<br>
+  the linear region i.e. during the QRS complex.<br>
+  This method only works correctly when the samplefrequency of the ECG recording is an<br>
+  integer multiple of the powerline frequency.<br>
+  In case they are synchronized, this method will remove also the harmonics of the<br>
+  powerline frequency. In that case extra notch-filters for the harmonics are<br>
+  not necessary. The advantage of this method is that it will not cause ringing or other distortion<br>
+  in the waveform of the QRS complex (like notch-filters do).<br>
+<br>
+  The following rules apply:<br>
+  - The samplefrequency of the ECG recording must be at least 500 Hz<br>
+  - The samplefrequency of the ECG recording must be an integer multiple of the powerline frequency<br>
+  - The physical dimension (units) of the ECG signal must be expressed in uV, mV or V.<br>
+<br>
+  Note: Good results will be achieved when the accuracy of the recording sampleclock is &lt=100ppm.<br>
+  A nearly perfect result will achieved when the recording sampleclock is synchronized with the<br>
+  powerlinefrequency in hardware (e.g. using a Phase Locked Loop).
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="ECG_detection">ECG heart rate detection</a></h3>
+
+<p>
+  Toggling the "Heart Rate" button toggles on or off the detection and calculation of the heartrate<br>
+  expressed in beats per minute (bpm).<br>
+  The "Heart Rate" button can be found in the <a href="#Signalproperties">Signalproperties dialog</a>.
+<br>
+  The algorithm used for the heartrate detection is derived from "Real time electrocardiogram QRS detection using combined adaptive threshold"<br>
+  by Ivaylo I Christov. <a href="http://www.biomedical-engineering-online.com/content/3/1/28">http://www.biomedical-engineering-online.com/content/3/1/28</a><br>
+<br>
+  The R-onset times and/or RR-interval times (beat to beat) can be exported to an ascii-file for analysis in other programs (e.g. Kubios).<br>
+  After you switched on the Heart Rate detection, go to "Tools -&gt; Import/Export ECG RR-interval".<br>
+  Only the part of the signal that is visible on the screen will be exported, except when you check the "Whole recording" checkbox.<br>
+  There is also the possibility to import the RR-intervals as annotations.<br>
+<br>
+  Some statistics about the Heart Rate (variability) are available <a href="#HR_statistics">here</a>.<br>
+<br>
+  Important: before using the Heart Rate detection, go to the settings menu (Settings -&gt; Other) and adjust the "Powerline Frequency" to the frequency used in the country<br>
+  where the recording of the ECG took place (50 or 60 Hz). Otherwise the powerline noise suppression filter in the Heart Rate detection algorithm will not work correctly.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="HR_statistics">Heart Rate statistics</a></h3>
+
+<p>
+  When the <a href="#ECG_detection">ECG heart rate detection</a> is enabled, you can view some statistics about the<br>
+  Heart Rate (variability) in the <a href="#Signalproperties">Signalproperties</a>. Once you see the Signalproperties dialog,<br>
+  click on the "Statistics" button. A brief description of the statistics:<br>
+<br>
+  - Mean, the average of the RR-intervals.<br>
+  - SDNN, the standard deviation of RR-intervals.<br>
+  - RMSSD, the square root of the mean squared difference of successive RR's.<br>
+  - NN20, the number of pairs of successive RR's that differ by more than 20 ms.<br>
+  - pNN20, the proportion of NN20 divided by total number of RR's as a percentage.<br>
+  - NN50, the number of pairs of successive RR's that differ by more than 50 ms.<br>
+  - pNN50, the proportion of NN50 divided by total number of RR's as a percentage.<br>
+<br>
+  The data used for the statistics is derived from the timewindow that is visible on the screen.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Spike_filter">Spike filter</a></h3>
+
+<p>
+  The Spike filter can be used to filter out spikes, fast transients, glitches or pacemaker impulses.<br>
+  Velocity is expressed in units (e.g. uV) per 0.25 milli-Seconds. If the filter detects two fast transients<br>
+  with opposite polarity and within 3 milli-Seconds, it will consider it a spike which will be suppressed.<br>
+<br>
+  The transient is measured for every sample with a delta t of 0.25 milli-Seconds.<br>
+  (The sample will be compared with an older sample 0.25 milli-Seconds before.)<br>
+<br>
+  Setting the value of velocity too high, will cause the spikes not to be detected.<br>
+  Setting the value of velocity too low, will cause false triggers.<br>
+<br>
+  Hold-off is used to prevent a re-trigger of the filter within the hold-off period after the last trigger.<br>
+<br>
+  The Spike filter can not be used with samplerates lower than 4000 Hz.<br>
+  Signals with lower samplerates will not be visible in the Spike filter dialog.<br>
+<br>
+  The Spike filter dialog has no apply button. Activating or de-activating the spike filter is simply done<br>
+  by selecting or de-selecting one or more signals.<br>
+  Changing the value of velocity or holdoff will cause an immediate update of the screen.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Zoomfunction">Zoomfunction</a></h3>
+
+<p>
+  There are multiple ways to zoom-in:<br><br>
+
+  - By pressing (several times) Ctrl++ or Ctrl+-.<br>
+<br>
+  or<br>
+<br>
+  - By using the mousewheel while keeping the Ctrl-button pressed.<br>
+<br>
+  or<br>
+<br>
+  - You can zoom into a signal/curve on the screen by drawing a rectangle with the mouse.<br>
+  Keep the left mousebutton pressed and move the mousepointer in the direction of the<br>
+  right lower corner. When you release the left mousebutton, the content of the rectangle<br>
+  will be expanded to the whole screen. You can repeat this step and zoom in again.<br>
+<br>
+  Use the backspace button on your keyboard to zoom out and restore the previous settings.<br>
+  After using the backspace button, you can zoom in again by pressing the insert button on<br>
+  your keyboard.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Floatingruler">Floating ruler</a></h3>
+
+<p>
+  You can use a floating ruler for measurements. Leftclick on the signallabel of the signal<br>
+  of interest. A small dialog will appear. Click on Ruler. A floating ruler will appear.<br>
+  Drag and drop the ruler with the left mousebutton. Rightclick to remove the ruler or press the "Esc" key.<br>
+  Note: the ruler will appear only when the Timescale (pagetime) is set between 2 and 60 seconds<br>
+  AND when the amplitude (size/gain) is set between 1 and 2000.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Crosshairs">Crosshairs</a></h3>
+
+<p>
+  You can use one or two crosshairs for precise measurements. Leftclick on the signallabel<br>
+  of the signal of interest. A small dialog will appear. Click on Crosshair. A crosshair will<br>
+  appear. Drag and drop the crosshair with the left mousebutton. Now you can add another crosshair.<br>
+  The second crosshair will show you the differences (delta) in time and value of the signal(s).<br>
+  Rightclick to remove the crosshair(s) or press the "Esc" key.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Statistics">Statistics</a></h3>
+
+<p>
+  Some statistical info about a signal can be found in the <a href="#Signalproperties">Signalproperties</a>.<br>
+  and clicking on the "Statistics" button.
+  It will show the number of samples showed on the screen, the sum, mean, RMS (root mean square), and MRS<br>
+  (mean root square i.e average of rectified values) value of the samples showed on the screen.<br>
+  In addition, the number of zero-crossings (i.e. switching from positive to negative or vice versa)<br>
+  and the frequency of that part of the signal will be shown.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Montages">Montages</a></h3>
+
+<p>
+  Montages can be used to store information about which signals should be shown on<br>
+  the screen, what combinations (derivations) should be made and other properties<br>
+  like filters, amplitude (sensitivity), offset, alias, color and pagetime (timescale).<br>
+  Once you have loaded a file for review and you have added all the signals you want<br>
+  (and/or all the combinations/derivations) and you have adjusted amplitude and colors<br>
+  and/or filters, you can save them as a montage.<br>
+  Go to Montage -&gt; Save. A dialog will be opened where you can choose a directory<br>
+  and filename to store your montage.<br>
+  Next time when you load a file, you can load a montage via Montage -&gt; Load.<br>
+<br>
+  You can view the properties of a montage via Montage -&gt; View saved montages or<br>
+  Montage -&gt; View this montage.<br>
+<br>
+  note:<br>
+  It is important that the names (labels) of the signals are correct when you use a montage<br>
+  to review different files.<br>
+<br>
+  You can bind the F1 to F12 keys to twelve different montages. This way you can quickly switch<br>
+  between different montages by pressing key F1, F2, etc.<br>
+  Go to Montage -&gt; Edit key-bindings for montages.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Keyboard_bindings_for_montages">Keyboard bindings for montages</a></h3>
+
+<p>
+  It is possible to create keyboard shortcuts (bindings) for predefined montages.<br>
+  Go to Montage -&gt; Edit key-bindings for montages. Click on the first row (F1);<br>
+  Now you can select a <a href="#Montages">montage</a>. You can assign twelve different<br>
+  montages to keys F1 - F12.<br>
+  Now you can quickly switch between predefined montages by pressing one of these keys.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Colors">Colors</a></h3>
+
+<p>
+  Go to the Settings menu to change the colors like you prefer.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Calibration">Calibration</a></h3>
+
+<p>
+  In the Settings menu go to the Calibration tab to calibrate your screen.<br>
+  This will achieve that the amplitude expressed in units/cm will have<br>
+  the correct height/value.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Timelock">Timelock and File synchronisation</a></h3>
+
+<p>
+  When you open multiple files, you can choose  to "timelock" all files with<br>
+  each other. This means that when you navigate (by pressing PgUp/Pgdwn)<br>
+  this will affect all signals on the screen. When you choose to "unlock" the files,<br>
+  only the signals of the "reference" file will be moved on the screen. You can<br>
+  change which file should be the reference in the Time menu.<br>
+<br>
+  There are three kinds of timelock:<br>
+<br>
+  - Offset<br>
+<br>
+  The start of the recording of all files will coincide with each other.<br>
+<br>
+  - Absolute time<br>
+<br>
+  The clock/date-time of the different files will coincide with each other.<br>
+  (this is only useful when the period of registration overlap eachother)<br>
+<br>
+  - No timelock<br>
+<br>
+  Only the signals from the file that has the "time reference" will move when you navigate.<br>
+  Use this option when you want to align two or more files manually.<br>
+<br>
+  - Userdefined synchronizing<br>
+<br>
+  Files are timelocked with a custom offset. Usually after synchronizing the<br>
+  files manually.<br>
+<br>
+<br>
+  The time shown in the leftbottom corner represents the time from the<br>
+  file that acts as the "reference". You can change which file should be<br>
+  the reference in the Time menu.<br>
+<br>
+  You can adjust the horizontal position (time) of two different files by using<br>
+  two <a href="#Crosshairs">crosshairs</a>. Put one crosshair at a signal of the first file and put the second<br>
+  crosshair at a signal of the second file. Now click on Time -&gt; synchronize by crosshairs.<br>
+  Now the position of the two crosshairs (and that particular position of the two files) will<br>
+  coincide with eachother.<br>
+  Or you can drag a trace horizontally by keeping the middle mouse button (wheel) pressed.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="File_Info">File info / properties / header</a></h3>
+
+<p>
+  To view the content of the header of a file (subject, recording, signalproperties like samplerates etc.),<br>
+  go to file -&gt; info and select the file of interest.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Header_editor">Header editor</a></h3>
+
+<p>
+  This tool can be used to edit (or anonymize) the header (file info) like subject, birthdate, etc.<br>
+  You can also edit labels (signalnames), physical dimension, pre-filter and transducer names.<br>
+  If the file you want to edit has been opened in EDFbrowser already, close it first before starting<br>
+  this tool.<br>
+  This tool can also be used to repair a file that can not be opened with EDFbrowser because of<br>
+  invalid characters in the header (the EDF format allows 7-bit ascii characters only) or other errors.<br>
+<br>
+  Other errors that can be fixed with this tool:<br>
+  - a wrong timestamp format in the header (a colon instead of a dot between the numbers)<br>
+  - a wrong number of datarecords written in the header<br>
+  - a wrong filesize (file is not ending on the boundary of a datarecord)<br>
+  - a broken number i.e. a number with decimal(s) in the digital maximum/minimum field<br>
+  - the value for digital maximum is lower than or equal to digital minimum<br>
+<br>
+  Do as follows: In EDFbrowser go to Tools -> Header editor. Select the file. Now click on the<br>
+  "save" button (you don't need to edit the content manually). Close the header editor.<br>
+  Now open the file in the usual way.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="EDFBDF_to_ASCII_format_converter">EDF(+)/BDF(+) to ASCII (CSV) format converter</a></h3>
+
+<p>
+  This tool converts all the signals in an EDF or BDF-file to a plain ASCII text-file.<br>
+  It supports different samplerates between the signals.<br>
+<br>
+  Four textfiles will be created:<br>
+<br>
+  - EDFfilename_header.txt  contains the general header of the file.<br>
+  - EDFfilename_signals.txt contains all signal headers of the file.<br>
+  - EDFfilename_data.txt contains the data of all signals.<br>
+  - EDFfilename_annotations.txt contains all annotations.<br>
+<br>
+  filename_data.txt contains a separate line for each sampletime that occurs.<br>
+  Note to windows-users: these lines are separated by a linefeed only,<br>
+  so the file does NOT look OK in Notepad, use a real editor instead.<br>
+<br>
+  Each line contains the comma-separated values of the sampletime and of all<br>
+  samples that were taken at that time.<br>
+  Sampletime is expressed in seconds, while sample values are expressed in the<br>
+  physical dimensions that are specified in filename_signals.txt.<br>
+  All values have a dot (.) as decimal separator.<br>
+<br>
+  Different sampling frequencies are allowed in the file. In that case,<br>
+  not all signals are sampled at each sampletime.<br>
+  Those sample values are simply left empty, but the comma-separator is there.<br>
+<br>
+  note:<br>
+<br>
+  All comma's in headertext and annotations will be replaced by<br>
+  single quotes (') because they interfere with the comma-separated<br>
+  txt-files.<br>
+<br>
+  Unicode/UTF-8 decoding in annotations is not supported because of<br>
+  the limitations of the ASCII txt-files.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Reduce_signals">Reduce signals, duration and/or samplerate</a></h3>
+
+<p>
+  This tool can be used to reduce the number of signals in a file and/or to reduce the duration (length) of a file<br>
+  and/or to reduce the samplerate of one or more signals.<br>
+  First, open the file in the usual way in EDFbrowser. Then start the tool and select the file.<br>
+  Uncheck all the signals you do not want into the new file. If you want to shorten the file, choose the first<br>
+  datarecord (starttime) and the last datarecord (endtime).<br>
+  If you don't want to downsample, set the samplerate divider to 1 (default). Otherwise select one of the possible<br>
+  divider values. Those values depend on the actual samplerate and the datarecord duration.<br>
+<br>
+  The anti-aliasing filter order can be choosen as well. The default is 4th order. This prevents practically<br>
+  any change of aliasing.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Export_filtered_signals">Export filtered signals</a></h3>
+
+<p>
+  This tool can be used to export the signals which are visible on the screen to a new EDF/BDF file<br>
+  including any applied filters and or derivations.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Export_annotations">Export annotations/events</a></h3>
+
+<p>
+  This tool exports the annotations/events from an EDF+/BDF+ file.<br>
+  You can choose to save as a comma (or tab) separated textfile, to save as an EDFplus file<br>
+  or XML. If you have opened multiple files, you can choose to export all<br>
+  annotations of all opened files into one new file. The header of the file which acts as<br>
+  the "reference" will be copied into the new EDFplus file. The "reference" file can be selected<br>
+  in the menu <a href="#Timelock">Time -&gt; Timereference</a>.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Import_annotations">Import annotations/events</a></h3>
+
+<p>
+  This tool imports annotations/events. The inputfile can be ASCII (CSV), XML, EDF+, BDF+ or MIT/WFDB format.<br>
+  It's also possible to use a triggersignal in a DC-coupled channel/signal.<br>
+</p>
+<p>
+  Note: You have to open an EDF/BDF file first in order to be able to import annotations/events.<br>
+</p>
+<h4>ASCII</h4>
+<p>
+  An ASCII-file must be organised in rows and columns.<br>
+  The decimal separator of numbers must be a dot.<br>
+  Grouping characters like the comma in for example "12,345.678" are not allowed.<br>
+  The example must be written as "12345.678".<br>
+  Line endings must use the "newline" or "linefeed" character (Unix style)<br>
+  In the import dialog, set the separator character (the character that separates the columns),<br>
+  for example: "tab" (tabulator),"," (comma) or ";"(semicolon).<br>
+  Set the column number of the onset time and the description/label.<br>
+  If the file starts with a header, adjust the "Data starts at line" spinbox in order to skip these lines.<br>
+  If there's only one column in the ascii/txt file (with onset time values), check the<br>
+  "Manual description" button and enter a description. This description will be used for all<br>
+  annotations that will be imported from that ascii/txt file.<br>
+  <br>
+  The onset time encoding can be expressed as:
+</p>
+<ul>
+  <li>relative from start of file and expressed in seconds</li>
+  <li>clock time: hh:mm:ss</li>
+  <li>clock time: hh:mm:ss.xxx</li>
+  <li>date time: yyyy-mm-ddThh:mm:ss</li>
+  <li>date time: yyyy-mm-ddThh:mm:ss.xxx</li>
+</ul>
+<h4>XML</h4>
+<p>
+  XML-files need to be encoded either in ISO-8859-1 or UTF-8 character encoding.<br>
+  The root element name must be "annotationlist", child elements must be named "annotation".<br>
+  Inside the element "annotation" are the elements "onset", "duration" and "description".<br>
+  Onset is expressed in the ISO date-time format "yyyy-mm-ddThh:mm:ss" or "yyyy-mm-ddThh:mm:ss.xxx".<br>
+  Duration is expressed in seconds "145.23" or empty.<br>
+  Example:<br>
+</p>
+<pre>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;annotationlist&gt;
+ &lt;annotation&gt;
+  &lt;onset&gt;2006-11-14T09:14:31.0000000&lt;/onset&gt;
+  &lt;duration&gt;&lt;/duration&gt;
+  &lt;description&gt;REC START IIB CAL   &lt;/description&gt;
+ &lt;/annotation&gt;
+ &lt;annotation&gt;
+  &lt;onset&gt;2006-11-14T09:14:31.0000000&lt;/onset&gt;
+  &lt;duration&gt;&lt;/duration&gt;
+  &lt;description&gt;PAT IIB EEG         &lt;/description&gt;
+ &lt;/annotation&gt;
+ &lt;annotation&gt;
+  &lt;onset&gt;2006-11-14T09:14:32.0000000&lt;/onset&gt;
+  &lt;duration&gt;&lt;/duration&gt;
+  &lt;description&gt;A1+A2 OFF           &lt;/description&gt;
+ &lt;/annotation&gt;
+&lt;/annotationlist&gt;
+</pre>
+<h4>MIT/WFDB</h4>
+<p>
+  The onset time of the annotations in MIT/WFDB format are expressed in samples offset from the start of the recording.<br>
+  In case your file contains signals with different samplerates, you need to specify which samplerate should be used to<br>
+  calculate the onset time of the annotations.<br>
+  MIT/WFDB annotation files can have various extensions like *.ari *.ecg *.trigger *.qrs *.atr *.apn *.st *.pwave<br>
+</p>
+<h4>DC-events / DC-triggers</h4>
+<p>
+  A "DC-event" consist of a positive impulse (startbit) followed by eight databits and a stopbit (lowlevel).<br>
+  This signal is recorded onto a dc-coupled inputchannel of the hardware during aquisition.<br>
+  The eight databits are used to identify a maximum of 256 different types of events/triggers.<br>
+  The startbit has always a high level and the stopbit has always a lowlevel.<br>
+  At idle the signal should stay at low level.<br>
+  The following example shows a dc-event with decimal code 170:<br>
+</p>
+<pre>
+                  onsettime of the event
+                  |                               bittime
+                  |                               |&lt;-&gt;|
+                  v                               |   |
+ 1 Volt           +---+   +---+   +---+   +---+   +---+
+                  |   |   |   |   |   |   |   |   |   |
+                  |   |   |   |   |   |   |   |   |   |&lt;--triggerlevel = 0.5 Volt
+                  |   |   |   |   |   |   |   |   |   |
+ 0 Volt ----------+   +---+   +---+   +---+   +---+   +---+--------------
+            ^       ^   ^   ^   ^   ^   ^   ^   ^   ^   ^
+            |       |   |   |   |   |   |   |   |   |   |
+            idle    |   |   |   |   |   |   |   |   |   stopbit, always low
+                    |   |   |   |   |   |   |   |   db7
+                    |   |   |   |   |   |   |   db6
+                    |   |   |   |   |   |   db5
+                    |   |   |   |   |   db4
+                    |   |   |   |   db3
+                    |   |   |   db2
+                    |   |   db1
+                    |   db0
+                    startbit, always high
+</pre>
+<p>
+  The binary code in the example is 01010101 which is 170 decimal.<br>
+  The rising edge of the startbit represents the time of the event (for example, an evoked potential).<br>
+  The voltage levels can be freely chosen. In the importdialog adjust the triggerlevel to a level that is equal<br>
+  to: (lowlevel + highlevel) / 2.<br>
+  Also, set the bittime used for the DC-event.<br>
+  Note that the intervaltime between two consegutive events must be more than ten times the bittime.<br>
+<br>
+  It is possible not to use the code but just only the startbit. In that case all triggers will have the code "0".<br>
+  In that case you can use a simple on/off pulse as a trigger.<br>
+<br>
+  Note: The signal which contains the DC-event must be put on the screen in order to be available in the selectionscreen.<br>
+  Also, the signal must be unipolar, i.e. not a derivation. Next, the detectionalgorithm of the triggers in this signal will bypass<br>
+  any filters.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Z_EEG">Z-EEG</a></h3>
+
+<p>
+  To use the Z-EEG measurement, leftclick on the signallabel and choose "Z-EEG".<br>
+<br>
+  Z-ratio = ((Delta + Theta) - (Alpha + Beta)) / (Delta + Theta + Alpha + Beta)<br>
+<br>
+  Z-ratio, therefore, is a measure of the relative contribution of slow to fast EEG activity within a<br>
+  2-second epoch. It ranges from -1 to +1, with negative values indicating a predominance of fast<br>
+  activity and positive values indicating a predominance of slow activity.<br>
+<br>
+  A per page score for z-ratio was derived by averaging the majority of 15 2-second z-ratios.<br>
+  The average of the majority is the z-page.<br>
+<br>
+  The algorithm is derived from<br>
+<br>
+  <a href="http://www.ncbi.nlm.nih.gov/pubmed/8746389/">http://www.ncbi.nlm.nih.gov/pubmed/8746389/</a><br>
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="ASCII_to_EDF_converter">ASCII (CSV) to EDF/BDF format converter</a></h3>
+
+<p>
+  This tool converts an ASCII-file (.csv or .txt file) to EDF or BDF. The following rules apply:<br>
+<br>
+  - the data in the ASCII-file must be presented in their physical dimension (i.e. uV, bpm, mmHg, etc.)<br>
+  - the data in the ASCII-file must be organised in columns and rows<br>
+  - a row must contain values from different signals/channels acquired at the same sampletime<br>
+  - a column must represent a continuous sampled signal/channel<br>
+  - all signals/channels must have the same samplefrequency<br>
+  - the timeinterval between two consecutive samples of the same signal/channel must have a stable value (fixed samplerate)<br>
+  - the decimal separator (if any) must be a dot, not a comma<br>
+<br>
+  Enter the following parameters:<br>
+<br>
+  - the character that separates the different columns (i.e. "tab" ","(comma) ";"(semicolon) " "(space) etc.)<br>
+<br>
+  - the number of columns<br>
+<br>
+  - the line at which the data starts. some ASCII-files contain headers, so use this entry<br>
+  to tell the converter to skip n-lines before interpreting the data<br>
+<br>
+  - samplefrequency<br>
+<br>
+  - subject (the name of the subject)<br>
+<br>
+  - recording (a description about the type of recording/aquisition)<br>
+<br>
+  - startdate and time of the recording/aquisition<br>
+<br>
+  - signals: for every column in the ASCII-file, there is a row in the signals-table.<br>
+  every row has a checkbox and four inputfields:<br>
+<br>
+  - label (name of the signal/channel i.e. FP1, SaO2, Heartrate, etc.)<br>
+  - physical maximum (the maximum physical value that can occur, i.e. the maximum inputlevel<br>
+  of the acquisition equipment. A common value in EEG applications is 3000 uV)<br>
+  Physical minimum will be equal to physical maximum. For example, if you enter 3000, the<br>
+  range will be from +3000 to -3000<br>
+  - physical dimension (units, e.g. uV, mV, %, mmHg, bpm)<br>
+  - multiplier is normally 1.0. Some programs exports their ascii-data expressed in Volts while<br>
+  the signal is in the microVolt range. By changing the multiplier you can add gain to the signal before converting.<br>
+  For example, if the ascii-data is expressed in Volts and the signal is in the microVolt range (EEG),<br>
+  set the physical maximum to 3000, set the physical dimension to "uV" and set the multiplier to 1000000.<br>
+<br>
+  It is possible to exclude columns, by unchecking the corresponding row in the signals-table.<br>
+  This can be useful when a column contains a time/datestamp or when you don't want to include<br>
+  a particular signal in the EDF/BDF-file.<br>
+<br>
+  Click on the startbutton to start the conversion.<br>
+  Click on the savebutton to save the entered parameters in a template.<br>
+  Click on the loadbutton to load parameters from a template.<br>
+<br>
+  Note: It is important to enter the right value in the "physical maximum" field.<br>
+  If you to choose this value too small, the top of the signal will clip at the peaks.<br>
+  If you choose this value too big, small values of the signal will not be visible<br>
+  and the signal will look coarse.<br>
+  The ideal value for the "physical maximum" is just above (or equal to) the maximum value that can occur,<br>
+  i.e. the maximum possible output of the sensor or ADC, either positive or negative.<br>
+  Therefore, it's better to set the checkbox "Auto detect physical maximum". That way you don't need to<br>
+  enter the values in the column "Physical maximum".<br>
+<br>
+  Note 2: The maximum physical value that the converter can handle, is limited to 9999999. Values above<br>
+  will be  clipped to 9999999 and values below -9999999 will be clipped at -9999999.<br>
+  If you expect higher values in your ascii-file, use the multiplier. For example,<br>
+  set the multiplier to 0.1, 0.01 or 0.001, etc.<br>
+<br>
+  Note 3: If you think that, later, you want to make derivations (for example P4 - C4 in EEG applications),<br>
+  make sure that the signals have the same value in the physical maximum field.<br>
+  Also, do not set the checkbox "Auto detect physical maximum".
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Nihon_Kohden_to_EDF_format_converter">Nihon Kohden to EDF(+)  format converter</a></h3>
+
+<p>
+ This tool converts EEG-files in Nihon Kohden format to the European Data Format<br>
+ (EDF or EDF+ with annotations/events).<br>
+<br>
+ Three files are needed for a conversion to EDF+:<br>
+<br>
+  - nihonkohdenfile.eeg<br>
+  - nihonkohdenfile.pnt<br>
+  - nihonkohdenfile.log<br>
+<br>
+  In case you have only the nihonkohdenfile.eeg you can not convert to EDF+.<br>
+  It is still possible to convert to EDF. In that case there will be no annotations/events and patientinfo.<br>
+<br>
+  The Marker/Event channel will be decoded on the fly when opening the new created EDF+ file with EDFbrowser.<br>
+  If the screen becomes too "noisy" because of drawing too many annotations, you can switch them of by<br>
+  unchecking the "Read Nihon Kohden Trigger/Marker signal" checkbox in the Settings-menu.<br>
+  The new settings will be effective after closing and re-opening the file.<br>
+  Also, you can selectively hide annotations by rightclicking on an annotation in the annotationwindow.<br>
+<br>
+  Note: In case you changed the default electrodenames in the Nihon Kohden aquisition software,<br>
+  you need also the *.21e file which contains the electrode names (labels).
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="UNISENS_TO_EDFPLUS">Unisens to EDF+ format converter</a></h3>
+
+<p>
+  This tool converts the waveform data and events/triggers from a collection of Unisense data files to EDF+.<br>
+<br>
+   Limitations of the converter:<br>
+   - the Unisens XML-file must be encoded in UTF-8 or ISO-8859-1.<br>
+   - Broken numbers for samplerate >= 1 Hz will be rounded to the nearby integer e.g. 2.75 Hz will be rounded to 3 Hz.<br>
+     Samplerates below 1 Hz will be rounded to 1/2, 1/3, 1/4, etc. til 1/1000 Hz.<br>
+     Lowest samplerate is 0.001 Hz<br>
+   - Output format of the converter is EDF+ (16-bit) when all files have a samplesize of 16-bit or lower.<br>
+     When one or more files have a samplesize of more than 16-bit, output format of the converter will be BDF+ (24-bit).<br>
+<br>
+   An extra feature of the converter which is not in the offical Unisens data format specification:<br>
+   - support for binary sampletypes: int24 and uint24.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="SCP_ECG_to_EDFplus">SCP ECG to EDF+ format converter</a></h3>
+
+<p>
+  This tool converts an SCP-ECG (EN 1064:2005+A1:2007) file to EDF+.<br>
+  Before conversion it performs a CRC-check on the file.<br>
+  Bimodal compression is supported.<br>
+  Reference beat subtraction is supported.<br>
+  Pacemake spike measurements, if present, are imported as well.<br>
+  Encoding using the default Huffman table is supported.<br>
+  Customized Huffman tables are not supported.<br>
+  Character-encoding other than ASCII/Latin-1 is not supported.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="MIT_to_EDFplus">MIT (PhysioBank) to EDF+ format converter</a></h3>
+
+<p>
+  This tool converts the waveform data and annotations from the MIT-format to EDF+.<br>
+  It's used for files from PhysioBank at <a href="https://physionet.org/">physionet.org</a>.<br>
+  At this moment it supports the Formats "212", "16" and "61".<br>
+  Most of the signal files in PhysioBank are written in format 212.<br>
+  Annotations (in the files with extensions *.atr, *.ari, *.ecg, *.trigger, *.qrs, *.apn, *.st)<br>
+  will be read and converted to EDF+ as well.<br>
+  In case the file that contains the annotations has a different extension, just rename the<br>
+  extension to .atr. Otherwise the converter will not read the annotations.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Manscan_to_EDFplus">Manscan to EDF+ format converter</a></h3>
+
+<p>
+  This tool converts a Manscan MICROAMPS binary data file to EDF+.<br>
+  Two files are needed for the conversion, one with the extension ".mbi" and one with the extension ".mb2".<br>
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Biosemi_to_BDFplus">Biosemi to BDF+ format converter</a></h3>
+
+<p>
+  This tool converts a Biosemi data file to BDF+ and  makes it possible to visualize the<br>
+  trigger interrupts and the "new epoch" in EDFbrowser. <br>
+  The Status signal of the Biosemi datafile which contains the input triggers will be<br>
+  converted to annotations in the BDF+ format. The original file will not be altered.<br>
+  Instead, a copy of the file will be made in the BDF+ format which will contain annotations<br>
+  extracted from the Status signal (which contains the input triggers).<br>
+  The original Status signal will be preserved in the new file.<br>
+  You'll find the Biosemi to BDF+ converter in the Tools-menu.<br>
+<br>
+  BDF+ files are backwards compatibel and can be read and processed with older BDF software.<br>
+  BDF+ files can be converted to EDF+ while preserving your annotations.<br>
+  Use the <a href="#bdf2edfconverter">BDF to EDF converter</a> in the Tools menu.<br><br>
+
+  Limitations:<br><br>
+
+ - The maximum number of annotations (input triggers) in the new file is:<br>
+ &nbsp;&nbsp;duration of file in seconds multiplied by 32. If the original file contains more trigger input events, they will be ignored.<br>
+ &nbsp;&nbsp;If, for example, the duration of a file is 5 minutes, the first 9600 input triggers will be converted to BDF+ annotations.<br><br>
+
+ - The precision of the annotations is limited to 100 microSeconds (0.0001 sec.).<br><br>
+
+ - Only the 17 lowest bits of the Status signal will be evaluated and converted.<br><br>
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Fino_to_EDF">Finometer to EDF converter</a></h3>
+
+<p>
+  This tool converts the ASCII-output (*.txt) of the Finometer (Beatscope) to EDF. <br>
+  Finometer is a non-invasive stationary blood measurement and beat to beat haemodynamic monitoring system<br>
+  made by Finapres Medical Systems.<br>
+<br>
+  Start Beatscope and open the file of interest.<br>
+<br>
+  Go to File -&gt; Export.<br>
+<br>
+  - set export type to textfile<br>
+  - set timeformat to seconds<br>
+  - check output: header<br>
+  - set averaging to none<br>
+  - check datacolumnwidth: delimiter<br>
+  - set delimiter to semicolon ";"<br>
+  - check export beats and/or events: beats only<br>
+  - select the channels you want to export<br>
+<br>
+  Now click on the Export-button to create the file.<br>
+<br>
+  In EDFbrowser, you'll find the Finometer to EDF converter in the Tools-menu.<br>
+  In order to create a correct EDF-file header, enter the subject and a description about<br>
+  the type of recording/aquisition.<br>
+  Adjust the startdate and starttime to the date and time when the Finometer registration took place.<br>
+<br>
+  Click on the "select file" button to select the Finometer/Beatscope file.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Wave_to_EDF">Wave to EDF converter</a></h3>
+
+<p>
+  This tool converts a Waveform Audio File (*.wav) to EDF.<br>
+  The converter accepts 8, 16 and 24 bit wave files.<br>
+  It accepts 1 to 256 channels and samplerates from 1 Hz to 500000 Hz.<br>
+  8 and 16 bit wave files will be converted to EDF. 24 bit wave files will be<br>
+  converted to BDF. Compressed files are not supported.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="FMaudio_to_EDF">FM Audio ECG to EDF converter</a></h3>
+
+<p>
+  This tool converts an audiorecording containing an FM modulated ECG waveform to EDF.<br>
+  The carrier centerfrequency of the FM signal is 1900Hz. Frequency deviation is 100Hz<br>
+  per milli-Volt. This technic is used to upload ECG recording via POTS (Plain Old Telephone Service).<br>
+  The converter has been tested with audio recordings from Cardiette Microtel but should work<br>
+  also with devices from Aerotel HeartView.<br>
+<br>
+  The converter accepts recordings stored in WAV format with 16-bit resolution.<br>
+  The recording must contain only one channel (mono) and the samplerate must be<br>
+  one of the following: 8000, 11025, 16000, 22050, 32000, 44100, 48000, 88200 or 96000 Hz.<br>
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Nexfin_to_EDF">Nexfin to EDF converter</a></h3>
+
+<p>
+  This tool converts the ASCII-output (*.csv) of the Nexfin (FrameInspector) to EDF. <br>
+  Nexfin is a non-invasive stationary blood measurement and beat to beat haemodynamic monitoring system<br>
+  made by Bmeye B.V.<br>
+<br>
+  Start FrameInspector (it can be downloaded from the Nexfin website), open the file of interest and<br>
+  choose "Generic export".<br>
+<br>
+  Now click on the Export-button to create the csv and bin files.<br>
+<br>
+  In EDFbrowser, you'll find the Nexfin to EDF converter in the Tools-menu.<br>
+  In order to create a correct EDF-file header, enter the subject and a description about<br>
+  the type of recording/aquisition.<br>
+  Adjust the startdate and starttime to the date and time when the Nexfin registration took place.<br>
+<br>
+  Select which file you want to convert: beat-to-beat data, blood pressure waveform or the analog inputs.<br>
+  (for analog inputs: select "4 inputs" in case AO option is configured, else "1 input")<br>
+  Click on the "select file" button to select the Nexfin/FrameInspector csv or bin file.<br>
+  For beat-to-beat data you need to select the file that ends with "_100.csv".<br>
+  For blood pressure waveform you need to select the file that ends with "_103.bin".<br>
+  For the analog inputs you need to select the file that ends with "_032.bin".
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Emsa_to_EDF">Emsa to EDF+ format converter</a></h3>
+
+<p>
+  This tool converts an Emsa eeg-file (*.PLG) to EDF+. If the corresponding *.LBK file is<br>
+  present, the annotations/events will be exported to EDF+ as well.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="edfd_to_edfc">EDF+D to EDF+C converter</a></h3>
+
+<p>
+  This tool converts an EDF+D file to multiple EDF+C files. An EDF+D file can contain<br>
+  interrupted recordings. This converter export every uninterrupted recording to a new<br>
+  uninterrupted EDF+C file.<br>
+  This tool can be used for BDF+D files as well.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="bdf2edfconverter">BDF(+) to EDF(+) converter</a></h3>
+
+<p>
+  This tool converts a BDF file to an EDF file. A BDF+ file will be converted to<br>
+  EDF+, including the annotations/events.<br>
+  It uses a first order highpass-filter to remove the DC-part of the signal in order<br>
+  to make the 24-bits samples fit into the 16-bits samples of EDF.<br>
+  The cutoff-frequency of the highpass-filters can be adjusted for every signal.<br>
+  You can also select which signals have to be converted into the new EDF(+) file.<br>
+  Increasing the divider lowers the resolution but increases the range (physical<br>
+  maximum and minimum)
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="EDF_and_BDF_compatibility_checker">EDF(+) and BDF(+) compatibility checker</a></h3>
+
+<p>
+  This tool checks if a file is EDF(+) or BDF(+) compliant.<br>
+  It checks the data and all the annotations and timestamps.<br>
+  When it finds an error, it tells you what the error is and where it is in the file.<br>
+<br>
+  A description of the EDF fileformat can be found at:<br>
+<br>
+  <a href="http://www.teuniz.net/edfbrowser/edf%20format%20description.html">http://www.teuniz.net/edfbrowser/edf format description.html</a><br>
+<br>
+  A description of the EDF+ fileformat can be found at:<br>
+<br>
+  <a href="http://www.edfplus.info/specs/edfplus.html">http://www.edfplus.info/specs/edfplus.html</a><br>
+<br>
+  A description of the BDF fileformat can be found at:<br>
+<br>
+  <a href="http://www.biosemi.com/faq/file_format.htm">http://www.biosemi.com/faq/file_format.htm</a><br>
+<br>
+  A description of the BDF+ fileformat can be found at:<br>
+<br>
+  <a href="http://www.teuniz.net/edfbrowser/bdfplus%20format%20description.html">http://www.teuniz.net/edfbrowser/bdfplus format description.html</a><br>
+<br>
+  note:<br>
+<br>
+  A compatibility check of the header of the file is always done when you open an<br>
+  EDF(+)/BDF(+) file. When a file appears to be incompatible it will not be opened,<br>
+  you will be informed about the cause of the incompatibility instead.<br>
+<br>
+  Note: If a file can not be opened with EDFbrowser because of invalid characters in the header<br>
+  (the EDF format allows 7-bit ascii characters only), you can try to fix it with the <a href="#Header_editor">header editor</a>.<br>
+  In EDFbrowser go to Tools -> Header editor. Select the file. Now click on the "save" button<br>
+  (do not edit the content!). Close the header editor. Now open the file in EDFbrowser.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Binary_to_EDF">Binary/raw to EDF</a></h3>
+
+<p>
+  This tool converts the binary (raw) (ADC-)data from a file to a new EDF-file.<br>
+  This is a kind of "last resort" measure when there are no other tools or EDF-converters available.<br>
+  You need to figure out how the data in your file is organised and you need to have a good knowledge of<br>
+  how computers store data in memory (file). This tool is for experts only.<br>
+<br>
+  All signals must have the same samplerate and the data-samples in the file must be stored sequentially:<br>
+  sample 1 ch.1, sample 1 ch.2, sample 1 ch.3,<br>
+  sample 2 ch.1, sample 2 ch.2, sample 2 ch.3,<br>
+  sample 3 ch.1, sample 3 ch.2, sample 3 ch.3,<br>
+  sample 4 ch.1, etc.<br>
+<br>
+  Set the samplefrequency and the number of signals (channels).<br>
+  The samplesize is the size of a digital sample expressed in bytes.<br>
+  Encoding is the binary system used to present a digital value:<br>
+<br>
+<pre>
+  value   bipolar offset binary    2's complement<br>
+   15             1111               0111<br>
+   14             1110               0110<br>
+  ....            ....               ....<br>
+    2             1010               0010<br>
+    1             1001               0001<br>
+    0             1000               0000<br>
+   -1             0111               1111<br>
+   -2             0110               1110<br>
+  ....            ....               ....<br>
+  -15             0001               1001<br>
+  -16             0000               1000<br>
+</pre>
+<p>
+  See also: <a href="http://www.ti.com/general/docs/lit/getliterature.tsp?baseLiteratureNumber=sbaa042">Coding Schemes Used with Data Converters</a><br>
+  Most files contain some kind of header. Adjust the Offset to the point where the data starts.<br>
+  When a digital sample consists of multiple bytes, and the LSB (least significant byte) comes first,<br>
+  select little Endian. If the MSB (most significant byte) comes first, select big endian.<br>
+  Data blocksize is usually 0. Used only when some bytes must be skipped in a regular interval.<br>
+  Skip bytes is the number of bytes that must be skipped (ignored) after every Data blocksize number of databytes.<br>
+  Skip bytes is ignored when Data blocksize is set to 0.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Print_to_PDF">Print to PDF</a></h3>
+
+<p>
+  You can print/export to PDF in File -&gt; Print -&gt; to PDF
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Print_to_IMG">Print to image</a></h3>
+
+<p>
+  You can print/export to an image in File -&gt; Print -&gt; to Image
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Print_to_EDF">Print to EDF</a></h3>
+
+<p>
+  The option "Print to EDF" creates a new EDF-file which will contain the signals<br>
+  (and annotations) as they are on your screen. What you see is what you get,<br>
+  like when you print to a printer, PDF-file or image. You can also open multiple<br>
+  files, shift them in time  (by using the different timelock options in the timemenu)<br>
+  and "print" the result as one new EDF-file. The result wil contain the time-shifted<br>
+  signals.<br>
+  It is also possible to extract one or more signals from one (or more) files into a new file.<br>
+<br>
+  This function is located in File -&gt; Print menu.<br>
+<br>
+  The following rules apply:<br>
+<br>
+  - the length (duration) of the new file will be equal to the selected displaytime (timescale)<br>
+<br>
+  - combined signals (derivations) will become one signal like they are on your screen<br>
+<br>
+  - in case of multple files, the new file will get the subject, recording, date and time<br>
+  of the file that has the <a href="#Timelock">reference</a> at the moment of printing.<br>
+  You can select the reference in the Time-menu<br>
+<br>
+  - if (one of) the file(s) is of type EDF+, the outputfile will be an EDF+ file as well,<br>
+  otherwise EDF<br>
+<br>
+  - when selected multiple files, the datarecord duration of these files<br>
+  needs to be the same or an integer multiple of eachother<br>
+<br>
+  - if you selected any filters, these will be applied as well
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Print_to_BDF">Print to BDF</a></h3>
+
+<p>
+  The option "Print to BDF" creates a new BDF-file which will contain the signals<br>
+  (and annotations) as they are on your screen, in the same way like the <a href="#Print_to_EDF">Print to EDF</a> function,<br>
+  except that it is also possible to print EDF(+) files to BDF. You can even mix<br>
+  EDF and BDF files onto your screen and print them to a new BDF file.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Annotation_editor">Annotation editor</a></h3>
+
+<p>
+  The annotation editor can be used to create, edit or delete annotations.<br>
+  Start the editor via menu -&gt; Window -&gt; Annotation editor.<br>
+  To create a new annotation, write the text of the annotation in the description window and set<br>
+  the onset time. You can set the duration time as well. If the duration time is unknown or not<br>
+  applicable, set it to -1. Now click on the create button.<br><br>
+
+  Instead of manually entering the onset time, you can use a <a href="#Crosshairs">crosshair</a>.<br>
+  Drag and drop the crosshair and the onset time will be automatically adjusted.<br>
+  You can use a second <a href="#Crosshairs">crosshair</a> to adjust the duration of the event.<br><br>
+
+  To modify an existent annotation, click on the annotation in the annotation window.<br>
+  Adjust the text and/or time, manually or drag and drop the annotation marker with the mouse.<br><br>
+
+  To delete an annotation, click on the annotation in the annotation window and click<br>
+  on the delete button (or hit Del on your keyboard.<br>
+  Pay attention, there's no undo.<br><br>
+
+  When you have finished editing annotations, save the file in menu -&gt; File -&gt; Save.<br>
+  Your file will not be altered, instead a copy of your file with the edited annotations<br>
+  will be made.<br><br>
+
+  Note: The annotation editor will limit the precision of the onset-time of the annotations<br>
+  to 1 milliSecond.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="Commandline_options">Commandline options</a></h3>
+
+<p>
+  edfbrowser [[--stream] datafile.edf [mymontage.mtg]]<br>
+<br>
+  It is possible to start the program from the commandline:<br>
+<br>
+  edfbrowser<br>
+<br>
+  this will start the program.<br>
+<br>
+  or<br>
+<br>
+  edfbrowser myfile.edf<br>
+<br>
+  this will start the program with the file myfile.edf opened.<br>
+<br>
+  or<br>
+<br>
+  edfbrowser myfile.edf mymontage.mtg<br>
+<br>
+  this will start the program with the file myfile.edf opened and using the montage mymontage.mtg.<br>
+<br>
+  or<br>
+<br>
+  edfbrowser --stream myfile.edf mymontage.mtg<br>
+<br>
+  this will start the program with the streaming file myfile.edf opened and using the montage mymontage.mtg.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="FAQ">FAQ</a></h3>
+
+<div>
+<ul>
+  <li><a href="#FAQ_1">How do I add signals to the screen?</a></li>
+  <li><a href="#FAQ_2">How can I change the sensitivity or amplitude of a signal?</a></li>
+  <li><a href="#FAQ_3">How can I see the value of a signal?</a></li>
+  <li><a href="#FAQ_4">I added signals from multiple files but some of them are not visible on the screen.</a></li>
+  <li><a href="#FAQ_5">I want to open two files in different windows.</a></li>
+  <li><a href="#FAQ_6">When I try to open a file, it says that the file is not EDF(+)/BDF(+) compliant.</a></li>
+  <li><a href="#FAQ_7">How can I combine multiple EDF/BDF files?</a></li>
+  <li><a href="#FAQ_8">What is the difference between EDF and BDF?</a></li>
+  <li><a href="#FAQ_9">When I print a file, the borders are cut away</a></li>
+  <li><a href="#FAQ_10">When I print to a PDF file, the traces look grey instead of black when I open the file<br>
+  in Adobe Reader 8.x.</a></li>
+  <li><a href="#FAQ_11">Why are the annotationmarkers not visible?</a></li>
+  <li><a href="#FAQ_12">The amplitude settings are not correct. For example, 100 uV/cm is 100 uV/1.5 cm.</a></li>
+  <li><a href="#FAQ_13">What are the system requirements?</a></li>
+  <li><a href="#FAQ_14">Which operatingsystems are supported?</a></li>
+  <li><a href="#FAQ_15">Which license is used for the program?</a></li>
+  <li><a href="#FAQ_16">I think I found a bug. Where do I report it?</a></li>
+</ul>
+</div>
+
+<p><br></p>
+
+<p>
+<a name="FAQ_1"></a>
+  Q.  How do I add signals to the screen?<br>
+<br>
+  A.  Use the <a href="#Signaldialog">signalsdialog</a>.<br>
+<br>
+<br>
+<a name="FAQ_2"></a>
+  Q.  How can I change the amplitude of a signal?<br>
+<br>
+  A.  Leftclick on the signallabel of that signal. A small dialog will appear. There is a<br>
+  spinbox that will let you change the amplitude of the signal.<br>
+  Another way is to rightclick on the signallabel and move the mousepointer up or down<br>
+  while keeping the right mousebutton pressed. This will increase or decrease the amplitude<br>
+  of the signal on the screen.<br>
+<br>
+<a name="FAQ_3"></a>
+  Q.  How can I see the value of a signal?<br>
+<br>
+  A.  Use a <a href="#Crosshairs">crosshair</a>.<br>
+<br>
+<br>
+<a name="FAQ_4"></a>
+  Q.  I added signals from multiple files but some of them are not visible on the screen.<br>
+<br>
+  A.  Go to the "Time" menu and set it to "Synchronize start of files".<br>
+  Then select Time -&gt; Go to start of file.<br>
+  Now select Amplitude -&gt; Fit to pane.<br>
+<br>
+<br>
+<a name="FAQ_5"></a>
+  Q.  I want to open two files in different windows.<br>
+<br>
+  A.  Start the program twice and you can open files in different windows.<br>
+<br>
+<br>
+<a name="FAQ_6"></a>
+  Q. When I try to open a file, it says that the file is not EDF(+)/BDF(+) compliant.<br>
+  What do I do?<br>
+<br>
+  A.  Try to find out what program created that file. Write the maker/developer of that<br>
+  program and tell him/her that the program does not produce valid EDF(+)/BDF(+) files.<br>
+  Ask him/her to fix that program.<br>
+  If you get the message that a character in the header is not a valid ASCII-character,<br>
+  use the <a href="#Header_editor">header editor</a> to repair your file.
+<br>
+<br>
+<a name="FAQ_7"></a>
+  Q.  How can I combine multiple EDF/BDF files?<br>
+<br>
+  A.  Use the <a href="#Print_to_EDF">Print to EDF</a> function.<br>
+<br>
+<br>
+<a name="FAQ_8"></a>
+  Q.  What is the difference between EDF and BDF?<br>
+<br>
+  A.  The difference is the resolution. In EDF the maximum resolution is 16 bits, so the ratio<br>
+  between the smallest and the largest value is 1 to 2^16 or 1:65536.<br>
+  In BDF the resolution is 24 bits, so the ratio between the smallest and the largest value is<br>
+  1 to 2^24 or 1:16777216. In other words, the dynamic range of a BDF file is much higher.<br>
+  BDF is the 24-bits version of EDF, invented because more and more ADC's/aquisition systems use<br>
+  24-bits analoog to digital converters. When you try to store the data from a 24-bits ADC into EDF,<br>
+  you will lose information.<br>
+<br>
+<br>
+<a name="FAQ_9"></a>
+  Q.  When I print a file, the borders are cut away (the first characters of the signallabels are missing).<br>
+<br>
+  A.  In the printerdialog, choose "landscape" and the right papersize (A4) and<br>
+  adjust the margins in the printerproperties.<br>
+  For example, set top and bottom margins to 0.85 cm and the left and right margins to 1.27 cm.<br>
+<br>
+<br>
+<a name="FAQ_10"></a>
+  Q.  When I print to a PDF file, the traces look grey instead of black when I open the file<br>
+  in Adobe Reader 8.x.<br>
+<br>
+  A.  In Adobe Reader, go to Edit-&gt;Preferences-&gt;Page Display and uncheck "Smooth line art".<br>
+<br>
+<br>
+<a name="FAQ_11"></a>
+  Q.  Why are the annotationmarkers not visible?<br>
+<br>
+  A.  Go to the Settings menu. Check "Annotation marker" and make sure that it<br>
+  has a different color than the background color.<br>
+<br>
+<br>
+<a name="FAQ_12"></a>
+  Q.  The amplitude settings are not correct. For example, 100 uV/cm is 100 uV/1.5 cm.<br>
+<br>
+  A.  This can happen when the DPI-settings of the operatingsystem are wrong. For example,<br>
+  when EDFbrowser can not read your monitorsettings or when the monitorsettings are wrong.<br>
+  You can solve this as follows. Go to the settingsmenu and open the Calibration tab and<br>
+  check the "Manually override automatic DPI settings" checkbox. Now measure the two black<br>
+  rectangles, enter the values and click on the apply button.<br>
+<br>
+<br>
+<a name="FAQ_13"></a>
+  Q.  What are the system requirements?<br>
+<br>
+  A.  There are no special requirements. However, the faster your CPU and the more memory,<br>
+  the faster you can navigate. For example, a large pagetime (five minutes or more) will make<br>
+  the responsetime of the program longer, specially when you add a lot of signals and/or<br>
+  when the signals have a high samplerate.<br>
+  When you open a file with a size of hundred megabytes and you choose to make the whole<br>
+  recording visible on the screen, the program will load the whole file (hundred megabytes)<br>
+  into memory (RAM).<br>
+<br>
+<br>
+<a name="FAQ_14"></a>
+  Q.  Which operatingsystems are supported?<br>
+<br>
+  A.  Linux and Windows 2000/XP/Vista/7. The source can be compiled on the Mac.<br>
+<br>
+<br>
+<a name="FAQ_15"></a>
+  Q.  Which license is used for the program?<br>
+<br>
+  A.  The GNU General Public License version 3. For more info go to Help -&gt; About EDFbrowser.<br>
+<br>
+<br>
+<a name="FAQ_16"></a>
+  Q.  I think I found a bug. Where do I report it?<br>
+<br>
+  A.  First check if you are using the latest version of EDFbrowser.<br>
+  If the bug persists, send an email to <a href="mailto:teuniz@gmail.com">teuniz@gmail.com</a>
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br><br><br><br><br><br><br><br><br><br><br><br></p>
+
+</body>
+</html>
