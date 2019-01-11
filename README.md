@@ -1,4 +1,5 @@
-#COsleep 
+# COsleep
+ 
 Closed- and Open-loop (Slow Ocillations) sleep stimulation (auditory) or recording in _full_-PSG using OpenBCI for sleep.
 
 * Its a **fun project**, but with hard science behind in hardware, software and concept, usable for research.
