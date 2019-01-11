@@ -26,8 +26,10 @@ Closed- and Open-loop (Slow Ocillations) sleep stimulation (auditory) or recordi
 **[A poster with pictures and infographics, lists'n'stuff](https://drive.google.com/open?id=15XmB4hGwDl6L_oVv34uby7bRQaTBXUhu)**
 
 **Tutorial in the making, otherwise ask the author.**
+# Source
+[software/installation/source_python](https://github.com/Frederik-D-Weber/cosleep/tree/master/software/installation/source_python)
 
-#External Download
+# External Download
 1. [Example Data](https://drive.google.com/open?id=1lG-Q-U_NJ-pon1OYjL4bfOzeRWntyBL9) for testing the simulation (FREDDY is 8 channel, JINGYI is 16 channel data, settings described in [here](https://www.spisop.org/openbci/)
 1. [Example Stimuli (preprocessed)](https://drive.google.com/open?id=1LlGVS8i8-biWbdamWvwoxJH3bp0wo1Ch) for testing the open and closed loop stimulation of voice and tones. Example protocols for those stimuli see in the subfolder [stimulations](http://github.com/Frederik-D-Weber/cosleep/software/installation/source_python/stimulations)
 1. [Binaries, Ubuntu 18.04 LTS x64](https://drive.google.com/open?id=1BkZig25DqL_edzowbonLJYWGkWO9WNGj) compiled using pyinstaller
