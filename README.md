@@ -13,7 +13,7 @@ Closed- and Open-loop (Slow Ocillations) sleep stimulation (auditory) or recordi
 * Stimulation is activated manually, but disengaged automatically on arousal.
 * See live ERPs from stimulation
 * Latencies considered in stimulation (below 10 ms signal latency, auditory delay down to 24 ms, standard 93 ms)
-* 100% logging what you did, all markers, Lights-off on, checklist for eye movements
+* 100% logging what you did, all markers, Lights-off on, checklist for participant instructions (eye movements, muscle, resting state etc.) in English and Chinese.
 * Lost samples are imputed and logged.
 * works with parallel microSD card recording (250 Hz)
 * Handles all kinds of auditory stimuli, peeps, noises, voices and baaaams! (as long as in wav or mp3 format, or what [_sox_ can handle](http://sox.sourceforge.net/soxformat.html))
