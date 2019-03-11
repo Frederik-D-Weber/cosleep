@@ -350,6 +350,13 @@ class CLSalgo1(QtCore.QThread):
     def handleLightsOn(self):
         self.EventFired.appendEvent("Lights-On", self.currentSampleID, self.currentSampleWriteIndex)
 
+    def handleReconnect(self):
+        self.EventFired.appendEvent("Reconnect-attemp", self.currentSampleID, self.currentSampleWriteIndex)
+        self.board.reconnect()
+        self.EventFired.appendEvent("Reconnect-attemp-finished", self.currentSampleID, self.currentSampleWriteIndex)
+
+
+
     def setAutoStimEngaged(self):
         self.EventFired.appendEvent("Auto-Stim-Engage-turned-on", self.currentSampleID, self.currentSampleWriteIndex)
         self.status_forcedStimEngagement = False
@@ -747,6 +754,17 @@ class CLSalgo1(QtCore.QThread):
             if self.isClosedLoop:
                 temp_threshold_winsample_samplesago = [self.threshold, self.updateThresholdTimeWindowSample, (self.iSample % self.updateThresholdIntervalSample)]
 
+            indexPlayedItem = 0
+            itemsPlayed = 0
+            timeSinceLastStimulusPlayedSeconds = None
+
+            if self.isStimulationTurnedOn:
+                indexPlayedItem = self.stimulusPlayer.indexPlayedItem
+                itemsPlayed = self.stimulusPlayer.itemsPlayed
+                timeSinceLastStimulusPlayedSeconds = self.stimulusPlayer.timeSinceLastStimulusPlayedSeconds()
+                if not self.stimulusPlayer.playedAtLeastOnce:
+                    timeSinceLastStimulusPlayedSeconds = None
+
             msg = [self.signalTime[0:tempNSamples],
                    list(self.signalEEG),
                    list(self.signalEOG),
@@ -759,7 +777,10 @@ class CLSalgo1(QtCore.QThread):
                    spindles_signalTimesIndices,
                    temp_signalEEG_spindles_adapted,
                    temp_threshold_winsample_samplesago,
-                   self.threshold_EMGSignal_from_away_zero_disengage_algo]
+                   self.threshold_EMGSignal_from_away_zero_disengage_algo,
+                   indexPlayedItem,
+                   itemsPlayed,
+                   timeSinceLastStimulusPlayedSeconds]
             self.emit(QtCore.SIGNAL("updateSignalViewerSendMain"), msg)
             self.EventFired.resetNewEvents()
         self.updateViewSampleCounter += 1
@@ -931,7 +952,7 @@ class StimulusEventList(object):
 
 
 class StimulusPlayer(object):
-    def __init__(self, soundBufferSize, sound_base_level_db, sound_rise_from_base_level_db, isClosedLoop, isSham, mainWindow, soundFrequency):
+    def __init__(self, soundBufferSize, sound_base_level_db, sound_rise_from_base_level_db, isClosedLoop, isSham, mainWindow, soundFrequency, playListStartIndex=0):
 
         self.algo = None
         self.isClosedLoop = isClosedLoop
@@ -1027,7 +1048,7 @@ class StimulusPlayer(object):
 
         self.playListLength = self.stimuliPlayList.__len__()
         self.prevItem = -1
-        self.currentLoadedItem = 0
+        self.currentLoadedItem = playListStartIndex
 
         self.test_stimulus_filepath = "stimuli/pinknoise/pink_noise_50_ms_44.1Hz_16bit_integer.wav"
         self.currentSoundfile = self.test_stimulus_filepath + ".44.1kHz.16bit.integer.full.db." + self.final_sound_base_level_db_str + ".db.wav"
@@ -1040,7 +1061,8 @@ class StimulusPlayer(object):
         self.loadCurrentStimulus()
         self.playDone = True
         self.playedAtLeastOnce = False
-        self.indexPlayedItem = 0
+        self.indexPlayedItem = playListStartIndex
+        self.itemsPlayed = 0
 
 
     def setAlgo(self,algo):
@@ -1101,6 +1123,7 @@ class StimulusPlayer(object):
             pygame.mixer.music.play()
         self.timeLastStimulusPlayed = timeit.default_timer()
         self.currentPlayedStimWaitPlayNextStimSeconds = self.stimuliPlayList[self.currentLoadedItem][1]
+        self.itemsPlayed += 1
 
     def playTestStimulus(self):
         testStimulusSoundFile = self.test_stimulus_filepath + ".44.1kHz.16bit.integer.full.db." + self.final_sound_base_level_db_str + ".db.wav"
@@ -1159,12 +1182,12 @@ class StimulusPlayer(object):
     def getCurrentPlayedStimWaitPlayNextStimSeconds(self):
         return (self.currentPlayedStimWaitPlayNextStimSeconds)
 
-    def resetPlayList(self):
-        self.currentLoadedItem = 0
+    def resetPlayList(self,playListStartIndex=0):
+        self.currentLoadedItem = playListStartIndex
         self.determineCurrentStimulusSoundFile()
         self.loadCurrentStimulus()
         self.playDone = True
-        self.indexPlayedItem = 0
+        self.indexPlayedItem = playListStartIndex
 
 
     def getIDofPlaylistbyIndex(self, idx):

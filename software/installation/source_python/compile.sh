@@ -26,7 +26,8 @@ mv dist/hearing_threshold rec_stim/hearing_threshold
 mv dist/recording_stimulator rec_stim/recording_stimulator
 mv dist/obfuscate_conditions rec_stim/obfuscate_conditions
 cp -r data rec_stim/
-cp -r log rec_stim/
+cp -r log_terminal rec_stim/
+cp -r montages rec_stim/
 cp -r stimulations rec_stim/
 cp -r stimuli rec_stim/
 rm -r ../../rec_stim

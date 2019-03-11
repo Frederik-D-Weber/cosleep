@@ -5,6 +5,9 @@ import datetime
 import pyedflib
 import numpy as np
 import atexit
+import math
+import RealTimeFilter as rtf
+
 
 class OpenBCIcsvCollect(object):
     def __exit__(self, exc_type, exc_val, ex_tb):
@@ -16,7 +19,7 @@ class OpenBCIcsvCollect(object):
     def __del__(self):
         self.deactivate()
 
-    def __init__(self, FS, FS_ds, nChannels, file_name="collect", subfolder="data/rec/", delim=";", verbose=False, simulateFromCSV=False, doRealTimeStreaming=False, writeEDF=False, giveNameChannelsByMapping=False,subject="anonymous"):
+    def __init__(self, FS, FS_ds, nChannels, file_name="collect", subfolder="data/rec/", delim=";", verbose=False, simulateFromCSV=False, doRealTimeStreaming=False, writeEDF=False, giveNameChannelsByMapping=False,subject="anonymous",prefilterEDF_hp=None, correctInvertedChannels=False):
         now = datetime.datetime.now()
         self.time_stamp = '%d-%d-%d_%d-%d-%d' % (now.year, now.month, now.day, now.hour, now.minute, now.second)
         self.subfolder = subfolder
@@ -45,44 +48,67 @@ class OpenBCIcsvCollect(object):
         self.lastAcc = [0.0,0.0,0.0]
         self.simulateFromCSV = simulateFromCSV
         self.giveNameChannelsByMapping = giveNameChannelsByMapping
+        self.prefilterEDF_hp = prefilterEDF_hp
+        self.EDF_Physical_max_microVolt = 3277
+        self.EDF_Physical_min_microVolt = -self.EDF_Physical_max_microVolt
 
+        self.realTimeFilterOrder = 1
+        self.channelRealTimeFilters = []
+        if self.prefilterEDF_hp is not None:
+            for iCh in range(0, self.nChannels):
+                self.channelRealTimeFilters.append(rtf.RealTimeFilterHighPassButter(self.prefilterEDF_hp, self.fs, self.realTimeFilterOrder))
+        self.correctInvertedChannels = correctInvertedChannels
 
     def getWriteIndex(self):
         return self.writeIndex
 
+    def isChannelInverted(self,chNumber):
+        if chNumber in [3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16]:
+            return True
+        return False
+
+    def getChannelInversionMultiplicatorByChannelNumber(self, chNumber):
+        if self.isChannelInverted(chNumber):
+            return -1
+        return 1
+
     def getChannelByNumber(self,chNumber):
+        chName = ""
         if chNumber == 1:
-            return "EMG"
+            chName += "EMG"
         elif chNumber == 2:
-            return "EOG"
+            chName += "EOG"
         elif chNumber == 3:
-            return "A1_inverted"
+            chName += "A1"
         elif chNumber == 4:
-            return "A2_inverted"
+            chName += "A2"
         elif chNumber == 5:
-            return "C3_inverted"
+            chName += "C3"
         elif chNumber == 6:
-            return "C4_inverted"
+            chName += "C4"
         elif chNumber == 7:
-            return "Trigger"
+            chName += "Trigger"
         elif chNumber == 8:
-            return "ECG"
+            chName += "ECG"
         elif chNumber == 9:
-            return "F3_inverted"
+            chName += "F3"
         elif chNumber == 10:
-            return "Fz_inverted"
+            chName += "Fz"
         elif chNumber == 11:
-            return "F4_inverted"
+            chName += "F4"
         elif chNumber == 12:
-            return "P3_inverted"
+            chName += "P3"
         elif chNumber == 13:
-            return "Pz_inverted"
+            chName += "Pz"
         elif chNumber == 14:
-            return "P4_inverted"
+            chName += "P4"
         elif chNumber == 15:
-            return "O1_inverted"
+            chName += "O1"
         elif chNumber == 16:
-            return "O2_inverted"
+            chName += "O2"
+        if self.isChannelInverted(chNumber) and not self.correctInvertedChannels:
+            chName += "_inverted"
+        return chName
 
     def activate(self):
         self.writeIndex = 0
@@ -102,19 +128,40 @@ class OpenBCIcsvCollect(object):
             #     self.fevent.write('#Streaming restarted at ' + self.time_stamp + '\n')
             # self.fevent.write('#Streaming started at ' + self.time_stamp + '\n')
             if self.writeEDF:
-                self.edfWriter = pyedflib.EdfWriter(self.path_and_file_name + "_missing_samples_corrected" + ".bdf", self.nChannels+3, file_type=pyedflib.FILETYPE_BDFPLUS)
+
+                EDF_format_extention = ".edf"
+                EDF_format_filetype = pyedflib.FILETYPE_EDFPLUS
+                temp_filterStringFileIndicator = "_prefiltered"
+                temp_filterStringHeader = 'HP ' + str(self.prefilterEDF_hp) + ' Hz'
+                if self.prefilterEDF_hp is None:
+                    EDF_format_extention = ".bdf"
+                    EDF_format_filetype = pyedflib.FILETYPE_BDFPLUS
+                    temp_filterStringFileIndicator = "_unfiltered"
+                    temp_filterStringHeader = 'none'
+
+                self.edfWriter = pyedflib.EdfWriter(self.path_and_file_name + "_missing_samples_corrected" + temp_filterStringFileIndicator + EDF_format_extention, self.nChannels+3, file_type=EDF_format_filetype)
                 self.edfWriter.set_number_of_annotation_signals(64)
                 channel_info = {'label': 'ch', 'dimension': 'uV', 'sample_rate': int(round(self.fs)),
-                                'physical_max': 187500, 'physical_min': -187500,
-                                'digital_max': 8388607, 'digital_min': -8388608,
-                                'prefilter': 'none', 'transducer': 'none'}
+                                'physical_max': self.EDF_Physical_max_microVolt, 'physical_min': self.EDF_Physical_min_microVolt,
+                                'digital_max': 32767, 'digital_min': -32767,
+                                'prefilter': temp_filterStringHeader, 'transducer': 'none'}
                 channel_info_accel = {'label': 'acc', 'dimension': 'G', 'sample_rate': int(round(self.fs)),
-                                'physical_max': 4, 'physical_min': -4,
-                                'digital_max': 8388607, 'digital_min': -8388608,
-                                'prefilter': 'none', 'transducer': 'none'}
+                                      'physical_max': 4, 'physical_min': -4,
+                                      'digital_max': 32767, 'digital_min': -32767,
+                                      'prefilter': 'none', 'transducer': 'none'}
+
+                if EDF_format_extention == ".bdf":
+                    channel_info = {'label': 'ch', 'dimension': 'uV', 'sample_rate': int(round(self.fs)),
+                                    'physical_max': 187500, 'physical_min': -187500,
+                                    'digital_max': 8388607, 'digital_min': -8388607,
+                                    'prefilter': temp_filterStringHeader, 'transducer': 'none'}
+                    channel_info_accel = {'label': 'acc', 'dimension': 'G', 'sample_rate': int(round(self.fs)),
+                                    'physical_max': 4, 'physical_min': -4,
+                                    'digital_max': 8388607, 'digital_min': -8388607,
+                                    'prefilter': 'none', 'transducer': 'none'}
 
                 self.edfWriter.setTechnician('')
-                self.edfWriter.setRecordingAdditional('')
+                self.edfWriter.setRecordingAdditional('COsleep')
                 self.edfWriter.setPatientName(self.subject)
                 self.edfWriter.setPatientCode('')
                 self.edfWriter.setPatientAdditional('')
@@ -145,7 +192,6 @@ class OpenBCIcsvCollect(object):
             self.f.flush()
             if self.doRealTimeStreaming:
                 self.fevent.flush()
-
 
     def deactivate(self):
         if self.isActivated:
@@ -232,14 +278,25 @@ class OpenBCIcsvCollect(object):
     #         row += '\n'
     #         self.fevent.write(row)
 
-    def diffSampleApprox(self,prevID,currentID):
+    def diffSampleApprox(self,prevID,currentID,prevTime,currentTime,fs):
         divider = 1
         if self.FS_ds or (self.nChannels == 16):
             divider = 2
-        if currentID >= prevID:
-            return (currentID-prevID)/divider
+
+        diff_samples = 0
+        diff_samples_id = 0
+        approx_samples_diff = (currentTime - prevTime) * (self.fs * divider)
+        #diff_samples += int(math.floor(approx_samples_diff / 256.0) * 256.0 / divider)
+        if math.floor(approx_samples_diff) > 251.0:
+            diff_samples += int(math.floor(approx_samples_diff) / divider)
         else:
-            return (256-prevID + currentID)/divider
+            if currentID >= prevID:
+                diff_samples_id += (currentID-prevID)/divider
+            else:
+                diff_samples_id += (256-prevID + currentID)/divider
+        return diff_samples+diff_samples_id
+
+
 
     def writeSample(self, sample):
         if not self.isActivated:
@@ -274,8 +331,22 @@ class OpenBCIcsvCollect(object):
         if self.writeEDF:
             self.checkAndWriteEDF(sample)
 
-    def checkAndWriteEDF(self,sample):
-        tempdiff = self.diffSampleApprox(self.tempLastSampleID, sample.id)
+    def prefilterEDF(self, sample):
+        for iCh in range(0, sample.channel_data.__len__()):
+            sample.channel_data[iCh] = self.channelRealTimeFilters[iCh].fitlerNextSample(sample.channel_data[iCh])
+            if sample.channel_data[iCh] > self.EDF_Physical_max_microVolt:
+                sample.channel_data[iCh] = float(self.EDF_Physical_max_microVolt)
+            if sample.channel_data[iCh] < self.EDF_Physical_min_microVolt:
+                sample.channel_data[iCh] = float(self.EDF_Physical_min_microVolt)
+        return sample
+
+    def correctInvertedChannelsInSample(self, sample):
+        for iCh in range(0, sample.channel_data.__len__()):
+            sample.channel_data[iCh] = sample.channel_data[iCh]*self.getChannelInversionMultiplicatorByChannelNumber(iCh + 1)
+        return sample
+
+    def checkAndWriteEDF(self, sample):
+        tempdiff = self.diffSampleApprox(self.tempLastSampleID, sample.id, self.tempLastSample.time, sample.time, self.fs)
         if tempdiff > 1:
             self.edfWriter.writeAnnotation((self.writeIndex + self.nNumberCorrectedSamples) / self.fs, -1,
                                            "interpolated_samples:" + str(tempdiff - 1))
@@ -285,6 +356,12 @@ class OpenBCIcsvCollect(object):
 
         self.tempLastSampleID = sample.id
         self.tempLastSample = sample
+
+        if self.correctInvertedChannels:
+            sample = self.correctInvertedChannelsInSample(sample)
+
+        if self.prefilterEDF_hp is not None:
+            sample = self.prefilterEDF(sample)
 
         self.edfSampleBuffer.append(sample)
 

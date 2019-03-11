@@ -50,6 +50,8 @@ class MainWindow(QtGui.QMainWindow):
             self.emit(QtCore.SIGNAL("sendCALightsOff"))
         elif msg[0] == "lightson":
             self.emit(QtCore.SIGNAL("sendCALightsOn"))
+        elif msg[0] == "reconnect":
+            self.emit(QtCore.SIGNAL("sendCAReconnect"))
         elif msg[0] == "forced-stim":
             self.emit(QtCore.SIGNAL("sendCAForcedStim"))
         elif msg[0] == "auto-stim":
@@ -124,8 +126,8 @@ class QWidget2(QtGui.QWidget):
         self.emit(QtCore.SIGNAL('keyPressedEvent'), event)
 
     def closeEvent(self, event):
-        print("attempt to close...")
-        quit_msg = "Are you sure you want to quit?"
+        print("attempt to close...if confirmed...")
+        quit_msg = "Are you sure you want to quit?\n\nIf you still want to record on the SD card of the device\nthen plug out the dongle BEFORE you press \"Yes\" to exit."
         reply = QtGui.QMessageBox.question(self, 'Quit?',
                                            quit_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 
@@ -161,6 +163,8 @@ class DisplaySignalViewWidget(QtCore.QThread):
         self.threshold_EEGSignal_from_away_zero_disengage_algo = threshold_EEGSignal_from_away_zero_disengage_algo
         self.threshold_EOGSignal_from_away_zero_disengage_algo = threshold_EOGSignal_from_away_zero_disengage_algo
         self.threshold_EMGSignal_from_away_zero_disengage_algo = threshold_EMGSignal_from_away_zero_disengage_algo
+
+        self.timeOfLightsOff = None
 
         self.win = QWidget2()
 
@@ -201,21 +205,52 @@ class DisplaySignalViewWidget(QtCore.QThread):
         self.p2.setTitle(title="EOG (Eyes)")
         self.p3.setTitle(title="EMG (Muscles)")
 
+        self.btnReconnect = QtGui.QPushButton('[R]')
+        self.btnReconnect.setEnabled(False)
+
+        self.Label_lastLightsOff = QtGui.QLabel()
+        self.Label_lastLightsOff.setText("last lights-off: ")
+        self.Label_lastLightsOff.setAlignment(QtCore.Qt.AlignLeft)
+
+        self.Label_updateView = QtGui.QLabel()
+        self.Label_updateView.setText("update:")
+        self.Label_updateView.setAlignment(QtCore.Qt.AlignRight)
+
+
+        self.SpBx_updateView = QtGui.QDoubleSpinBox()
+        self.SpBx_updateView.setRange(0.01, 30.0)
+        self.SpBx_updateView.setSingleStep(0.05)
+        self.SpBx_updateView.setDecimals(2)
+        self.SpBx_updateView.setValue(self.updateSendOutDelaySeconds)
+
         if self.isStimulationTurnedOn:
             self.btnStartStim = QtGui.QPushButton('Start(S)')
             self.btnPauseStim = QtGui.QPushButton('Pause(P)')
             self.btnTestStim = QtGui.QPushButton('Test Noise(T)')
             self.btnForceEngageStimulation = QtGui.QPushButton("Auto Stim.(A)")
 
+            self.Label_nextPlayListItem = QtGui.QLabel()
+            self.Label_nextPlayListItem.setText("Next play list item: ")
+            self.Label_nextPlayListItem.setAlignment(QtCore.Qt.AlignLeft)
+
+            self.Label_PlayListItemsPlayed = QtGui.QLabel()
+            self.Label_PlayListItemsPlayed.setText("# played list items: ")
+            self.Label_PlayListItemsPlayed.setAlignment(QtCore.Qt.AlignLeft)
+
+            self.Label_lastStimulusPlayed = QtGui.QLabel()
+            self.Label_lastStimulusPlayed.setText("last played item: ")
+            self.Label_lastStimulusPlayed.setAlignment(QtCore.Qt.AlignLeft)
+
             self.Label_sound_rise_from_base_level_db = QtGui.QLabel()
             self.Label_sound_rise_from_base_level_db.setText("Vol. Adj. of basel. [dB]:(up/down)")
             self.Label_sound_rise_from_base_level_db.setAlignment(QtCore.Qt.AlignRight)
 
             self.SpBx_sound_rise_from_base_level_db = QtGui.QSpinBox()
-
             self.SpBx_sound_rise_from_base_level_db.setRange(-84 + sound_base_level_dB, -sound_base_level_dB)
             self.SpBx_sound_rise_from_base_level_db.setSingleStep(1)
             self.SpBx_sound_rise_from_base_level_db.setValue(sound_rise_from_base_level_db)
+
+
 
         self.btnEEGcheck = QtGui.QPushButton('Check EEG(C)')
         self.btnLightsOff = QtGui.QPushButton('Lights-OFF(O)')
@@ -258,14 +293,26 @@ class DisplaySignalViewWidget(QtCore.QThread):
         self.btnLightsOff.setStyleSheet('QPushButton {background-color: #000000; color: white; border: 1px solid gray;}')
         self.btnLightsOff.setStyleSheet('QPushButton {background-color: #000000; color: white; border: 1px solid gray;}')
 
+        self.btnReconnect.setStyleSheet('QPushButton {background-color: #777777; color: white; border: 1px solid red;}')
+
+        self.Label_lastLightsOff.setStyleSheet('QLabel {background-color: #000000; color: gray;}')
+
+        self.Label_updateView.setStyleSheet('QLabel {background-color: #000000; color: gray;}')
+        self.SpBx_updateView.setStyleSheet('QDoubleSpinBox {background-color: #000000; color: white; border: 1px solid gray;}')
+
         if self.isStimulationTurnedOn:
             self.btnStartStim.setStyleSheet('QPushButton {background-color: #000000; color: white; border: 1px solid gray;}')
             self.btnPauseStim.setStyleSheet('QPushButton {background-color: #000000; color: white; border: 1px solid gray;}')
             self.btnTestStim.setStyleSheet('QPushButton {background-color: #000000; color: white; border: 1px solid gray;}')
             self.btnForceEngageStimulation.setStyleSheet('QPushButton {background-color: #000000; color: white; border: 1px solid gray;}')
 
+            self.Label_nextPlayListItem.setStyleSheet('QLabel {background-color: #000000; color: gray;}')
+            self.Label_PlayListItemsPlayed.setStyleSheet('QLabel {background-color: #000000; color: gray;}')
+            self.Label_lastStimulusPlayed.setStyleSheet('QLabel {background-color: #000000; color: gray;}')
+
             self.Label_sound_rise_from_base_level_db.setStyleSheet('QLabel {background-color: #000000; color: gray;}')
             self.SpBx_sound_rise_from_base_level_db.setStyleSheet('QSpinBox {background-color: #000000; color: white; border: 1px solid gray;}')
+
 
 
 
@@ -293,7 +340,8 @@ class DisplaySignalViewWidget(QtCore.QThread):
 
         self.layout.addWidget(self.btnEEGcheck, 9, 1, 1, 4)
         self.layout.addWidget(self.btnLightsOff, 9, 5, 1, 4)
-        self.layout.addWidget(self.btnLightsOn, 9, 21, 1, 4)
+        self.layout.addWidget(self.btnLightsOn, 9, 21, 1, 3)
+        self.layout.addWidget(self.btnReconnect, 9, 24, 1, 1)
 
         if self.isStimulationTurnedOn:
             self.layout.addWidget(self.btnStartStim, 9, 9, 1, 4)
@@ -301,12 +349,26 @@ class DisplaySignalViewWidget(QtCore.QThread):
             self.layout.addWidget(self.btnForceEngageStimulation, 9, 15, 1, 2)
             self.layout.addWidget(self.btnPauseStim, 9, 17, 1, 4)
 
+            self.layout.addWidget(self.Label_nextPlayListItem, 6, 25, 1, 2)
+            self.layout.addWidget(self.Label_PlayListItemsPlayed, 6, 27, 1, 2)
+
+            self.layout.addWidget(self.Label_lastStimulusPlayed, 7, 25, 1, 4)
+            self.layout.addWidget(self.Label_lastLightsOff, 8, 25, 1, 2)
+
+            self.layout.addWidget(self.Label_updateView, 8, 27, 1, 1)
+            self.layout.addWidget(self.SpBx_updateView, 8, 28, 1, 1)
+
             self.layout.addWidget(self.SpBx_sound_rise_from_base_level_db, 9, 28, 1, 1)
             self.layout.addWidget(self.Label_sound_rise_from_base_level_db, 9, 25, 1, 3)
 
             for iColumn in range(0, 29):
                 self.layout.setColumnStretch(iColumn, 1)
         else:
+            self.layout.addWidget(self.Label_lastLightsOff, 9, 9, 1, 3)
+
+            self.layout.addWidget(self.Label_updateView, 9, 12, 1, 1)
+            self.layout.addWidget(self.SpBx_updateView, 9, 13, 1, 1)
+
             for iColumn in range(0, 25):
                 self.layout.setColumnStretch(iColumn, 1)
 
@@ -414,14 +476,17 @@ class DisplaySignalViewWidget(QtCore.QThread):
         self.connect(self.btnEEGcheck, QtCore.SIGNAL('clicked()'), self.sendCheckEEG)
         self.connect(self.btnLightsOff, QtCore.SIGNAL('clicked()'), self.sendLightsOff)
         self.connect(self.btnLightsOn, QtCore.SIGNAL('clicked()'), self.sendLightsOn)
+        self.connect(self.btnReconnect, QtCore.SIGNAL('clicked()'), self.sendReconnect)
+
 
         if self.isStimulationTurnedOn:
             self.connect(self.btnStartStim, QtCore.SIGNAL('clicked()'), self.sendStartStim)
             self.connect(self.btnPauseStim, QtCore.SIGNAL('clicked()'), self.sendPauseStim)
             self.connect(self.btnTestStim, QtCore.SIGNAL('clicked()'), self.sendTestStim)
             self.connect(self.btnForceEngageStimulation, QtCore.SIGNAL('clicked()'), self.setForceStimToggle)
-
             self.connect(self.SpBx_sound_rise_from_base_level_db, QtCore.SIGNAL('valueChanged(int)'), self.sendSoundRiseLevelChanged)
+
+        self.connect(self.SpBx_updateView, QtCore.SIGNAL('valueChanged(double)'), self.sendViewUpdateIntervalChanged)
 
         self.setRangeFixed()
 
@@ -556,10 +621,15 @@ class DisplaySignalViewWidget(QtCore.QThread):
     def sendLightsOff(self):
         print("clicked lights off button send to main ...")
         self.emit(QtCore.SIGNAL("sendMainLightsOff"), ["lightsoff"])
+        self.timeOfLightsOff = timeit.default_timer()
 
     def sendLightsOn(self):
         print("clicked lights on button send to main ...")
         self.emit(QtCore.SIGNAL("sendMainLightsOn"), ["lightson"])
+
+    def sendReconnect(self):
+        print("clicked reconnect on button send to main ...")
+        self.emit(QtCore.SIGNAL("sendMainReconnect"), ["reconnect"])
 
     def sendStartStim(self):
         if self.isStimulationTurnedOn:
@@ -588,6 +658,13 @@ class DisplaySignalViewWidget(QtCore.QThread):
         if self.isStimulationTurnedOn:
             print("clicked sound base level changed send to main ...")
             self.emit(QtCore.SIGNAL("sendMainSoundLevelChange"), ["sound-rise-level", self.SpBx_sound_rise_from_base_level_db.value()])
+
+    def sendViewUpdateIntervalChanged(self):
+        print("clicked view update interval changed send to main ...")
+        self.updateSendOutDelaySeconds = self.SpBx_updateView.value()
+        if self.updateSendOutDelaySeconds >= self.updateSendOutDelaySecondsAdjusted:
+            self.updateSendOutDelaySecondsAdjusted = self.updateSendOutDelaySeconds
+            self.sendUpdateIntervalAdjusted()
 
     def sendUpdateIntervalIncrease(self):
         self.updateSendOutDelaySecondsAdjusted = self.updateSendOutDelaySecondsAdjusted * 1.5
@@ -618,13 +695,13 @@ class DisplaySignalViewWidget(QtCore.QThread):
         self.win.setWindowTitle(
             'OpenBCI sleep signal viewer and stimulator - by Frederik D. Weber' + '  --- refresh data every ' + str(self.updateSendOutDelaySecondsAdjusted) + ' s')
 
-        self.updatePlots(np.array(msg[0]), np.array(msg[1]), np.array(msg[2]), np.array(msg[3]), msg[4], np.array(msg[5]), np.array(msg[6]), np.array(msg[7]), msg[8], msg[9], list(msg[10]), msg[11], msg[12])
+        self.updatePlots(np.array(msg[0]), np.array(msg[1]), np.array(msg[2]), np.array(msg[3]), msg[4], np.array(msg[5]), np.array(msg[6]), np.array(msg[7]), msg[8], msg[9], list(msg[10]), msg[11], msg[12], msg[13], msg[14], msg[15])
 
     def reinitiateERPPlots(self):
         self.p0.clear()
         self.p0avg.clear()
 
-    def updatePlots(self, t, y1, y2, y3, stimEvents, tERP, y0, y0avg, ERPavgCount, spindles_signalTimesIndices,y1_spindles,threshold_winsample_samplesago,threshold_EMGSignal_from_away_zero_disengage_algo):
+    def updatePlots(self, t, y1, y2, y3, stimEvents, tERP, y0, y0avg, ERPavgCount, spindles_signalTimesIndices,y1_spindles,threshold_winsample_samplesago,threshold_EMGSignal_from_away_zero_disengage_algo,nextPlaylistItem,PlayListItemsPlayed,timeSinceLastStimulusPlayedSeconds):
 
         # self.reinitiateERPPlots()
         if self.threshold_EMGSignal_from_away_zero_disengage_algo != threshold_EMGSignal_from_away_zero_disengage_algo:
@@ -659,6 +736,7 @@ class DisplaySignalViewWidget(QtCore.QThread):
         self.p2.getAxis("bottom").getViewBox().setXRange(mint, maxt, padding=0, update=False)
         self.p3.getAxis("bottom").getViewBox().setXRange(mint, maxt, padding=0, update=True)
 
+
         #self.doAntiAlias = not self.doAntiAlias
         if self.isStimulationTurnedOn:
             self.curve0.setData(tERP, y0, antialias=self.doAntiAlias)
@@ -672,6 +750,25 @@ class DisplaySignalViewWidget(QtCore.QThread):
 
         if self.isStimulationTurnedOn:
             self.p0avg.setTitle("ERP (Brain) avg " + str(ERPavgCount))
+
+        if self.isStimulationTurnedOn:
+            self.Label_nextPlayListItem.setText("Next play list item: "+str(nextPlaylistItem+1))
+            self.Label_PlayListItemsPlayed.setText("# played list items: "+str(PlayListItemsPlayed))
+
+            if timeSinceLastStimulusPlayedSeconds is not None:
+                if timeSinceLastStimulusPlayedSeconds > 60.0:
+                    self.Label_lastStimulusPlayed.setText("last played item: "+str(round(timeSinceLastStimulusPlayedSeconds/60.0, 2))+" min")
+                elif timeSinceLastStimulusPlayedSeconds > 3600.0:
+                    self.Label_lastStimulusPlayed.setText("last played item: " + str(round(timeSinceLastStimulusPlayedSeconds / 3600.0, 2)) + " h")
+                else:
+                    self.Label_lastStimulusPlayed.setText("last played item: "+str(round(timeSinceLastStimulusPlayedSeconds, 3))+" s")
+
+        if self.timeOfLightsOff is not None:
+            temp_timeSinceLastLightsOff = (timeit.default_timer() - self.timeOfLightsOff)
+            if temp_timeSinceLastLightsOff > 3600.0:
+                self.Label_lastLightsOff.setText("last lights-off: " + str(round(temp_timeSinceLastLightsOff / 3600.0, 2)) + " h")
+            else:
+                self.Label_lastLightsOff.setText("last lights-off: " + str(round(temp_timeSinceLastLightsOff / 60.0, 2)) + " min")
 
         iOddEven = 0
         for se in stimEvents:
@@ -863,6 +960,9 @@ if __name__ == "__main__":
     saveSD_sendChar = 'J'
     doTesting = False
     simulateFromCSV = False
+    #baudrate_serial = 115200
+    #baudrate_serial = 230400
+    baudrate_serial = 921600
     nChannels = 16
     FS = 250.0
     FS_SD = 250.0
@@ -877,11 +977,11 @@ if __name__ == "__main__":
     doShamObfuscation = False
     shamObfuscationCode = ''
     subject_condition_encoded_file_path = '<unused>'
-    doClosedLoopNotOpenLoop = False
+    doClosedLoopNotOpenLoop = True
     doClosedLoopRepeatSequence = True
     ThresholdDownStateDetectionPassBelow = -80.0
     waitForFurtherDipInThreshold = True
-    ThresholdUpStateDetectionPassAbove = -40.0
+    ThresholdUpStateDetectionPassAbove = -60.0
     ThresholdUpStateDetectionPassBelow = 200.0
     isStimulationTurnedOn = False
     sound_base_level_dB = -60
@@ -900,8 +1000,8 @@ if __name__ == "__main__":
     channelEEGrefs = None
     stimulusList = None
     stimulusPlayList = None
-    threshold_EEGSignal_from_away_zero_disengage_algo = 300
-    threshold_EOGSignal_from_away_zero_disengage_algo = 300
+    threshold_EEGSignal_from_away_zero_disengage_algo = 350 # in microVOlt
+    threshold_EOGSignal_from_away_zero_disengage_algo = 600 # in microVOlt
     threshold_EMGSignal_from_away_zero_disengage_algo = 25  # in microVOlt
 
     language = "en"
@@ -915,7 +1015,7 @@ if __name__ == "__main__":
 
     spindle_amplitude_threshold_detect_microVolts = 17.5
     spindle_amplitude_threshold_begin_end_microVolts = 12.5
-    spindle_amplitude_max_microVolts = 120.0
+    spindle_amplitude_max_microVolts = 100.0
 
     spindle_min_duration_seconds = 0.5
     spindle_max_duration_seconds = 2.0
@@ -928,6 +1028,11 @@ if __name__ == "__main__":
     doAntiAlias = True
     useOpenGL = False
     doDownSamplingForPlot = False
+
+    prefilterEDF_hp = None
+    correctInvertedChannels = True
+
+    playListStartIndex = 0
 
     main = MainWindow()
     # main.show()
@@ -943,12 +1048,12 @@ if __name__ == "__main__":
     logging.basicConfig(
         level=logging.DEBUG,
         format='%(asctime)s:%(levelname)s:%(name)s:%(message)s',
-        filename="log/" + subject + "_" + temp_time_stamp + '.connect.output.log' + '.txt',
+        filename="log_terminal/" + subject + "_" + temp_time_stamp + '.connect.output.log' + '.txt',
         filemode='a'
     )
 
 
-    doOutputFileLogging = True
+    doOutputFileLogging = False
     if doOutputFileLogging:
         stdout_logger = logging.getLogger('STDOUT')
         sl = StreamToLogger(stdout_logger, logging.INFO)
@@ -958,6 +1063,31 @@ if __name__ == "__main__":
         sl = StreamToLogger(stderr_logger, logging.ERROR)
         sys.stderr = sl
 
+
+    agegroup_options = ("Adult (20-35 yrs.)", "Child (5-12 yrs.)")
+    agegroup_res, okpressed = main.getChoice("Agegroup?", "Agegroup:",
+                                                    agegroup_options,
+                                                    current_item_int=0)
+    if not okpressed:
+        sys.exit(0)
+
+    if agegroup_res == "Adult (20-35 yrs.)":
+        pass
+    elif agegroup_res == "Child (5-12 yrs.)":
+        filterHP_EEG_spindle_freq = 10.5
+        filterLP_EEG_spindle_freq = 14.0
+        spindle_amplitude_threshold_detect_microVolts = 25
+        spindle_amplitude_threshold_begin_end_microVolts = 17.5
+        spindle_amplitude_max_microVolts = 150.0
+        threshold_EEGSignal_from_away_zero_disengage_algo = 600  # in microVOlt
+        threshold_EOGSignal_from_away_zero_disengage_algo = 700  # in microVOlt
+        threshold_EMGSignal_from_away_zero_disengage_algo = 25  # in microVOlt
+        ThresholdDownStateDetectionPassBelow = -130.0
+        ThresholdUpStateDetectionPassAbove = -90.0
+        ThresholdUpStateDetectionPassBelow = 300.0
+    else:
+        print("Agegroup option " + agegroup_res + " not handled yet")
+        sys.exit(0)
 
     nChannel_options = ("8", "16")
     nChannel_res, okpressed = main.getChoice("#Channels", "Number of channels:",
@@ -1101,35 +1231,80 @@ if __name__ == "__main__":
 
     realTimeFilterOrder = round(FS/125.0)
 
+    useDefaultSettings = False
+    options = ("Default", "Details")
+    res, okpressed = main.getChoice("Default Settings?", "Settings:",
+                                             options,
+                                             current_item_int=0)
+    if not okpressed:
+        sys.exit(0)
+
+    if res == "Default":
+        useDefaultSettings = True
+    elif res == "Details":
+        useDefaultSettings = False
+    else:
+        print("Default settings option " + res + " not handled yet")
+        sys.exit(0)
+
     if doRealTimeStreaming:
 
-
-        writeEDF_option = ("write", "no")
-        writeEDF_res, okpressed = main.getChoice("Write EDF+/BDF+", "write EDF/BDF:", writeEDF_option, current_item_int=0)
-
-        if not okpressed:
-            sys.exit(0)
-        if writeEDF_res == "write":
-            writeEDF = True
-        elif writeEDF_res == "no":
-            writeEDF = False
-        else:
-            print("write EDF/BDF option " + writeEDF_res + " not handled yet")
-            sys.exit(0)
-
-        if writeEDF:
-            giveNameChannelsByMapping_option = ("name", "no")
-            giveNameChannelsByMapping_res, okpressed = main.getChoice("Name Channels EDF/BDF?", "name EDF/BDF channels:", giveNameChannelsByMapping_option, current_item_int=0)
+        if not useDefaultSettings:
+            writeEDF_option = ("write", "no")
+            writeEDF_res, okpressed = main.getChoice("Write EDF+/BDF+", "write EDF+/BDF+:", writeEDF_option, current_item_int=0)
 
             if not okpressed:
                 sys.exit(0)
-            if giveNameChannelsByMapping_res == "name":
-                giveNameChannelsByMapping = True
-            elif giveNameChannelsByMapping_res == "no":
-                giveNameChannelsByMapping = False
+            if writeEDF_res == "write":
+                writeEDF = True
+            elif writeEDF_res == "no":
+                writeEDF = False
             else:
-                print("giveNameChannelsByMapping option " + giveNameChannelsByMapping_res + " not handled yet")
+                print("write EDF/BDF option " + writeEDF_res + " not handled yet")
                 sys.exit(0)
+
+            if writeEDF:
+                giveNameChannelsByMapping_option = ("name", "no")
+                giveNameChannelsByMapping_res, okpressed = main.getChoice("Name Channels EDF/BDF?", "name EDF/BDF channels:", giveNameChannelsByMapping_option, current_item_int=0)
+
+                if not okpressed:
+                    sys.exit(0)
+                if giveNameChannelsByMapping_res == "name":
+                    giveNameChannelsByMapping = True
+                elif giveNameChannelsByMapping_res == "no":
+                    giveNameChannelsByMapping = False
+                else:
+                    print("giveNameChannelsByMapping option " + giveNameChannelsByMapping_res + " not handled yet")
+                    sys.exit(0)
+
+                if prefilterEDF_hp == None:
+                   prefilterEDF_hp = 0.0
+
+                prefilterEDF_hp, okpressed = main.getDouble("EDF prefilter High-Pass", "EDF HP prefilter [Hz]:", 0.0, 30.0, 5,
+                                                                   prefilterEDF_hp)
+                if prefilterEDF_hp <= 0.0:
+                   prefilterEDF_hp = None
+                   okpressed = main.showMessageBox("Will write BDF", "No Filtering, thus will write as BDF.\nPysical maximum is that of OpenBCI device with 24x gain.\nPhysical maximum/minimum is +187500/-187500 microVolt until saturation.\nPrecision ~0.022352 microVolt",
+                                                   True, False, True, isOKbuttonDefault=True)
+                else:
+                    okpressed = main.showMessageBox("Will write EDF and filter", "Filtering with "+ str(prefilterEDF_hp) + " Hz and Butterworth filter order 1 sample,\n thus Will write as EDF.\nPhysical maximum/minimum is +3277/-+3277 microV until saturation.\nPrecision ~0.100000 microVolt" ,
+                                                    True, False, True, isOKbuttonDefault=True)
+                    if not okpressed:
+                        sys.exit(0)
+
+
+                option = ("EDF/BDF keep inversion in non-bipolar channels", "EDF/BDF correct inversion in non-bipolar channels")
+                res, okpressed = main.getChoice("EDF/BDF correct inversion", "Inversion correction (SR2B as ref):", option,
+                                                           current_item_int=1)
+                if not okpressed:
+                    sys.exit(0)
+                if res == "EDF/BDF keep inversion in non-bipolar channels":
+                    correctInvertedChannels = False
+                elif res == "EDF/BDF correct inversion in non-bipolar channels":
+                    correctInvertedChannels = True
+                else:
+                    print("EDF/BDF inversion option " + res + " not handled yet")
+                    sys.exit(0)
 
 
 
@@ -1181,7 +1356,7 @@ if __name__ == "__main__":
 
         stimulation_option = ("Do stimulation", "Only Recording")
         stim_condition, okpressed = main.getChoice("Stimulation?", "Stimulation option:", stimulation_option,
-                                                       current_item_int=0)
+                                                       current_item_int=1)
         if not okpressed:
             sys.exit(0)
         if stim_condition == "Do stimulation":
@@ -1225,6 +1400,7 @@ if __name__ == "__main__":
             if not okpressed:
                 sys.exit(0)
 
+
             # get PCH output card and Master Control for mixer selection
             alsaaudio.Mixer(control="Master", cardindex=np.where(np.array(alsaaudio.cards()) == u'PCH')[0][0]).setvolume(masterVolumePercent)
 
@@ -1250,29 +1426,42 @@ if __name__ == "__main__":
             if not okpressed:
                 sys.exit(0)
 
-            soundBufferSize_options = ("1024", "2048", "4096", "8192")
-            soundBufferSize_res, okpressed = main.getChoice("Sound buffer size", "sound buffer size: ",
-                                                            soundBufferSize_options,
-                                                            current_item_int=2)
-            if not okpressed:
-                sys.exit(0)
+            if not useDefaultSettings:
+                soundBufferSize_options = ("128", "256", "512", "1024", "2048", "4096", "8192")
+                soundBufferSize_options_display = ("128 (2.9 ms)", "256 (5.8 ms)", "512 (11.6 ms)", "1024 (23.2 ms)", "2048 (46.4 ms)", "4096 (93 ms)", "8192 (186 ms)")
+                soundBufferSize_res, okpressed = main.getChoice("Sound buffer size", "sound buffer size: ",
+                                                                soundBufferSize_options_display,
+                                                                current_item_int=5)
+                if not okpressed:
+                    sys.exit(0)
 
-            soundBufferSize = int(soundBufferSize_res)
+                soundBufferSize = int(soundBufferSize_res[0:4].trimmed())
 
-            sc = ShamCrypter.ShamCrypter()
+                if soundBufferSize < 4096:
 
-            doShamObfuscation_types = ("no", "obfuscate")
-            doShamObfuscation_opt, okpressed = main.getChoice("Sham Obfuscation", "Obfuscate sham condition:", doShamObfuscation_types,
-                                                       current_item_int=0)
-            if not okpressed:
-                sys.exit(0)
-            if doShamObfuscation_opt == "no":
-                doShamObfuscation = False
-            elif doShamObfuscation_opt == "obfuscate":
-                doShamObfuscation = True
-            else:
-                print("doShamObfuscation option " + doShamObfuscation_opt + " not handled yet")
-                sys.exit(0)
+                    okpressed = main.showMessageBox("Soundbuffer critical", "The sound buffer size " + soundBufferSize_res +
+                                                    " is very low.\n Make sure you have good sound hardware (below 1024, is unrealistic) and the system setup to not distort sounds!\nOtherwise restart and choose 4096 as buffer size.",
+                                                    True, False, True, isOKbuttonDefault=False)
+                    if not okpressed:
+                        sys.exit(0)
+
+
+
+                sc = ShamCrypter.ShamCrypter()
+
+                doShamObfuscation_types = ("no", "obfuscate")
+                doShamObfuscation_opt, okpressed = main.getChoice("Sham Obfuscation", "Obfuscate sham condition:", doShamObfuscation_types,
+                                                           current_item_int=0)
+                if not okpressed:
+                    sys.exit(0)
+                if doShamObfuscation_opt == "no":
+                    doShamObfuscation = False
+                elif doShamObfuscation_opt == "obfuscate":
+                    doShamObfuscation = True
+                else:
+                    print("doShamObfuscation option " + doShamObfuscation_opt + " not handled yet")
+                    sys.exit(0)
+
 
             if doShamObfuscation:
                 subject_condition_encoded_file_path = main.getFile("Encoded Experimental Condition File", initFolder='data/experiment', filterList='CSV and TXT (*.csv *.txt)')
@@ -1331,6 +1520,25 @@ if __name__ == "__main__":
 
             doClosedLoopRepeatSequence = (stimulusPlayer.playListLength <= 2)
 
+            if not doClosedLoopRepeatSequence:
+                playListStartIndex1, okpressed = main.getInteger("Playlist Start", "Playlist item [1..]%:",
+                                                             1, stimulusPlayer.playListLength, 1, playListStartIndex + 1)
+                if not okpressed:
+                    sys.exit(0)
+                playListStartIndex = playListStartIndex1 - 1
+
+                if playListStartIndex > 0:
+                    okpressed = main.showMessageBox("Start Stimuli is", "The first stimuli to play is\n"
+                                                    + stimulusPlayer.stimuliPlayList[playListStartIndex][0],
+                                                    True, False, True, isOKbuttonDefault=True)
+                    if not okpressed:
+                        sys.exit(0)
+
+                stimulusPlayer.resetPlayList(playListStartIndex=playListStartIndex)
+
+
+
+
             #firstDownToUpstateDelayInSec = 0.3
             #secondUpToUpstateDelayInSec = 1.075
 
@@ -1379,118 +1587,123 @@ if __name__ == "__main__":
                 # if not okpressed:
                 #     sys.exit(0)
 
-            threshold_EEGSignal_from_away_zero_disengage_algo, okpressed = main.getDouble("EEG Auto-stop Stimulation",
-                                                                                          "EEG from 0.0: ", 5.0, 1000.0, 1, threshold_EEGSignal_from_away_zero_disengage_algo)
-            if not okpressed:
-                sys.exit(0)
+            if not useDefaultSettings:
+                threshold_EEGSignal_from_away_zero_disengage_algo, okpressed = main.getDouble("EEG Auto-stop Stimulation",
+                                                                                              "EEG from 0.0: ", 5.0, 1000.0, 1, threshold_EEGSignal_from_away_zero_disengage_algo)
+                if not okpressed:
+                    sys.exit(0)
 
-            threshold_EOGSignal_from_away_zero_disengage_algo, okpressed = main.getDouble("EOG Auto-stop Stimulation",
-                                                                                          "EOG from 0.0: ", 5.0, 2000.0, 1, threshold_EOGSignal_from_away_zero_disengage_algo)
-            if not okpressed:
-                sys.exit(0)
+                threshold_EOGSignal_from_away_zero_disengage_algo, okpressed = main.getDouble("EOG Auto-stop Stimulation",
+                                                                                              "EOG from 0.0: ", 5.0, 2000.0, 1, threshold_EOGSignal_from_away_zero_disengage_algo)
+                if not okpressed:
+                    sys.exit(0)
 
-            threshold_EMGSignal_from_away_zero_disengage_algo, okpressed = main.getDouble("EMG Auto-stop Stimulation",
-                                                                                          "EMG from 0.0: ", 5.0, 2000.0, 1, threshold_EMGSignal_from_away_zero_disengage_algo)
-            if not okpressed:
-                sys.exit(0)
+                threshold_EMGSignal_from_away_zero_disengage_algo, okpressed = main.getDouble("EMG Auto-stop Stimulation",
+                                                                                              "EMG from 0.0: ", 5.0, 2000.0, 1, threshold_EMGSignal_from_away_zero_disengage_algo)
+                if not okpressed:
+                    sys.exit(0)
 
 
-        updateSendOutDelaySeconds, okpressed = main.getDouble("Update Viewer Interval", "update every (seconds):",
-                                                              0.05, 30.0, 2, updateSendOutDelaySeconds)
+        # updateSendOutDelaySeconds, okpressed = main.getDouble("Update Viewer Interval", "update every (seconds):",
+        #                                                       0.05, 30.0, 2, updateSendOutDelaySeconds)
 
         if not okpressed:
             sys.exit(0)
-
-        spindle_highlight_options = ("Highlight spindles", "OFF")
-        spindle_highlight, okpressed = main.getChoice("Hightlight Spindles?", "Spindle view:", spindle_highlight_options,
-                                                   current_item_int=0)
-        if not okpressed:
-            sys.exit(0)
-        if spindle_highlight == "Highlight spindles":
-            doSpindleHighlight = True
-        elif spindle_highlight == "OFF":
-            doSpindleHighlight = False
-        else:
-            print("spindle highlight option " + spindle_highlight + " not handled yet")
-            sys.exit(0)
+        if not useDefaultSettings:
+            spindle_highlight_options = ("Highlight spindles", "OFF")
+            spindle_highlight, okpressed = main.getChoice("Hightlight Spindles?", "Spindle view:", spindle_highlight_options,
+                                                       current_item_int=0)
+            if not okpressed:
+                sys.exit(0)
+            if spindle_highlight == "Highlight spindles":
+                doSpindleHighlight = True
+            elif spindle_highlight == "OFF":
+                doSpindleHighlight = False
+            else:
+                print("spindle highlight option " + spindle_highlight + " not handled yet")
+                sys.exit(0)
 
         if doSpindleHighlight:
-            filterHP_EEG_spindle_freq, okpressed = main.getDouble("Spindle HP filter:",
-                                                                    "HP-Filter-freq. -3 dB (Hz):", 8.0, 19.0, 2, filterHP_EEG_spindle_freq)
+            if not useDefaultSettings:
+                filterHP_EEG_spindle_freq, okpressed = main.getDouble("Spindle HP filter:",
+                                                                        "HP-Filter-freq. -3 dB (Hz):", 8.0, 19.0, 2, filterHP_EEG_spindle_freq)
+                if not okpressed:
+                    sys.exit(0)
+
+                filterLP_EEG_spindle_freq, okpressed = main.getDouble("Spindle LP filter:",
+                                                                      "LP-Filter-freq. -3 dB (Hz):", 9.0, 20.0, 2, filterLP_EEG_spindle_freq)
+                if not okpressed:
+                    sys.exit(0)
+
+                realTimeFilterOrderSpindles, okpressed = main.getInteger("Spindle IIR Filter",
+                                                                         "Filter order:", 1, 10*FS, 1,
+                                                                         realTimeFilterOrderSpindles*round(FS/125.0))
+                if not okpressed:
+                    sys.exit(0)
+
+                spindle_amplitude_threshold_detect_microVolts, okpressed = main.getDouble("Detect Spindle",
+                                                                      "Detect thresh. ampl. (uV):", 1.0, spindle_amplitude_max_microVolts, 1, spindle_amplitude_threshold_detect_microVolts)
+                if not okpressed:
+                    sys.exit(0)
+
+                spindle_amplitude_threshold_begin_end_microVolts, okpressed = main.getDouble("Detect Spindle bounds",
+                                                                                          "Bounds thresh. ampl. (uV):", 1.0, spindle_amplitude_max_microVolts-1.0, 1, spindle_amplitude_threshold_begin_end_microVolts)
+                if not okpressed:
+                    sys.exit(0)
+            else:
+                realTimeFilterOrderSpindles = realTimeFilterOrderSpindles * round(FS / 125.0)
+
+        if not useDefaultSettings:
+            antialias_option = ("Anti-aliasing", "No anti-aliasing")
+            alias_option, okpressed = main.getChoice("Anti-aliasing?", "View adaptation:", antialias_option,
+                                                       current_item_int=0)
             if not okpressed:
                 sys.exit(0)
 
-            filterLP_EEG_spindle_freq, okpressed = main.getDouble("Spindle LP filter:",
-                                                                  "LP-Filter-freq. -3 dB (Hz):", 9.0, 20.0, 2, filterLP_EEG_spindle_freq)
+            if alias_option == "Anti-aliasing":
+                doAntiAlias = True
+            elif alias_option == "No anti-aliasing":
+                doAntiAlias = False
+            else:
+                print("Anti-aliasing option " + alias_option + " not handled yet")
+                sys.exit(0)
+
+            OpenGL_option = ("OpenGL", "Standard")
+            opengl_option, okpressed = main.getChoice("Use OpenGL?", "View processing:", OpenGL_option,
+                                                     current_item_int=1)
             if not okpressed:
                 sys.exit(0)
 
-            realTimeFilterOrderSpindles, okpressed = main.getInteger("Spindle IIR Filter",
-                                                                     "Filter order:", 1, 10*FS, 1,
-                                                                     realTimeFilterOrderSpindles*round(FS/125.0))
-            if not okpressed:
+            if opengl_option == "OpenGL":
+                useOpenGL = True
+            elif opengl_option == "Standard":
+                useOpenGL = False
+            else:
+                print("OpenGL option " + opengl_option + " not handled yet")
                 sys.exit(0)
-
-            spindle_amplitude_threshold_detect_microVolts, okpressed = main.getDouble("Detect Spindle",
-                                                                  "Detect thresh. ampl. (uV):", 1.0, spindle_amplitude_max_microVolts, 1, spindle_amplitude_threshold_detect_microVolts)
-            if not okpressed:
-                sys.exit(0)
-
-            spindle_amplitude_threshold_begin_end_microVolts, okpressed = main.getDouble("Detect Spindle bounds",
-                                                                                      "Bounds thresh. ampl. (uV):", 1.0, spindle_amplitude_max_microVolts-1.0, 1, spindle_amplitude_threshold_begin_end_microVolts)
-            if not okpressed:
-                sys.exit(0)
-
-
-        antialias_option = ("Anti-aliasing", "No anti-aliasing")
-        alias_option, okpressed = main.getChoice("Anti-aliasing?", "View adaptation:", antialias_option,
-                                                   current_item_int=0)
-        if not okpressed:
-            sys.exit(0)
-
-        if alias_option == "Anti-aliasing":
-            doAntiAlias = True
-        elif alias_option == "No anti-aliasing":
-            doAntiAlias = False
-        else:
-            print("Anti-aliasing option " + alias_option + " not handled yet")
-            sys.exit(0)
-
-        OpenGL_option = ("OpenGL", "Standard")
-        opengl_option, okpressed = main.getChoice("Use OpenGL?", "View processing:", OpenGL_option,
-                                                 current_item_int=1)
-        if not okpressed:
-            sys.exit(0)
-
-        if opengl_option == "OpenGL":
-            useOpenGL = True
-        elif opengl_option == "Standard":
-            useOpenGL = False
-        else:
-            print("OpenGL option " + opengl_option + " not handled yet")
-            sys.exit(0)
 
 
         languages = ("en", "zh")
-        languages_res, okpressed = main.getChoice("Language Instructions", "Language:",
+        languages_res, okpressed = main.getChoice("Instructions Language?", "Instructions Language:",
                                                   languages,
                                                   current_item_int=0)
         if not okpressed:
             sys.exit(0)
         language = languages_res
 
-        run_types = ("Device", "CSV")
-        run_type_res, okpressed = main.getChoice("Run from Device or CSV (Simulation)", "Device or CSV-Simulation:", run_types,
-                                                 current_item_int=0)
-        if not okpressed:
-            sys.exit(0)
-        if run_type_res == "Device":
-            simulateFromCSV = False
-        elif run_type_res == "CSV":
-            simulateFromCSV = True
-        else:
-            print("Run type  " + run_type_res + " not handled yet")
-            sys.exit(0)
+        if not useDefaultSettings:
+            run_types = ("Device", "CSV")
+            run_type_res, okpressed = main.getChoice("Run from Device or CSV (Simulation)", "Device or CSV-Simulation:", run_types,
+                                                     current_item_int=0)
+            if not okpressed:
+                sys.exit(0)
+            if run_type_res == "Device":
+                simulateFromCSV = False
+            elif run_type_res == "CSV":
+                simulateFromCSV = True
+            else:
+                print("Run type  " + run_type_res + " not handled yet")
+                sys.exit(0)
 
 
 
@@ -1513,7 +1726,7 @@ if __name__ == "__main__":
     if not okpressed:
         sys.exit(0)
 
-    csvCollectData = OBCIcsv.OpenBCIcsvCollect(FS,FS_ds,nChannels,file_name=subject + "_" + temp_time_stamp + '.collect', subfolder="data/rec/", delim=";", verbose=False,simulateFromCSV=simulateFromCSV, doRealTimeStreaming=doRealTimeStreaming,writeEDF=writeEDF, giveNameChannelsByMapping = giveNameChannelsByMapping,subject=subject)
+    csvCollectData = OBCIcsv.OpenBCIcsvCollect(FS,FS_ds,nChannels,file_name=subject + "_" + temp_time_stamp + '.collect', subfolder="data/rec/", delim=";", verbose=False,simulateFromCSV=simulateFromCSV, doRealTimeStreaming=doRealTimeStreaming,writeEDF=writeEDF, giveNameChannelsByMapping = giveNameChannelsByMapping,subject=subject,prefilterEDF_hp=prefilterEDF_hp,correctInvertedChannels=correctInvertedChannels)
 
     soundlatency_seconds = soundBufferSize / float(soundFrequency)
     soundlatency_rec_samples = int(math.ceil(soundlatency_seconds * float(FS)))
@@ -1523,7 +1736,7 @@ if __name__ == "__main__":
 
     flog = open("data/log/" + subject + "_" + temp_time_stamp + '.recording_stimulator.log' + '.csv', 'a', buffering=500000)
     flog.write('subject;saveSD;saveSD_sendChar;saveSD_hours;'
-               'writeEDF;giveNameChannelsByMapping;'
+               'writeEDF;giveNameChannelsByMapping;correctInvertedChannels;prefilterEDF_hp;'
                'doTesting;simulateFromCSV;nChannels;'
                'condition;doSham;doShamObfuscation;shamObfuscationCode;subject_condition_encoded_file_path;ThresholdDownStateDetectionPassBelow;waitForFurtherDipInThreshold;ThresholdUpStateDetectionPassAbove;ThresholdUpStateDetectionPassBelow;'
                'doClosedLoopNotOpenLoop;doClosedLoopRepeatSequence;isStimulationTurnedOn;'
@@ -1534,11 +1747,11 @@ if __name__ == "__main__":
                'sound_rise_from_base_level_db_initial_value;'
                'soundOnsetDelaySeconds;soundOnsetDelayRecordingSamples;'
                'updateSendOutDelaySeconds;soundBufferSize;'
-               'channelEEG;channelEMG;channelEOG;channelEEGrefs;FS;FS_SD;FS_ds;doRealTimeStreaming;instruction_language\n')
+               'channelEEG;channelEMG;channelEOG;channelEEGrefs;FS;FS_SD;FS_ds;baudrate_serial;doRealTimeStreaming;instruction_language\n')
 
 
     flog.write(subject + ";" + str(saveSD) + ";" + saveSD_sendChar + ";" + SDcard_option_dict[saveSD_sendChar] + ";" + \
-               str(writeEDF) + ";" + str(giveNameChannelsByMapping) + ";" + \
+               str(writeEDF) + ";" + str(giveNameChannelsByMapping) + ";" + str(correctInvertedChannels) + ";" + str(prefilterEDF_hp) + ";" + \
                str(doTesting) + ";" + str(simulateFromCSV) + ";" + str(nChannels) + ";" + \
                str(condition) + ";" + str(doSham) + ";" + str(doShamObfuscation) + ";" + str(shamObfuscationCode) + ";" + str(subject_condition_encoded_file_path) + ";" + str(ThresholdDownStateDetectionPassBelow) + ";" + str(waitForFurtherDipInThreshold) + ";" + str(ThresholdUpStateDetectionPassAbove) + ";" + str(ThresholdUpStateDetectionPassBelow) + ";" +\
                str(doClosedLoopNotOpenLoop) + ";" + str(doClosedLoopRepeatSequence) + ";" + str(isStimulationTurnedOn) + ";" + \
@@ -1549,12 +1762,10 @@ if __name__ == "__main__":
                str(sound_rise_from_base_level_db) + ";" + \
                str(soundlatency_seconds) + ";" + str(soundlatency_rec_samples) + ";" + \
                str(updateSendOutDelaySeconds) + ";" + str(soundBufferSize) + ";" + \
-               str(channelEEG) + ";" + str(channelEMG) + ";" + str(channelEOG) + ";" + str(channelEEGrefs) + ";" + str(FS) + ";" + str(FS_SD) + ";" + str(FS_ds) + ";" + str(doRealTimeStreaming) + ";" + str(language) + '\n')
+               str(channelEEG) + ";" + str(channelEMG) + ";" + str(channelEOG) + ";" + str(channelEEGrefs) + ";" + str(FS) + ";" + str(FS_SD) + ";" + str(FS_ds) + ";" + str(baudrate_serial) + ";" + str(doRealTimeStreaming) + ";" + str(language) + '\n')
 
     flog.flush()
     flog.close()
-
-    baud = 115200
 
     if not simulateFromCSV:
         nTryToConnect = 0
@@ -1564,70 +1775,99 @@ if __name__ == "__main__":
             try:
                 nTryToConnect += 1
 
-                board = bci.OpenBCIBoard(port=None, baud=baud, filter_data=False, scaled_output=True, daisy=useDaisyModule,
+                board = bci.OpenBCIBoard(port=None, baud=baudrate_serial, filter_data=False, scaled_output=True, daisy=useDaisyModule,
                                          log=True, timeout=None, sendDeviceStopAfterSerialStop=sendDeviceStopAfterSerialStop)
                 board.port = board.find_port()
                 print("finnaly connected to " + board.port)
                 # logging.basicConfig(filename="log/" + subject + "_" + temp_time_stamp + '.connect.output.log' + '.txt', format='%(message)s', level=logging.DEBUG)
                 logging.info('---------WRITE TO BOARD-------------')
 
+                initSendBoardByteString = b''
+
                 if nChannels == 16:
                     board.ser.write(b'C')
-                    time.sleep(0.500)
+                    time.sleep(0.2500)
+                    initSendBoardByteString += b'C'
                 elif nChannels == 8:
                     board.ser.write(b'c')
-                    time.sleep(0.500)
+                    time.sleep(0.2500)
+                    initSendBoardByteString += b'c'
 
                 if not doRealTimeStreaming:
-                    board.ser.write(FS_SD_char)  # EMG on the first pins
-                    time.sleep(0.500)
+                    board.ser.write(FS_SD_char)
+                    time.sleep(0.2500)
+                    initSendBoardByteString += FS_SD_char
 
                 # configure pins
                 board.ser.write(b'x1060000X')  # EMG on the first pins
-                time.sleep(0.500)
+                time.sleep(0.2500)
+                initSendBoardByteString += b'x1060000X'
                 board.ser.write(b'x2060000X')  # EOG on the second pins
-                time.sleep(0.500)
+                time.sleep(0.2500)
+                initSendBoardByteString += b'x2060000X'
                 board.ser.write(b'x3060110X')  # A1 on the third N pin
-                time.sleep(0.500)
+                time.sleep(0.2500)
+                initSendBoardByteString += b'x3060110X'
                 board.ser.write(b'x4060110X')  # A2 on the fourth N pin
-                time.sleep(0.500)
+                time.sleep(0.2500)
+                initSendBoardByteString += b'x4060110X'
                 board.ser.write(b'x5060110X')  # C3 on the fifth N pin
-                time.sleep(0.500)
+                time.sleep(0.2500)
+                initSendBoardByteString += b'x5060110X'
                 board.ser.write(b'x6060110X')  # C4 on the sixth N pin
-                time.sleep(0.500)
-                # if doTesting:
+                time.sleep(0.2500)
+                initSendBoardByteString += b'x6060110X'
+                # # if doTesting:
                 board.ser.write(b'x7060000X')  # Trigger cable
-                # else:
-                #   board.ser.write(b'x7060110X')  #
-                time.sleep(0.500)
+                initSendBoardByteString += b'x7060000X'
+                # # else:
+                # #   board.ser.write(b'x7060110X')  #
+                time.sleep(0.2500)
                 board.ser.write(b'x8060000X')  # ECG/ audio/marker on the eights pins/
-                time.sleep(0.500)
+                initSendBoardByteString += b'x8060000X'
+                time.sleep(0.2500)
 
                 if nChannels == 16:
                     board.ser.write(b'xQ060110X') # F3 on the third N pin
-                    time.sleep(0.500)
+                    time.sleep(0.2500)
+                    initSendBoardByteString += b'xQ060110X'
                     board.ser.write(b'xW060110X') # Fz on the third N pin
-                    time.sleep(0.500)
+                    time.sleep(0.2500)
+                    initSendBoardByteString += b'xW060110X'
                     board.ser.write(b'xE060110X') # F4 on the third N pin
-                    time.sleep(0.500)
+                    time.sleep(0.2500)
+                    initSendBoardByteString += b'xE060110X'
                     board.ser.write(b'xR060110X') # P3 on the third N pin
-                    time.sleep(0.500)
+                    time.sleep(0.2500)
+                    initSendBoardByteString += b'xR060110X'
                     board.ser.write(b'xT060110X') # Pz on the third N pin
-                    time.sleep(0.500)
+                    time.sleep(0.2500)
+                    initSendBoardByteString += b'xT060110X'
                     board.ser.write(b'xY060110X') # P4 on the third N pin
-                    time.sleep(0.500)
+                    time.sleep(0.2500)
+                    initSendBoardByteString += b'xY060110X'
                     board.ser.write(b'xU060110X') # O1 on the third N pin
-                    time.sleep(0.500)
+                    time.sleep(0.2500)
+                    initSendBoardByteString += b'xU060110X'
                     board.ser.write(b'xI060110X') # O2 on the third N pin
-                    time.sleep(0.500)
+                    time.sleep(0.2500)
+                    initSendBoardByteString += b'xI060110X'
 
                 if saveSD:
                     board.ser.write(saveSD_sendChar_byte)  # record on SD card
                     time.sleep(0.500)
+                    initSendBoardByteString += saveSD_sendChar_byte
+
+                board.initSendBoardByteString = initSendBoardByteString
+                #board.ser.write(initSendBoardByteString)
+
                 OBCI_connected = True
+            except Exception as e:
+                print e.message, e.args
+                print "connection to OpenBCI dongle or device failed %d times, try again in 5 seconds" % (nTryToConnect)
+                time.sleep(5.0)
             except:
-                print
-                "connection to OpenBCI dongle or device failed %d times, try again in 5 seconds" % (nTryToConnect)
+                print "connection to OpenBCI dongle or device failed %d times, try again in 5 seconds" % (nTryToConnect)
                 time.sleep(5.0)
                 pass
             finally:
@@ -1668,14 +1908,22 @@ if __name__ == "__main__":
                     time.sleep(8.0)
                     sys.exit(app.exec_())
 
-    hasSerialMessage = True
-    while hasSerialMessage and not(simulateFromCSV):
-        hasSerialMessage = board.print_incoming_text()
+    temp_line_read = ""
+    while temp_line_read != "No Message" and not(simulateFromCSV):
+        temp_line_read = board.print_incoming_text()
+        if "initialization failed." in temp_line_read:
+            print('micro SD card problem')
+            okpressed = main.showMessageBox("micro SD card problem", "The OpenBCI device has problems to write on the micro SD card!\nYou chose to write "+saveSD_rep_str+" on the card.\n\nTry the following:\n  1. restart again device and software\n  2. check if card is nearly full (also clear the trash)\n  3. check that the card is formatted correctly\n  4. Assure the card can hold the amount of data required\n  (5. get another (better) micro SD card)\n  (6. Don't use the micro SD card at all)\n\nStill want to try to continue without using the SD card?",
+                                            True, False, True, isOKbuttonDefault=False)
+            if not okpressed:
+                sys.exit(0)
+
+
 
     if not doRealTimeStreaming:
         try:
             csvCollectData.activate()
-            time.sleep(0.5)
+            time.sleep(0.1)
             board.ser.write(b'b')
             csvCollectData.fireStreamingStarted()
             csvCollectData.flush()
@@ -1789,6 +2037,9 @@ if __name__ == "__main__":
         app.connect(dsvw, QtCore.SIGNAL("sendMainCheckEEG"), main.DSVWtoMain, QtCore.Qt.QueuedConnection)
         app.connect(dsvw, QtCore.SIGNAL("sendMainLightsOff"), main.DSVWtoMain, QtCore.Qt.QueuedConnection)
         app.connect(dsvw, QtCore.SIGNAL("sendMainLightsOn"), main.DSVWtoMain, QtCore.Qt.QueuedConnection)
+        app.connect(dsvw, QtCore.SIGNAL("sendMainReconnect"), main.DSVWtoMain, QtCore.Qt.QueuedConnection)
+
+
 
         app.connect(dsvw, QtCore.SIGNAL("sendMainStartStim"), main.DSVWtoMain, QtCore.Qt.QueuedConnection)
         app.connect(dsvw, QtCore.SIGNAL("sendMainPauseStim"), main.DSVWtoMain, QtCore.Qt.QueuedConnection)
@@ -1804,8 +2055,10 @@ if __name__ == "__main__":
         print("connected dsvw send to main")
 
         app.connect(main, QtCore.SIGNAL("sendCACheckEEG"), ca.handleCheckEEG, QtCore.Qt.QueuedConnection)
-        app.connect(main, QtCore.SIGNAL("sendCALightsOn"), ca.handleLightsOn, QtCore.Qt.QueuedConnection)
         app.connect(main, QtCore.SIGNAL("sendCALightsOff"), ca.handleLightsOff, QtCore.Qt.QueuedConnection)
+        app.connect(main, QtCore.SIGNAL("sendCALightsOn"), ca.handleLightsOn, QtCore.Qt.QueuedConnection)
+        app.connect(main, QtCore.SIGNAL("sendCAReconnect"), ca.handleReconnect, QtCore.Qt.QueuedConnection)
+
 
         app.connect(main, QtCore.SIGNAL("sendCAStartStim"), ca.doStimulation, QtCore.Qt.QueuedConnection)
         app.connect(main, QtCore.SIGNAL("sendCAPauseStim"), ca.pauseStimulation, QtCore.Qt.QueuedConnection)

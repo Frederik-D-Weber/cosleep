@@ -64,23 +64,48 @@ class OpenBCIBoard(object):
         self.log = log  # print_incoming_text needs log
         self.streaming = False
         self.baudrate = baud
+        self.baudrate_default = 115200
         self.timeout = timeout
         self.sendDeviceStopAfterSerialStop = sendDeviceStopAfterSerialStop
+        self.log_packet_count = 0
+        self.initSendBoardByteString = b''
+        self.callback = None
+
         if not port:
             port = self.find_port()
         self.port = port
         print("Connecting to V3 at port %s" % (port))
-        self.ser = serial.Serial(port=port, baudrate=baud, timeout=timeout)
 
-        print("Serial established...")
+        self.baudrate_serial_code = '\xF0\x05'
+        if baud == 115200:
+            self.baudrate_serial_code = '\xF0\x05'
+        elif baud == 230400:
+            self.baudrate_serial_code = '\xF0\x06'
+        elif baud == 921600:
+            self.baudrate_serial_code = '\xF0\x0A'
+        else:
+            print("baudrate_serial of " + str(baudrate_serial) + " not handled")
+            # sys.exit(0)
 
         time.sleep(2)
+        self.ser = serial.Serial(port=port, baudrate=self.baudrate_default, timeout=timeout)
+        print("Serial with baud rate of " + str(self.baudrate_default) + " established to port " + port)
+
         # Initialize 32-bit board, doesn't affect 8bit board
-        self.ser.write(b'v');
+        self.ser.write(b'v')
+        time.sleep(1)
+
+        temp_line_read = ""
+        while temp_line_read != "No Message":
+            temp_line_read = self.print_incoming_text()
+
+
+        self.ser.write(self.baudrate_serial_code)
+        self.ser.baudrate = self.baudrate
+
+        print("Serial reconfigured to baud rate of " + str(baud) + " on port " + port)
 
         # wait for device to be ready
-        time.sleep(1)
-        self.print_incoming_text()
 
         self.streaming = False
         self.filtering_data = filter_data
@@ -90,7 +115,6 @@ class OpenBCIBoard(object):
         self.read_state = 0
         self.daisy = daisy
         self.last_odd_sample = OpenBCISample(-1, [], [])  # used for daisy
-        self.log_packet_count = 0
         self.attempt_reconnect = False
         self.last_reconnect = 0
         self.reconnect_freq = 5
@@ -132,10 +156,15 @@ class OpenBCIBoard(object):
         if not isinstance(callback, list):
             callback = [callback]
 
+        self.callback = callback
+
 
         # Initialize check connection
         self.check_connection()
 
+        self.stream(lapse,start_time)
+
+    def stream(self,lapse, start_time):
         while self.streaming:
 
             # read current sample
@@ -152,15 +181,25 @@ class OpenBCIBoard(object):
 
                     whole_sample = OpenBCISample(sample.id, sample.channel_data + self.last_odd_sample.channel_data,
                                                  avg_aux_data)
-                    for call in callback:
+                    for call in self.callback:
                         call(whole_sample)
             else:
-                for call in callback:
+                for call in self.callback:
                     call(sample)
             if (lapse > 0 and timeit.default_timer() - start_time > lapse):
                 self.stop()
             if self.log:
                 self.log_packet_count = self.log_packet_count + 1
+
+    def restream(self,lapse=-1):
+        if not self.streaming:
+            self.ser.write(b'b')
+            self.streaming = True
+
+        start_time = timeit.default_timer()
+        self.stream(lapse,start_time)
+
+
 
     """
       PARSER:
@@ -170,14 +209,14 @@ class OpenBCIBoard(object):
       0xA0|0-255|8, 3-byte signed ints|3 2-byte signed ints|0xC0
     """
 
-    def _read_serial_binary(self, max_bytes_to_skip=3000):
+    def _read_serial_binary(self, max_bytes_to_skip=5000):
         def read(n):
             bb = self.ser.read(n)
             if not bb:
                 self.warn('Device appears to be stalled. Quitting...')
                 sys.exit()
                 raise Exception('Device Stalled')
-                sys.exit()
+                sys.exit(0)
                 return '\xFF'
             else:
                 return bb
@@ -261,10 +300,10 @@ class OpenBCIBoard(object):
     Clean Up (atexit)
     """
 
-    def stop(self):
+    def stop(self,sendDeviceStopAfterSerialStop=False):
         print("Stopping streaming...\nWait for buffer to flush...")
         self.streaming = False
-        if self.sendDeviceStopAfterSerialStop:
+        if self.sendDeviceStopAfterSerialStop or sendDeviceStopAfterSerialStop:
             self.ser.write(b's')
             if self.log:
                 logging.warning('sent <s>: stopped streaming')
@@ -297,20 +336,19 @@ class OpenBCIBoard(object):
         """
         line = ''
         # Wait for device to send data
-        time.sleep(1)
+        time.sleep(0.2)
 
         if self.ser.inWaiting():
-            line = ''
-            c = ''
+            #while self.ser.inWaiting():
             # Look for end sequence $$$
             while '$$$' not in line:
                 c = self.ser.read().decode('utf-8')
                 line += c
             print(line);
-            return True
+            return line
         else:
             self.warn("No Message")
-            return False
+            return "No Message"
 
     def openbci_id(self, serial):
         """
@@ -417,13 +455,22 @@ class OpenBCIBoard(object):
     def reconnect(self):
         self.packets_dropped = 0
         self.warn('Reconnecting')
-        self.stop()
+        self.stop(sendDeviceStopAfterSerialStop=True)
+        time.sleep(0.5)
+        self.ser.baudrate = self.baudrate_default
+        self.ser.write(b'v')
+        time.sleep(0.5)
+        self.ser.write(self.baudrate_serial_code)
+        self.ser.baudrate = self.baudrate
         time.sleep(0.5)
         self.ser.write(b'v')
         time.sleep(0.5)
-        self.ser.write(b'b')
+        self.ser.write(self.initSendBoardByteString)
         time.sleep(0.5)
-        self.streaming = True
+ #       hasSerialMessage = True
+ #       while hasSerialMessage:
+ #           hasSerialMessage = self.print_incoming_text()
+        self.restream()
         # self.attempt_reconnect = False
 
     # Adds a filter at 60hz to cancel out ambient electrical noise
@@ -544,7 +591,7 @@ class OpenBCIBoard(object):
         openbci_port = ''
         for port in ports:
             try:
-                s = serial.Serial(port=port, baudrate=self.baudrate, timeout=self.timeout)
+                s = serial.Serial(port=port, baudrate=self.baudrate_default, timeout=self.timeout)
                 s.write(b'v')
                 openbci_serial = self.openbci_id(s)
                 s.close()
