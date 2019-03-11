@@ -1,6 +1,6 @@
 # COsleep
  
-Closed- and Open-loop (Slow Ocillations) sleep stimulation (auditory) or recording in _full_-PSG using OpenBCI for sleep.
+Closed- and Open-loop (Slow Oscillations) sleep stimulation (auditory) or recording in _full_-PSG using OpenBCI for sleep.
 
 * Its a **fun project**, but with hard science behind in hardware, software and concept, usable for research.
 * Different modes: e.g. Stimulation, Recording only (just PSG, no stimulation), record on SD card without real-time monitoring/stimulation
@@ -12,16 +12,18 @@ Closed- and Open-loop (Slow Ocillations) sleep stimulation (auditory) or recordi
 * Stimulate during a specific time point of a slow oscillation, and trigger another stimuli after that.
 * Stimulation is activated manually, but disengaged automatically on arousal.
 * See live ERPs from stimulation
-* Latencies considered in stimulation (below 10 ms signal latency, auditory delay down to 24 ms, standard 93 ms)
+* Latencies considered in stimulation (below 10 ms signal latency, auditory delay down to 24 ms with normal hardware under 3 ms with specialized sound card, default is 93 ms)
 * 100% logging what you did, all markers, Lights-off on, checklist for eye movements
 * Lost samples are imputed and logged.
 * works with parallel microSD card recording (250 Hz)
+* Warning on SD card problems on device
 * Handles all kinds of auditory stimuli, peeps, noises, voices and baaaams! (as long as in wav or mp3 format, or what [_sox_ can handle](http://sox.sourceforge.net/soxformat.html))
 * Detect accurately your **hearing threshold** on any PC with Linux (alsa) down to the deciBel, and stimulate accurately as well with online-adjustments of volume.
-* FUll unfiltered BDF & CSV export (live, and including all markers)
-* Obfuscate your sham/stim condition for blinding your experiment.
+* Full unfiltered BDF+ (24bit) & CSV export or pre-filtered (High-pass, can choose cut-off frequency, Butterworth, order 1 sample) EDF+(16bit) (live recording, and including all markers)
+* Obfuscate your Sham/Stim condition for blinding your experiment.
 * Realtime-view, scalable channels, with spindle highlighting.
-* Flexible rereferencing
+* Flexible re-referencing
+* Default settings for stimulation in healthy school children (5-12 yrs.) and adults (5-35 yrs.)
 * ... lots of stuff, see the poster:
 **[A poster with pictures and infographics, lists'n'stuff](https://drive.google.com/open?id=15XmB4hGwDl6L_oVv34uby7bRQaTBXUhu)**
 
