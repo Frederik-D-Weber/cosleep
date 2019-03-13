@@ -609,8 +609,25 @@ class OpenBCIBoard(object):
 class OpenBCISample(object):
     """Object encapulsating a single sample from the OpenBCI board."""
 
-    def __init__(self, packet_id, channel_data, aux_data):
-        self.time = timeit.default_timer()
-        self.id = packet_id;
-        self.channel_data = channel_data;
-        self.aux_data = aux_data;
+    def __init__(self, packet_id, channel_data, aux_data, time=None):
+        self.time = time
+        if time is None:
+            self.time = timeit.default_timer()
+        self.id = packet_id
+        self.channel_data = channel_data
+        self.aux_data = aux_data
+
+    def __copy__(self):
+        return type(self)(self.id, self.channel_data, self.aux_data, self.time)
+
+    def __deepcopy__(self, memo):
+        id_self = id(self)
+        acopy = memo.get(id_self)
+        if acopy is None:
+            acopy = type(self)(
+                deepcopy(self.id, memo),
+                deepcopy(self.channel_data, memo),
+                deepcopy(self.aux_data, memo),
+                deepcopy(self.time, memo))
+            memo[id_self] = acopy
+        return acopy

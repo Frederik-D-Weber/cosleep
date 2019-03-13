@@ -7,6 +7,9 @@ import numpy as np
 import atexit
 import math
 import RealTimeFilter as rtf
+import copy
+from open_bci_v3 import OpenBCISample
+
 
 
 class OpenBCIcsvCollect(object):
@@ -346,6 +349,12 @@ class OpenBCIcsvCollect(object):
         return sample
 
     def checkAndWriteEDF(self, sample):
+        # sample = copy.deepcopy(sample)
+        sample = OpenBCISample(copy.deepcopy(sample.id),
+                               copy.deepcopy(sample.channel_data),
+                               copy.deepcopy(sample.aux_data),
+                               copy.deepcopy(sample.time))
+        #sample.channel_data[0] = 14;
         tempdiff = self.diffSampleApprox(self.tempLastSampleID, sample.id, self.tempLastSample.time, sample.time, self.fs)
         if tempdiff > 1:
             self.edfWriter.writeAnnotation((self.writeIndex + self.nNumberCorrectedSamples) / self.fs, -1,
