@@ -952,7 +952,7 @@ class StimulusEventList(object):
 
 
 class StimulusPlayer(object):
-    def __init__(self, soundBufferSize, sound_base_level_db, sound_rise_from_base_level_db, isClosedLoop, isSham, mainWindow, soundFrequency, playListStartIndex=0):
+    def __init__(self, soundBufferSize, sound_base_level_db, soundVolume, sound_rise_from_base_level_db, isClosedLoop, isSham, mainWindow, soundFrequency, playListStartIndex=0):
 
         self.algo = None
         self.isClosedLoop = isClosedLoop
@@ -1050,11 +1050,16 @@ class StimulusPlayer(object):
         self.prevItem = -1
         self.currentLoadedItem = playListStartIndex
 
+        self.soundVolume = soundVolume
+
         self.test_stimulus_filepath = "stimuli/pinknoise/pink_noise_50_ms_44.1Hz_16bit_integer.wav"
         self.currentSoundfile = self.test_stimulus_filepath + ".44.1kHz.16bit.integer.full.db." + self.final_sound_base_level_db_str + ".db.wav"
 
         pygame.mixer.pre_init(frequency=self.soundFrequency, size=-16, channels=1, buffer=self.soundlatency_samples)
         pygame.mixer.init()
+
+        pygame.mixer.music.set_volume(self.soundVolume)
+
         self.timeLastStimulusPlayed = 0
         self.currentPlayedStimWaitPlayNextStimSeconds = 0
         self.determineCurrentStimulusSoundFile()

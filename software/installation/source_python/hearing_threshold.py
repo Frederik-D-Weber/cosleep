@@ -136,7 +136,7 @@ if __name__ == '__main__':
 
         # vol = pygame.mixer.music.get_volume()
         vol = channel_sound.get_volume()
-        masterVolumePercent =     alsaaudio.Mixer(control="Master", cardindex=np.where(np.array(alsaaudio.cards()) == u'PCH')[0][0]).getvolume()
+        masterVolumePercent = alsaaudio.Mixer(control="Master", cardindex=np.where(np.array(alsaaudio.cards()) == u'PCH')[0][0]).getvolume()
         masterVolumePercent = int(masterVolumePercent[0])
         masterVolumePercent = changeMasterVolume(masterVolumePercent,0)
         alsaaudio.Mixer(control="Master", cardindex=np.where(np.array(alsaaudio.cards()) == u'PCH')[0][0]).setvolume(masterVolumePercent)

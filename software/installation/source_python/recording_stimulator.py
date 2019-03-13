@@ -985,13 +985,13 @@ if __name__ == "__main__":
     ThresholdUpStateDetectionPassBelow = 200.0
     isStimulationTurnedOn = False
     sound_base_level_dB = -60
-    stimInitialSoundVolume = 0.50
+    soundVolume = 0.50
     masterVolumePercent = int(100)
     stimuliSoundFiles = ["stimuli/pinknoise/pink_noise_50_ms_44.1kHz_16bit_integer_full_db.wav"]
     stimuliListFilePath = "NA"
     stimuliPlayListFilePath = "NA"
     updateSendOutDelaySeconds = 1.0
-    soundBufferSize = 4096  # power of 2, divided by the sampling rate of 441000 Hz gives the delay 1024 is possible with good drivers
+    soundBufferSize = 4096  # power of 2, divided by the sampling rate of 44100 Hz gives the delay 1024 is possible with good drivers
     firstDownToUpstateDelayInSec = 0.2
     #secondUpToUpstateDelayInSec = 1.075
     channelEEG = None
@@ -1406,7 +1406,7 @@ if __name__ == "__main__":
                 f.close()
 
                 masterVolumePercent = f_volume_master
-                stimInitialSoundVolume = f_volume
+                soundVolume = f_volume
                 sound_base_level_dB = f_sound_base_level
             except:
                 print('Subject volume file not found or accessible')
@@ -1446,8 +1446,8 @@ if __name__ == "__main__":
                 sys.exit(0)
             sound_base_level_dB = int(sound_base_level_rep_str[0:3])
 
-            stimInitialSoundVolume, okpressed = main.getDouble("Pick Subject Volume", "Subject\'s volume:", 0.0, 1.0, 6,
-                                                               stimInitialSoundVolume)
+            soundVolume, okpressed = main.getDouble("Pick Subject Volume", "Subject\'s volume:", 0.0, 1.0, 6,
+                                                               soundVolume)
             if not okpressed:
                 sys.exit(0)
 
@@ -1539,7 +1539,7 @@ if __name__ == "__main__":
                 sys.exit(0)
 
 
-            stimulusPlayer = clsa.StimulusPlayer(soundBufferSize, sound_base_level_dB, sound_rise_from_base_level_db, doClosedLoopNotOpenLoop, doSham, main, soundFrequency)
+            stimulusPlayer = clsa.StimulusPlayer(soundBufferSize, sound_base_level_dB, soundVolume, sound_rise_from_base_level_db, doClosedLoopNotOpenLoop, doSham, main, soundFrequency)
             stimuliListFilePath = stimulusPlayer.stimuliListFilePath
             stimuliPlayListFilePath = stimulusPlayer.stimuliPlayListFilePath
 
@@ -1794,7 +1794,7 @@ if __name__ == "__main__":
                'doSpindleHighlight;filterHP_EEG_spindle_freq;filterLP_EEG_spindle_freq;realTimeFilterOrderSpindles;spindle_amplitude_threshold_detect_microVolts;spindle_amplitude_threshold_begin_end_microVolts;'
                'doAntiAlias;doDownSamplingForPlot;'
                'stimuliListFilePath;stimuliPlayListFilePath;'
-               'sound_base_level_dB;stimInitialSoundVolume;masterVolumePercent;'
+               'sound_base_level_dB;soundVolume;masterVolumePercent;'
                'sound_rise_from_base_level_db_initial_value;'
                'soundOnsetDelaySeconds;soundOnsetDelayRecordingSamples;'
                'updateSendOutDelaySeconds;soundBufferSize;'
@@ -1809,7 +1809,7 @@ if __name__ == "__main__":
                str(doSpindleHighlight) + ";" + str(filterHP_EEG_spindle_freq) + ";" + str(filterLP_EEG_spindle_freq) + ";" + str(realTimeFilterOrderSpindles) + ";" + str(spindle_amplitude_threshold_detect_microVolts) + ";" + str(spindle_amplitude_threshold_begin_end_microVolts) + ";" + \
                str(doAntiAlias) + ";" + str(doDownSamplingForPlot) + ";" + \
                str(stimuliListFilePath) + ";" + str(stimuliPlayListFilePath) + ";" + \
-               str(sound_base_level_dB) + ";" + str(stimInitialSoundVolume) + ";" + str(masterVolumePercent) + ";" + \
+               str(sound_base_level_dB) + ";" + str(soundVolume) + ";" + str(masterVolumePercent) + ";" + \
                str(sound_rise_from_base_level_db) + ";" + \
                str(soundlatency_seconds) + ";" + str(soundlatency_rec_samples) + ";" + \
                str(updateSendOutDelaySeconds) + ";" + str(soundBufferSize) + ";" + \
