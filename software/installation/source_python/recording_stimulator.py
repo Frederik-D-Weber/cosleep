@@ -1053,7 +1053,7 @@ if __name__ == "__main__":
     )
 
 
-    doOutputFileLogging = False
+    doOutputFileLogging = True
     if doOutputFileLogging:
         stdout_logger = logging.getLogger('STDOUT')
         sl = StreamToLogger(stdout_logger, logging.INFO)
