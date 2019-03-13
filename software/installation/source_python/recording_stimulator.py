@@ -199,11 +199,11 @@ class DisplaySignalViewWidget(QtCore.QThread):
 
 
         if self.isStimulationTurnedOn:
-            self.p0.setTitle(title="ERP (Brain)")
+            self.p0.setTitle(title="ERP (Brain) last")
             self.p0avg.setTitle(title="ERP (Brain) avg 0")
-        self.p1.setTitle(title="EEG (Brain)")
-        self.p2.setTitle(title="EOG (Eyes)")
-        self.p3.setTitle(title="EMG (Muscles)")
+        self.p1.setTitle(title="EEG (Brain) 0.16 - 30 Hz")
+        self.p2.setTitle(title="EOG (Eyes) 0.16 - 30 Hz")
+        self.p3.setTitle(title="EMG (Muscles) >10 Hz")
 
         self.btnReconnect = QtGui.QPushButton('[R]')
         self.btnReconnect.setEnabled(False)
@@ -757,18 +757,18 @@ class DisplaySignalViewWidget(QtCore.QThread):
 
             if timeSinceLastStimulusPlayedSeconds is not None:
                 if timeSinceLastStimulusPlayedSeconds > 60.0:
-                    self.Label_lastStimulusPlayed.setText("last played item: "+str(round(timeSinceLastStimulusPlayedSeconds/60.0, 2))+" min")
+                    self.Label_lastStimulusPlayed.setText("last played item: " + "{:.2f}".format(round(timeSinceLastStimulusPlayedSeconds/60.0, 2))+" min")
                 elif timeSinceLastStimulusPlayedSeconds > 3600.0:
-                    self.Label_lastStimulusPlayed.setText("last played item: " + str(round(timeSinceLastStimulusPlayedSeconds / 3600.0, 2)) + " h")
+                    self.Label_lastStimulusPlayed.setText("last played item: " + "{:.2f}".format(round(timeSinceLastStimulusPlayedSeconds / 3600.0, 2)) + " h")
                 else:
-                    self.Label_lastStimulusPlayed.setText("last played item: "+str(round(timeSinceLastStimulusPlayedSeconds, 3))+" s")
+                    self.Label_lastStimulusPlayed.setText("last played item: " + "{:.3f}".format(round(timeSinceLastStimulusPlayedSeconds, 3))+" s")
 
         if self.timeOfLightsOff is not None:
             temp_timeSinceLastLightsOff = (timeit.default_timer() - self.timeOfLightsOff)
             if temp_timeSinceLastLightsOff > 3600.0:
-                self.Label_lastLightsOff.setText("last lights-off: " + str(round(temp_timeSinceLastLightsOff / 3600.0, 2)) + " h")
+                self.Label_lastLightsOff.setText("last lights-off: " + "{:.2f}".format(round(temp_timeSinceLastLightsOff / 3600.0, 2)) + " h")
             else:
-                self.Label_lastLightsOff.setText("last lights-off: " + str(round(temp_timeSinceLastLightsOff / 60.0, 2)) + " min")
+                self.Label_lastLightsOff.setText("last lights-off: " + "{:.2f}".format(round(temp_timeSinceLastLightsOff / 60.0, 2)) + " min")
 
         iOddEven = 0
         for se in stimEvents:
@@ -1034,6 +1034,12 @@ if __name__ == "__main__":
 
     playListStartIndex = 0
 
+    doOutputFileLogging = True
+
+    useDefaultSettings = True
+
+
+
     main = MainWindow()
     # main.show()
 
@@ -1052,8 +1058,38 @@ if __name__ == "__main__":
         filemode='a'
     )
 
+    options = ("Default", "Details")
+    res, okpressed = main.getChoice("Default Settings?", "Settings:",
+                                    options,
+                                    current_item_int=0)
+    if not okpressed:
+        sys.exit(0)
 
-    doOutputFileLogging = True
+    if res == "Default":
+        useDefaultSettings = True
+    elif res == "Details":
+        useDefaultSettings = False
+    else:
+        print("Default settings option " + res + " not handled yet")
+        sys.exit(0)
+
+    if not useDefaultSettings:
+        options = ("terminal only", "log file only")
+        res, okpressed = main.getChoice("Logging?", "logging:",
+                                        options,
+                                        current_item_int=1)
+        if not okpressed:
+            sys.exit(0)
+
+        if res == "terminal only":
+            doOutputFileLogging = False
+        elif res == "log file only":
+            doOutputFileLogging = True
+        else:
+            print("loging option " + res + " not handled yet")
+            sys.exit(0)
+
+
     if doOutputFileLogging:
         stdout_logger = logging.getLogger('STDOUT')
         sl = StreamToLogger(stdout_logger, logging.INFO)
@@ -1231,21 +1267,6 @@ if __name__ == "__main__":
 
     realTimeFilterOrder = round(FS/125.0)
 
-    useDefaultSettings = False
-    options = ("Default", "Details")
-    res, okpressed = main.getChoice("Default Settings?", "Settings:",
-                                             options,
-                                             current_item_int=0)
-    if not okpressed:
-        sys.exit(0)
-
-    if res == "Default":
-        useDefaultSettings = True
-    elif res == "Details":
-        useDefaultSettings = False
-    else:
-        print("Default settings option " + res + " not handled yet")
-        sys.exit(0)
 
     if doRealTimeStreaming:
 
@@ -1260,18 +1281,18 @@ if __name__ == "__main__":
             elif writeEDF_res == "no":
                 writeEDF = False
             else:
-                print("write EDF/BDF option " + writeEDF_res + " not handled yet")
+                print("EDF/BDF, write option " + writeEDF_res + " not handled yet")
                 sys.exit(0)
 
             if writeEDF:
-                giveNameChannelsByMapping_option = ("name", "no")
-                giveNameChannelsByMapping_res, okpressed = main.getChoice("Name Channels EDF/BDF?", "name EDF/BDF channels:", giveNameChannelsByMapping_option, current_item_int=0)
+                giveNameChannelsByMapping_option = ("channel name", "channel number")
+                giveNameChannelsByMapping_res, okpressed = main.getChoice("EDF/BDF, Label Channels?", "EDF/BDF, Label channels:", giveNameChannelsByMapping_option, current_item_int=0)
 
                 if not okpressed:
                     sys.exit(0)
-                if giveNameChannelsByMapping_res == "name":
+                if giveNameChannelsByMapping_res == "channel name":
                     giveNameChannelsByMapping = True
-                elif giveNameChannelsByMapping_res == "no":
+                elif giveNameChannelsByMapping_res == "channel number":
                     giveNameChannelsByMapping = False
                 else:
                     print("giveNameChannelsByMapping option " + giveNameChannelsByMapping_res + " not handled yet")
@@ -1280,7 +1301,7 @@ if __name__ == "__main__":
                 if prefilterEDF_hp == None:
                    prefilterEDF_hp = 0.0
 
-                prefilterEDF_hp, okpressed = main.getDouble("EDF prefilter High-Pass", "EDF HP prefilter [Hz]:", 0.0, 30.0, 5,
+                prefilterEDF_hp, okpressed = main.getDouble("EDF, prefilter High-Pass", "EDF HP prefilter [Hz]:", 0.0, 30.0, 5,
                                                                    prefilterEDF_hp)
                 if prefilterEDF_hp <= 0.0:
                    prefilterEDF_hp = None
@@ -1294,7 +1315,7 @@ if __name__ == "__main__":
 
 
                 option = ("EDF/BDF keep inversion in non-bipolar channels", "EDF/BDF correct inversion in non-bipolar channels")
-                res, okpressed = main.getChoice("EDF/BDF correct inversion", "Inversion correction (SR2B as ref):", option,
+                res, okpressed = main.getChoice("EDF/BDF, correct inversion?", "Inversion correction (SR2B as ref):", option,
                                                            current_item_int=1)
                 if not okpressed:
                     sys.exit(0)
@@ -1328,7 +1349,7 @@ if __name__ == "__main__":
             eegchannels_dict[15] = "15 (O1)"
             eegchannels_dict[16] = "16 (O2)"
 
-        eegchannel_rep_str, okpressed = main.getChoice("Pick EEG Channel", "EEG channel:",
+        eegchannel_rep_str, okpressed = main.getChoice("GUI, pick EEG Channel", "GUI, EEG channel:",
                                                        eegchannels_dict.values(), current_item_int=np.where(
                 np.array(eegchannels_dict.keys()) == int(channelEEG))[0][0])
         if not okpressed:
@@ -1337,7 +1358,7 @@ if __name__ == "__main__":
         channelEEG = int(eegchannel_rep_str[0:2].trimmed())
 
         channelEEGrefs_option = ("3 (A1)", "4 (A2)", "3,4 (A1~A2)")
-        channelEEGrefs_choice, okpressed = main.getChoice("Pick EEG reference channel(s)", "Reference channels:", channelEEGrefs_option, current_item_int=2)
+        channelEEGrefs_choice, okpressed = main.getChoice("GUI, pick EEG reference channel(s)", "GUI, reference channels:", channelEEGrefs_option, current_item_int=2)
 
         if not okpressed:
             sys.exit(0)
@@ -1400,6 +1421,10 @@ if __name__ == "__main__":
             if not okpressed:
                 sys.exit(0)
 
+            okpressed = main.showMessageBox("DON'T TOUCH VOLUME NOW!", "DO NOT touch the system's or computer's volume control now anymore!\nAlso make sure the audio is not muted by the system or in any other way.",
+                                            True, False, True, isOKbuttonDefault=True)
+            if not okpressed:
+                sys.exit(0)
 
             # get PCH output card and Master Control for mixer selection
             alsaaudio.Mixer(control="Master", cardindex=np.where(np.array(alsaaudio.cards()) == u'PCH')[0][0]).setvolume(masterVolumePercent)
@@ -1544,14 +1569,14 @@ if __name__ == "__main__":
 
             if doClosedLoopNotOpenLoop:
 
-                ThresholdDownStateDetectionPassBelow, okpressed = main.getDouble("Pick Down State Threshold (SO)",
-                                                                        "down state threshold:", -300.0, -20.0, 1,
+                ThresholdDownStateDetectionPassBelow, okpressed = main.getDouble("Pick Down-State Threshold (SO)",
+                                                                        "down-state threshold:", -300.0, -20.0, 1,
                                                                                  ThresholdDownStateDetectionPassBelow)
                 if not okpressed:
                     sys.exit(0)
 
                 waitForFurtherDipInThreshold_options = ("Wait", "Immediate")
-                waitForFurtherDipInThreshold_option, okpressed = main.getChoice("Wait for Threshold Dip?", "Wait (-)dip:", waitForFurtherDipInThreshold_options,
+                waitForFurtherDipInThreshold_option, okpressed = main.getChoice("Wait for Threshold Dip?", "Wait (negative) dip:", waitForFurtherDipInThreshold_options,
                                                               current_item_int=0)
                 if not okpressed:
                     sys.exit(0)
@@ -1564,19 +1589,19 @@ if __name__ == "__main__":
                     sys.exit(0)
 
 
-                ThresholdUpStateDetectionPassAbove, okpressed = main.getDouble("Pick Up State Threshold Above (SO)",
-                                                                                 "up state threshold above:", -300.0, 300.0, 1,
+                ThresholdUpStateDetectionPassAbove, okpressed = main.getDouble("Pick Up-State Threshold Above (SO)",
+                                                                                 "up-state threshold above:", -300.0, 300.0, 1,
                                                                                ThresholdUpStateDetectionPassAbove)
                 if not okpressed:
                     sys.exit(0)
 
-                ThresholdUpStateDetectionPassBelow, okpressed = main.getDouble("Pick Up State Threshold Below (SO)",
-                                                                                   "up state threshold below:", -300.0, 300.0, 1,
+                ThresholdUpStateDetectionPassBelow, okpressed = main.getDouble("Pick Up-State Threshold Below (SO)",
+                                                                                   "up-state threshold below:", -300.0, 300.0, 1,
                                                                                ThresholdUpStateDetectionPassBelow)
                 if not okpressed:
                     sys.exit(0)
 
-                firstDownToUpstateDelayInSec, okpressed = main.getDouble("Down To Upstate Interval", "down to upsate (seconds):",
+                firstDownToUpstateDelayInSec, okpressed = main.getDouble("Down-To-Upstate Interval", "down-to-upsate (seconds):",
                                                                          round(stimulusPlayer.soundlatency_seconds,3)+0.001, 2.0, 3, firstDownToUpstateDelayInSec)
 
                 if not okpressed:
@@ -1705,6 +1730,17 @@ if __name__ == "__main__":
                 print("Run type  " + run_type_res + " not handled yet")
                 sys.exit(0)
 
+            if not simulateFromCSV:
+                options = ("115200 Hz", "230400 Hz", "921600 Hz")
+                res, okpressed = main.getChoice("Baudrate FTDI", "Baudrate: ",
+                                                                options,
+                                                                current_item_int=2)
+                if not okpressed:
+                    sys.exit(0)
+
+                baudrate_serial = int(res[0:7].trimmed())
+
+
 
 
     ConnectDeviceText = \
@@ -1720,9 +1756,24 @@ if __name__ == "__main__":
         "  5. Wait another 30 seconds, or repeat<br/>" \
         "<br/>" \
         "Press OK to try to connect, or abort<br/>"
+    if simulateFromCSV:
+        ConnectDeviceText = \
+            "<br/>" \
+            "<b>Now Starting simulation...</b>" \
+            "<br/> " \
+            "<b>Choose a ***.collect.csv from a previous recording</b>" \
+            "<br/> " \
+            "<b>(e.g. from the data/rec/ folder)</b>" \
+            "<br/> " \
+            "<br/> " \
+            "Known bug: Markers in the GUI might shift in time while viewing (saved files are still accurate though)." \
+            "<br/> " \
+            "<br/> " \
+            "Press OK to try to open file, or abort<br/>"
+
 
     ConnectDeviceText = QtCore.QString.fromUtf8(ConnectDeviceText)
-    okpressed = main.showMessageBox("Connect to Device ...", ConnectDeviceText, False, True, True)
+    okpressed = main.showMessageBox("Connect ...", ConnectDeviceText, False, True, True)
     if not okpressed:
         sys.exit(0)
 
@@ -2003,7 +2054,7 @@ if __name__ == "__main__":
 
         if simulateFromCSV:
             exampleCSVFile = main.getFile("OpenBCI CSV file by SpiSOP", initFolder='', filterList='CSV and TXT (*.csv *.txt)')
-            skipSeconds, okpressed = main.getDouble("Seconds to Skip", "skip (s)", 0.0, 3600 * 200.0, 3, 0.0)
+            skipSeconds, okpressed = main.getDouble("CSV, Seconds to Skip", "skip (s)", 0.0, 3600 * 200.0, 3, 0.0)
             if not okpressed:
                 skipSeconds = 0.0
 
