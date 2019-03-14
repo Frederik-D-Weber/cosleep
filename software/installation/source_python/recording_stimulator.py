@@ -1103,31 +1103,6 @@ if __name__ == "__main__":
         sys.stderr = sl
 
 
-    agegroup_options = ("Adult (20-35 yrs.)", "Child (5-12 yrs.)")
-    agegroup_res, okpressed = main.getChoice("Agegroup?", "Agegroup:",
-                                                    agegroup_options,
-                                                    current_item_int=0)
-    if not okpressed:
-        sys.exit(0)
-
-    if agegroup_res == "Adult (20-35 yrs.)":
-        pass
-    elif agegroup_res == "Child (5-12 yrs.)":
-        filterHP_EEG_spindle_freq = 10.5
-        filterLP_EEG_spindle_freq = 14.0
-        spindle_amplitude_threshold_detect_microVolts = 25
-        spindle_amplitude_threshold_begin_end_microVolts = 17.5
-        spindle_amplitude_max_microVolts = 150.0
-        threshold_EEGSignal_from_away_zero_disengage_algo = 600  # in microVOlt
-        threshold_EOGSignal_from_away_zero_disengage_algo = 700  # in microVOlt
-        threshold_EMGSignal_from_away_zero_disengage_algo = 25  # in microVOlt
-        ThresholdDownStateDetectionPassBelow = -130.0
-        ThresholdUpStateDetectionPassAbove = -90.0
-        ThresholdUpStateDetectionPassBelow = 300.0
-    else:
-        print("Agegroup option " + agegroup_res + " not handled yet")
-        sys.exit(0)
-
     nChannel_options = ("8", "16")
     nChannel_res, okpressed = main.getChoice("#Channels", "Number of channels:",
                                              nChannel_options,
@@ -1392,6 +1367,33 @@ if __name__ == "__main__":
             sys.exit(0)
 
         if isStimulationTurnedOn:
+
+            agegroup_options = ("Adult (20-35 yrs.)", "Child (5-12 yrs.)")
+            agegroup_res, okpressed = main.getChoice("Agegroup?", "Agegroup:",
+                                                     agegroup_options,
+                                                     current_item_int=0)
+            if not okpressed:
+                sys.exit(0)
+
+            if agegroup_res == "Adult (20-35 yrs.)":
+                pass
+            elif agegroup_res == "Child (5-12 yrs.)":
+                filterHP_EEG_spindle_freq = 10.5
+                filterLP_EEG_spindle_freq = 14.0
+                spindle_amplitude_threshold_detect_microVolts = 25
+                spindle_amplitude_threshold_begin_end_microVolts = 17.5
+                spindle_amplitude_max_microVolts = 150.0
+                threshold_EEGSignal_from_away_zero_disengage_algo = 600  # in microVOlt
+                threshold_EOGSignal_from_away_zero_disengage_algo = 700  # in microVOlt
+                threshold_EMGSignal_from_away_zero_disengage_algo = 25  # in microVOlt
+                ThresholdDownStateDetectionPassBelow = -130.0
+                ThresholdUpStateDetectionPassAbove = -90.0
+                ThresholdUpStateDetectionPassBelow = 300.0
+            else:
+                print("Agegroup option " + agegroup_res + " not handled yet")
+                sys.exit(0)
+
+
             subject_volume_file = "data/subject/" + subject + ".volume_settings.txt"
 
             try:
