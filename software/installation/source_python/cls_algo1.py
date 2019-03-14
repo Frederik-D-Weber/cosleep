@@ -1085,7 +1085,7 @@ class StimulusPlayer(object):
         self.indexPlayedItem = playListStartIndex
         self.itemsPlayed = 0
 
-        self.playBackgroundNoise = True
+        self.playBackgroundNoise = playBackgroundNoise
         self.resumeBackgroundStimulusIfFinishedwaitNotSkip = False
 
         self.currentBackgroundSoundfilePath = "stimuli/whitenoise/background/white_noise_10_s_44.1Hz_16bit_integer.wav"

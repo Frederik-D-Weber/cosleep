@@ -1472,20 +1472,19 @@ if __name__ == "__main__":
                     sys.exit(0)
 
 
-                soundBufferSize_options = ("128", "256", "512", "1024", "2048", "4096", "8192")
-                soundBufferSize_options_display = ("128 (2.9 ms)", "256 (5.8 ms)", "512 (11.6 ms)", "1024 (23.2 ms)", "2048 (46.4 ms)", "4096 (93 ms)", "8192 (186 ms)")
+                soundBufferSize_options_display = ("32  (<1 ms)", "64  (1.5 ms)", "128 (2.9 ms)", "256 (5.8 ms)", "512 (11.6 ms)", "1024 (23.2 ms)", "2048 (46.4 ms)", "4096 (93 ms)", "8192 (186 ms)")
                 soundBufferSize_res, okpressed = main.getChoice("Sound buffer size", "sound buffer size: ",
                                                                 soundBufferSize_options_display,
-                                                                current_item_int=5)
+                                                                current_item_int=7)
                 if not okpressed:
                     sys.exit(0)
 
                 soundBufferSize = int(soundBufferSize_res[0:4].trimmed())
 
-                if soundBufferSize < 4096:
+                if soundBufferSize < 1024:
 
                     okpressed = main.showMessageBox("Soundbuffer critical", "The sound buffer size " + soundBufferSize_res +
-                                                    " is very low.\n Make sure you have good sound hardware (below 1024, is unrealistic) and the system setup to not distort sounds!\nOtherwise restart and choose 4096 as buffer size.",
+                                                    " is very low.\n Make sure you have good (sound) hardware (below 1024, is unrealistic) and the system setup to not distort sounds!\nOtherwise restart and choose conservatively 4096 or try 1024 as buffer size.",
                                                     True, False, True, isOKbuttonDefault=False)
                     if not okpressed:
                         sys.exit(0)
