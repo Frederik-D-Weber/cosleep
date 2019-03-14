@@ -3,6 +3,7 @@ import math
 from scipy.signal import hilbert
 import csv
 import pygame
+import pygame.locals
 import timeit
 import datetime
 import RealTimeFilter as rtf
@@ -13,6 +14,7 @@ import numpy as np
 import time
 from PyQt4 import QtGui, QtCore
 import Dialogs
+import threading
 
 
 class CLSalgo1(QtCore.QThread):
@@ -952,7 +954,7 @@ class StimulusEventList(object):
 
 
 class StimulusPlayer(object):
-    def __init__(self, soundBufferSize, sound_base_level_db, soundVolume, sound_rise_from_base_level_db, isClosedLoop, isSham, mainWindow, soundFrequency, playListStartIndex=0):
+    def __init__(self, soundBufferSize, sound_base_level_db, soundVolume, sound_rise_from_base_level_db, isClosedLoop, isSham, mainWindow, soundFrequency, playListStartIndex=0,playBackgroundNoise=False):
 
         self.algo = None
         self.isClosedLoop = isClosedLoop
@@ -1057,8 +1059,22 @@ class StimulusPlayer(object):
 
         pygame.mixer.pre_init(frequency=self.soundFrequency, size=-16, channels=1, buffer=self.soundlatency_samples)
         pygame.mixer.init()
+        # pygame.mixer.quit()
+        # pygame.mixer.pre_init(frequency=self.soundFrequency, size=-16, channels=1, buffer=self.soundlatency_samples)
+        # pygame.mixer.init()
 
-        pygame.mixer.music.set_volume(self.soundVolume)
+        self.sound_channel = pygame.mixer.Channel(0)
+        self.sound_channel.set_endevent(pygame.locals.USEREVENT)
+        self.sound_channel_background = pygame.mixer.Channel(1)
+
+        self.sound_channel.set_volume(self.soundVolume)
+        self.sound_channel_background.set_volume(self.soundVolume)
+
+        self.currentStimulusSound = None
+        self.nextStimulusSound = None
+
+
+        #pygame.mixer.music.set_volume(self.soundVolume)
 
         self.timeLastStimulusPlayed = 0
         self.currentPlayedStimWaitPlayNextStimSeconds = 0
@@ -1069,9 +1085,24 @@ class StimulusPlayer(object):
         self.indexPlayedItem = playListStartIndex
         self.itemsPlayed = 0
 
+        self.playBackgroundNoise = True
+        self.resumeBackgroundStimulusIfFinishedwaitNotSkip = False
+
+        self.currentBackgroundSoundfilePath = "stimuli/whitenoise/background/white_noise_10_s_44.1Hz_16bit_integer.wav"
+        self.currentBackgroundSoundfile = ""
+        self.determineCurrentBackgroundSoundFile()
+        self.nextBackgroundStimulusSound = None
+        self.loadCurrentBackgroundStimulus()
+
+        if self.playBackgroundNoise:
+            self.playCurrentBackgroundStimulus()
+
 
     def setAlgo(self,algo):
         self.algo = algo
+
+    def determineCurrentBackgroundSoundFile(self):
+        self.currentBackgroundSoundfile = self.currentBackgroundSoundfilePath + ".44.1kHz.16bit.integer.full.db." + self.final_sound_base_level_db_str + ".db.wav"
 
     def determineCurrentStimulusSoundFile(self):
         stimulus_id = self.stimuliPlayList[self.currentLoadedItem][0]
@@ -1080,11 +1111,23 @@ class StimulusPlayer(object):
 
     def loadCurrentStimulus(self):
         try:
-            pygame.mixer.music.load(self.currentSoundfile)
+            #pygame.mixer.music.load(self.currentSoundfile)
+            self.nextStimulusSound = pygame.mixer.Sound(self.currentSoundfile)
         except:
             print('ERROR loading sound file' + self.currentSoundfile + ' probably not exists?, experiment corrupted')
             self.dialogApp.showMessageBox("ERROR loading sound file",
                                      "Sound file " + self.currentSoundfile +
+                                     " could not be loaded.\nCheck if it exists and is readable. PLEASE CLOSE THE APP NOW!!!",
+                                     True, False, False)
+
+    def loadCurrentBackgroundStimulus(self):
+        try:
+            #pygame.mixer.music.load(self.currentSoundfile)
+            self.nextBackgroundStimulusSound = pygame.mixer.Sound(self.currentBackgroundSoundfile)
+        except:
+            print('ERROR loading background sound file' + self.currentBackgroundSoundfile + ' probably not exists?, experiment corrupted')
+            self.dialogApp.showMessageBox("ERROR loading sound file",
+                                     "Background Sound file " + self.currentBackgroundSoundfile +
                                      " could not be loaded.\nCheck if it exists and is readable. PLEASE CLOSE THE APP NOW!!!",
                                      True, False, False)
 
@@ -1108,6 +1151,11 @@ class StimulusPlayer(object):
         self.final_sound_base_level_db_str = "minus" + str(
             abs(int(self.sound_base_level_db) + int(self.sound_rise_from_base_level_db)))
 
+        if self.playBackgroundNoise:
+            self.determineCurrentBackgroundSoundFile()
+            self.loadCurrentBackgroundStimulus()
+            self.playCurrentBackgroundStimulus()
+
     def updateClosedLoopParameter(self):
         if self.algo and (len(self.firstDownToUpstateDelayInSec_list) > 0):
             self.algo.updateClosedLoopParameter(self.firstDownToUpstateDelayInSec_list[self.indexPlayedItem][1],
@@ -1117,7 +1165,44 @@ class StimulusPlayer(object):
                                                 self.ThresholdUpStateDetectionPassBelow_list[self.indexPlayedItem][1])
 
 
+    def playCurrentBackgroundStimulus(self):
+        self.sound_channel_background.play(self.nextBackgroundStimulusSound, loops=-1)
+
+    def pauseCurrentBackgroundStimulus(self):
+        self.sound_channel_background.pause()
+
+    def resumeBackgroundStimulusIfFinishedStimulus(self,sound=None):
+        if self.resumeBackgroundStimulusIfFinishedwaitNotSkip:
+            self.resumeBackgroundStimulusIfFinishedStimulusWait()
+        else:
+            if sound is None:
+                sound = self.currentStimulusSound
+            self.resumeBackgroundStimulusIfFinishedStimulusSkip(sound)
+
+
+    def resumeBackgroundStimulusIfFinishedStimulusWait(self):
+        timer = threading.Timer(0.0, self.resumeBackgroundStimulusIfFinishedStimulusWaitHelper)
+        timer.start()
+
+    def resumeBackgroundStimulusIfFinishedStimulusWaitHelper(self):
+        playing = True
+        while playing:
+            for event in pygame.event.get():
+                if event.type is self.sound_channel.get_endevent():
+                    self.sound_channel_background.unpause()
+                    playing = False
+
+    def resumeBackgroundStimulusIfFinishedStimulusSkip(self,sound):
+        timer = threading.Timer(max(0.0,sound.get_length()), self.resumeBackgroundStimulusIfFinishedStimulusSkipHelper)
+        timer.start()
+
+    def resumeBackgroundStimulusIfFinishedStimulusSkipHelper(self):
+        self.sound_channel_background.unpause()
+
+
     def playCurrentStimulus(self):
+        if self.playBackgroundNoise and not self.isSham:
+            self.pauseCurrentBackgroundStimulus()
         self.indexPlayedItem +=1
         if self.indexPlayedItem >= (self.playListLength):
             self.indexPlayedItem = 0
@@ -1125,15 +1210,27 @@ class StimulusPlayer(object):
             self.updateClosedLoopParameter()
 
         if not self.isSham:
-            pygame.mixer.music.play()
+            #pygame.mixer.music.play()
+            self.currentStimulusSound = self.nextStimulusSound
+            self.sound_channel.play(self.nextStimulusSound, loops=0)
+            if self.playBackgroundNoise:
+                self.resumeBackgroundStimulusIfFinishedStimulus()
         self.timeLastStimulusPlayed = timeit.default_timer()
         self.currentPlayedStimWaitPlayNextStimSeconds = self.stimuliPlayList[self.currentLoadedItem][1]
         self.itemsPlayed += 1
 
+
     def playTestStimulus(self):
+        if self.playBackgroundNoise:
+            self.pauseCurrentBackgroundStimulus()
         testStimulusSoundFile = self.test_stimulus_filepath + ".44.1kHz.16bit.integer.full.db." + self.final_sound_base_level_db_str + ".db.wav"
-        pygame.mixer.music.load(testStimulusSoundFile)
-        pygame.mixer.music.play()
+        test_sound = pygame.mixer.Sound(testStimulusSoundFile)
+        self.sound_channel.play(test_sound, loops=0)
+        if self.playBackgroundNoise:
+            self.resumeBackgroundStimulusIfFinishedStimulus(sound=test_sound)
+
+        #pygame.mixer.music.load(testStimulusSoundFile)
+        #pygame.mixer.music.play()
 
     def timeSinceLastStimulusPlayedSeconds(self):
         return timeit.default_timer() - self.timeLastStimulusPlayed
@@ -1190,6 +1287,7 @@ class StimulusPlayer(object):
     def resetPlayList(self,playListStartIndex=0):
         self.currentLoadedItem = playListStartIndex
         self.determineCurrentStimulusSoundFile()
+        #self.determineCurrentBackgroundSoundFile()
         self.loadCurrentStimulus()
         self.playDone = True
         self.indexPlayedItem = playListStartIndex

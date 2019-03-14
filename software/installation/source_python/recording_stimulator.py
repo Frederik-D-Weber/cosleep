@@ -1036,7 +1036,10 @@ if __name__ == "__main__":
 
     doOutputFileLogging = True
 
+    playBackgroundNoise = False
+
     useDefaultSettings = True
+
 
 
 
@@ -1452,6 +1455,21 @@ if __name__ == "__main__":
                 sys.exit(0)
 
             if not useDefaultSettings:
+                options = ("silence", "white noise")
+                res, okpressed = main.getChoice("Background noise", "cont. background noise:", options,
+                                                                  current_item_int=0)
+                if not okpressed:
+                    sys.exit(0)
+
+                if res == "silence":
+                    playBackgroundNoise = False
+                elif res == "white noise":
+                    playBackgroundNoise = True
+                else:
+                    print("Background noise option " + options + " not handled yet")
+                    sys.exit(0)
+
+
                 soundBufferSize_options = ("128", "256", "512", "1024", "2048", "4096", "8192")
                 soundBufferSize_options_display = ("128 (2.9 ms)", "256 (5.8 ms)", "512 (11.6 ms)", "1024 (23.2 ms)", "2048 (46.4 ms)", "4096 (93 ms)", "8192 (186 ms)")
                 soundBufferSize_res, okpressed = main.getChoice("Sound buffer size", "sound buffer size: ",
@@ -1539,7 +1557,7 @@ if __name__ == "__main__":
                 sys.exit(0)
 
 
-            stimulusPlayer = clsa.StimulusPlayer(soundBufferSize, sound_base_level_dB, soundVolume, sound_rise_from_base_level_db, doClosedLoopNotOpenLoop, doSham, main, soundFrequency)
+            stimulusPlayer = clsa.StimulusPlayer(soundBufferSize, sound_base_level_dB, soundVolume, sound_rise_from_base_level_db, doClosedLoopNotOpenLoop, doSham, main, soundFrequency,playBackgroundNoise=playBackgroundNoise)
             stimuliListFilePath = stimulusPlayer.stimuliListFilePath
             stimuliPlayListFilePath = stimulusPlayer.stimuliPlayListFilePath
 
@@ -1789,7 +1807,7 @@ if __name__ == "__main__":
     flog.write('subject;saveSD;saveSD_sendChar;saveSD_hours;'
                'writeEDF;giveNameChannelsByMapping;correctInvertedChannels;prefilterEDF_hp;'
                'doTesting;simulateFromCSV;nChannels;'
-               'condition;doSham;doShamObfuscation;shamObfuscationCode;subject_condition_encoded_file_path;ThresholdDownStateDetectionPassBelow;waitForFurtherDipInThreshold;ThresholdUpStateDetectionPassAbove;ThresholdUpStateDetectionPassBelow;'
+               'condition;doSham;doShamObfuscation;shamObfuscationCode;subject_condition_encoded_file_path;ThresholdDownStateDetectionPassBelow;waitForFurtherDipInThreshold;ThresholdUpStateDetectionPassAbove;ThresholdUpStateDetectionPassBelow;playBackgroundNoise;'
                'doClosedLoopNotOpenLoop;doClosedLoopRepeatSequence;isStimulationTurnedOn;'
                'doSpindleHighlight;filterHP_EEG_spindle_freq;filterLP_EEG_spindle_freq;realTimeFilterOrderSpindles;spindle_amplitude_threshold_detect_microVolts;spindle_amplitude_threshold_begin_end_microVolts;'
                'doAntiAlias;doDownSamplingForPlot;'
@@ -1804,7 +1822,7 @@ if __name__ == "__main__":
     flog.write(subject + ";" + str(saveSD) + ";" + saveSD_sendChar + ";" + SDcard_option_dict[saveSD_sendChar] + ";" + \
                str(writeEDF) + ";" + str(giveNameChannelsByMapping) + ";" + str(correctInvertedChannels) + ";" + str(prefilterEDF_hp) + ";" + \
                str(doTesting) + ";" + str(simulateFromCSV) + ";" + str(nChannels) + ";" + \
-               str(condition) + ";" + str(doSham) + ";" + str(doShamObfuscation) + ";" + str(shamObfuscationCode) + ";" + str(subject_condition_encoded_file_path) + ";" + str(ThresholdDownStateDetectionPassBelow) + ";" + str(waitForFurtherDipInThreshold) + ";" + str(ThresholdUpStateDetectionPassAbove) + ";" + str(ThresholdUpStateDetectionPassBelow) + ";" +\
+               str(condition) + ";" + str(doSham) + ";" + str(doShamObfuscation) + ";" + str(shamObfuscationCode) + ";" + str(subject_condition_encoded_file_path) + ";" + str(ThresholdDownStateDetectionPassBelow) + ";" + str(waitForFurtherDipInThreshold) + ";" + str(ThresholdUpStateDetectionPassAbove) + ";" + str(ThresholdUpStateDetectionPassBelow) + ";" + str(playBackgroundNoise) + ";"  +\
                str(doClosedLoopNotOpenLoop) + ";" + str(doClosedLoopRepeatSequence) + ";" + str(isStimulationTurnedOn) + ";" + \
                str(doSpindleHighlight) + ";" + str(filterHP_EEG_spindle_freq) + ";" + str(filterLP_EEG_spindle_freq) + ";" + str(realTimeFilterOrderSpindles) + ";" + str(spindle_amplitude_threshold_detect_microVolts) + ";" + str(spindle_amplitude_threshold_begin_end_microVolts) + ";" + \
                str(doAntiAlias) + ";" + str(doDownSamplingForPlot) + ";" + \
