@@ -1,0 +1,11 @@
+"spindle_whitenoise_13.3_Hz_1_s",5
+"spindle_whitenoise_13.3_Hz_2_s",5
+"spindle_whitenoise_11.0_Hz_1_s",5
+"spindle_whitenoise_11.0_Hz_2_s",5
+"spindle_whitenoise_12.0_Hz_1_s",5
+"spindle_whitenoise_12.0_Hz_2_s",5
+"spindle_whitenoise_15.0_Hz_1_s",5
+"spindle_whitenoise_15.0_Hz_2_s",5
+"theta_whitenoise_4.0_Hz_0.5_s",5
+"theta_whitenoise_4.0_Hz_1_s",5
+"theta_whitenoise_4.0_Hz_2_s",5
