@@ -7,6 +7,7 @@ Closed- and Open-loop (Slow Oscillations) sleep stimulation (auditory) or record
 * Setup for OpenBCI sleep recording (125 or 250 Hz sampling rate, 8 or 16 channels, incl. EEG, EOG, EMG and ECG) [here](https://www.spisop.org/openbci/)
 * Build your own sleep lab for under a $1000 and do research-grade recording and reactivation protocols.
 * Its free, its open and its closed-loop too, at least for slow waves/slow oscillations.
+* Use your own Electrode Montage stored in a *.tsv to change channel setup, display in the GUI and algorithm
 * Targeted & Untargeted Auditory Stimuli Presentation using Configurable Stimuli Playlists (easy to create and mix).
 * Reproduce all the published research in this area, e.g. Targeted Memory Reactivation (TMR, e.g Rudoy et al. 2009) during sleep, or Slow wave enhancement (Ngo et al. 2013)
 * Stimulate during a specific time point of a slow oscillation, and trigger another stimuli after that.
