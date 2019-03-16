@@ -1,0 +1,9 @@
+channelnumber	label	status	connect	isref	GUI
+1	EMG	on	bimodal	no	EMG
+2	EOG	on	bimodal	no	EOG
+3	A1	on	ref	no	no
+4	A2	on	ref	yes	no
+5	C3	on	ref	no	EEG
+6	C4	on	ref	no	no
+7	Trigger	on	bimodal	no	no
+8	ECG	on	bimodal	no	ECG

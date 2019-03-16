@@ -15,6 +15,8 @@ import time
 from PyQt4 import QtGui, QtCore
 import Dialogs
 import threading
+import os.path
+import Montage
 
 
 class CLSalgo1(QtCore.QThread):
@@ -23,8 +25,7 @@ class CLSalgo1(QtCore.QThread):
                  useDaisy=False,
                  FS_ds=False,
                  updateSendOutDelaySeconds=0.2,
-                 channelEEG=1, channelEMG=2, channelEOG=3,
-                 channelEEGrefs=None,
+                 montage=None,
                  realTimeFilterOrder=1,
                  realTimeFilterOrderSpindles=100,
                  isStimulationTurnedOn=False,
@@ -71,6 +72,8 @@ class CLSalgo1(QtCore.QThread):
 
         self.fs = fs
 
+        self.montage = montage
+
         self.EEG_SIGNAL_CORRECTION_FACTOR = -1;
         self.updateSendOutDelaySeconds = updateSendOutDelaySeconds
         self.updateViewSampleUpdate = int(math.ceil(self.updateSendOutDelaySeconds * self.fs))
@@ -79,11 +82,11 @@ class CLSalgo1(QtCore.QThread):
         self.useDaisy = useDaisy
         self.FS_ds = FS_ds
 
-        self.channelEEG = channelEEG
-        self.channelEMG = channelEMG
-        self.channelEOG = channelEOG
+        self.channelEEGrefs = self.montage.getRerefChannelNumbers()
 
-        self.channelEEGrefs = channelEEGrefs
+        self.channelEEG = self.montage.getGUIchannelNumber("EEG")
+        self.channelEMG = self.montage.getGUIchannelNumber("EMG")
+        self.channelEOG = self.montage.getGUIchannelNumber("EOG")
 
         self.data_ring_buffer_length_seconds = 600.0
         self.data_ring_buffer_length_samples = int(round(self.data_ring_buffer_length_seconds * self.fs))
@@ -220,11 +223,18 @@ class CLSalgo1(QtCore.QThread):
         self.ERPcaptureIsComplete = True
         self.ERPcapturePrematureFired = False
 
-        self.filterHP_EEG = rtf.RealTimeFilterHighPassButter(0.16, self.fs, self.realTimeFilterOrder)
-        self.filterLP_EEG = rtf.RealTimeFilterLowPassButter(30.0, self.fs, self.realTimeFilterOrder)
-        self.filterHP_EOG = rtf.RealTimeFilterHighPassButter(0.16, self.fs, self.realTimeFilterOrder)
-        self.filterLP_EOG = rtf.RealTimeFilterLowPassButter(30.0, self.fs, self.realTimeFilterOrder)
-        self.filterHP_EMG = rtf.RealTimeFilterHighPassButter(10, self.fs, self.realTimeFilterOrder)
+        self.filterHP_EEG_freq = 0.16
+        self.filterHP_EOG_freq = 0.16
+        self.filterHP_EMG_freq = 10
+
+        self.filterLP_EEG_freq = 30.0
+        self.filterLP_EOG_freq = 30.0
+
+        self.filterHP_EEG = rtf.RealTimeFilterHighPassButter(self.filterHP_EEG_freq, self.fs, self.realTimeFilterOrder)
+        self.filterLP_EEG = rtf.RealTimeFilterLowPassButter(self.filterLP_EEG_freq, self.fs, self.realTimeFilterOrder)
+        self.filterHP_EOG = rtf.RealTimeFilterHighPassButter(self.filterHP_EOG_freq, self.fs, self.realTimeFilterOrder)
+        self.filterLP_EOG = rtf.RealTimeFilterLowPassButter(self.filterLP_EOG_freq, self.fs, self.realTimeFilterOrder)
+        self.filterHP_EMG = rtf.RealTimeFilterHighPassButter(self.filterHP_EMG_freq, self.fs, self.realTimeFilterOrder)
 
         self.filterBP_EEG_spindle = rtf.RealTimeFilterBandPassFIR(self.filterHP_EEG_spindle_freq, self.filterLP_EEG_spindle_freq, self.fs, self.realTimeFilterOrderSpindles)
         self.filterBP_EEG_spindle_delayInSamples = self.filterBP_EEG_spindle.getDelayInSamples()
@@ -366,6 +376,10 @@ class CLSalgo1(QtCore.QThread):
     def setForcedStimEngaged(self):
         self.EventFired.appendEvent("Forced-Stim-Engage-turned-on", self.currentSampleID, self.currentSampleWriteIndex)
         self.status_forcedStimEngagement = True
+
+    def changeEEGchannel(self,new_channelEEG):
+        self.channelEEG = new_channelEEG
+        self.EventFired.appendEvent("Channel-EEG-changed-to-" + str(new_channelEEG) + "-" + self.montage.getChannelLabelByChannelNumber(new_channelEEG), self.currentSampleID, self.currentSampleWriteIndex)
 
     def changeSoundRiseFromBaseLeveldB(self, new_sound_rise_from_base_level_db):
         self.stimulusPlayer.changeSoundRiseFromBaseLeveldB(new_sound_rise_from_base_level_db)
@@ -537,7 +551,7 @@ class CLSalgo1(QtCore.QThread):
                     self.testing_trigger_ready = True
         return
 
-    def input(self, eegsample, emgsample=0, eogsample=0):
+    def input(self, eegsample, emgsample, eogsample):
         self.iSample += 1
         self.dataEEG.append(eegsample)
         self.dataEOG.append(eogsample)
@@ -812,23 +826,50 @@ class CLSalgo1(QtCore.QThread):
         # A1 = self.correctEEGsignalPolarity(sample.channel_data[2])
         # A2 = self.correctEEGsignalPolarity(sample.channel_data[3])
 
-        if ((self.channelEEG == 7) or (self.channelEEG == 8)):  # switch and feedback/ECG channel
-            TrackingEEG = sample.channel_data[self.channelEEG - 1]
-        elif (self.channelEEG == 0):  # the reference channel (Cz)
+        if (self.channelEEG == 0):   # the reference channel (e.g. Cz)
             TrackingEEG = None  # to be see below.
+        elif self.montage.channelNumberConnectIsBimodal(self.channelEEG):
+            TrackingEEG = sample.channel_data[self.channelEEG - 1]
         else:
             TrackingEEG = self.correctEEGsignalPolarity(sample.channel_data[self.channelEEG - 1])
-        TrackingEOG = sample.channel_data[self.channelEOG - 1]
-        TrackingEMG = sample.channel_data[self.channelEMG - 1]
+
+        if (self.channelEOG == 0):
+            TrackingEOG = None  # to be see below.
+        elif self.montage.channelNumberConnectIsBimodal(self.channelEOG):
+            TrackingEOG = sample.channel_data[self.channelEOG - 1]
+        else:
+            TrackingEOG = self.correctEEGsignalPolarity(sample.channel_data[self.channelEOG - 1])
+
+        if (self.channelEMG == 0):
+            TrackingEMG = None  # to be see below.
+        elif self.montage.channelNumberConnectIsBimodal(self.channelEMG):
+            TrackingEMG = sample.channel_data[self.channelEMG - 1]
+        else:
+            TrackingEMG = self.correctEEGsignalPolarity(sample.channel_data[self.channelEMG - 1])
+
         if self.channelEEGrefs is not None:
             nRefs = len(self.channelEEGrefs)
             # print nRefs
             RefsAVG = np.mean(self.correctEEGsignalPolarity([sample.channel_data[i - 1] for i in self.channelEEGrefs[0:nRefs]]))
             # print RefsAVG
-            if (self.channelEEG == 0):
-                TrackingEEG = RefsAVG * -1.0
-            else:
-                TrackingEEG = TrackingEEG - RefsAVG
+            if not self.montage.channelNumberConnectIsBimodal(self.channelEEG):
+                if (self.channelEEG == 0):
+                    TrackingEEG = RefsAVG * -1.0
+                else:
+                    TrackingEEG = TrackingEEG - RefsAVG
+
+            if not self.montage.channelNumberConnectIsBimodal(self.channelEOG):
+                if (self.channelEOG == 0):
+                    TrackingEOG = RefsAVG * -1.0
+                else:
+                    TrackingEOG = TrackingEOG - RefsAVG
+
+            if not self.montage.channelNumberConnectIsBimodal(self.channelEMG):
+                if (self.channelEMG == 0):
+                    TrackingEMG = RefsAVG * -1.0
+                else:
+                    TrackingEMG = TrackingEMG - RefsAVG
+
 
         if self.isTesting():
             TrackingEEG = self.correctEEGsignalPolarity(sample.channel_data[7 - 1])
@@ -977,7 +1018,7 @@ class StimulusPlayer(object):
 
         self.dialogApp = Dialogs.Dialogs()
 
-        self.stimuliListFilePath = mainWindow.getFile("Stimuli List File", initFolder='', filterList='TXT (*.txt)')
+        self.stimuliListFilePath = mainWindow.getFile("Stimuli List File", initFolder='stimulations', filterList='TXT (*.txt)')
         if self.stimuliListFilePath:
             self.stimuliListFile = open(self.stimuliListFilePath, 'r', buffering=500000)
             try:
@@ -1000,7 +1041,7 @@ class StimulusPlayer(object):
                                        " could not be read.\nCheck if it exists and is readable.",
                                        True, False, False)
         # time.sleep(0.5)
-        self.stimuliPlayListFilePath = mainWindow.getFile("Stimuli Play List File", initFolder='', filterList='TXT (*.txt)')
+        self.stimuliPlayListFilePath = mainWindow.getFile("Stimuli Play List File", initFolder=os.path.dirname(os.path.abspath(str(self.stimuliListFilePath))), filterList='TXT (*.txt)')
         if self.stimuliPlayListFilePath:
             self.stimuliPlayListFile = open(self.stimuliPlayListFilePath, 'r', buffering=500000)
             try:

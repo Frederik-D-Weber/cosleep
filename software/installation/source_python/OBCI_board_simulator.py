@@ -1,3 +1,4 @@
+import sys
 import time
 import timeit
 import csv
@@ -64,6 +65,9 @@ class OBCI_board_simulator():
                         self.sample.time = timeit.default_timer()
 
                         self.sample.id = int(row[2])
+                        if self.daisy and len(row) < 19:
+                            print "you chose a 16 channel setup, but the file " + self.simulationCSVFilepath + " probably only a 8 channel recording or not the right file. Choose another 8 channel setup, or another 16 channel recording."
+                            sys.exit(0)
                         if self.daisy:
                             self.sample.channel_data = [float(row[3]), float(row[4]), float(row[5]), float(row[6]),
                                                         float(row[7]), float(row[8]), float(row[9]), float(row[10]),

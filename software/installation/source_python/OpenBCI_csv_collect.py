@@ -22,7 +22,7 @@ class OpenBCIcsvCollect(object):
     def __del__(self):
         self.deactivate()
 
-    def __init__(self, FS, FS_ds, nChannels, file_name="collect", subfolder="data/rec/", delim=";", verbose=False, simulateFromCSV=False, doRealTimeStreaming=False, writeEDF=False, giveNameChannelsByMapping=False,subject="anonymous",prefilterEDF_hp=None, correctInvertedChannels=False):
+    def __init__(self, FS, FS_ds, nChannels, montage, file_name="collect", subfolder="data/rec/", delim=";", verbose=False, simulateFromCSV=False, doRealTimeStreaming=False, writeEDF=False, subject="anonymous",prefilterEDF_hp=None, correctInvertedChannels=False):
         now = datetime.datetime.now()
         self.time_stamp = '%d-%d-%d_%d-%d-%d' % (now.year, now.month, now.day, now.hour, now.minute, now.second)
         self.subfolder = subfolder
@@ -41,6 +41,7 @@ class OpenBCIcsvCollect(object):
         self.fs = FS
         self.FS_ds = FS_ds
         self.nChannels = nChannels
+        self.montage = montage
         self.writeEDF = writeEDF
         self.subject = subject
         self.edfSampleBuffer = []
@@ -50,7 +51,7 @@ class OpenBCIcsvCollect(object):
         atexit.register(self.deactivate)
         self.lastAcc = [0.0,0.0,0.0]
         self.simulateFromCSV = simulateFromCSV
-        self.giveNameChannelsByMapping = giveNameChannelsByMapping
+        # self.giveNameChannelsByMapping = giveNameChannelsByMapping
         self.prefilterEDF_hp = prefilterEDF_hp
         self.EDF_Physical_max_microVolt = 3277
         self.EDF_Physical_min_microVolt = -self.EDF_Physical_max_microVolt
@@ -66,9 +67,10 @@ class OpenBCIcsvCollect(object):
         return self.writeIndex
 
     def isChannelInverted(self,chNumber):
-        if chNumber in [3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16]:
-            return True
-        return False
+        return not self.montage.channelNumberConnectIsBimodal(chNumber)
+        # if chNumber in [3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16]:
+        #     return True
+        # return False
 
     def getChannelInversionMultiplicatorByChannelNumber(self, chNumber):
         if self.isChannelInverted(chNumber):
@@ -77,38 +79,39 @@ class OpenBCIcsvCollect(object):
 
     def getChannelByNumber(self,chNumber):
         chName = ""
-        if chNumber == 1:
-            chName += "EMG"
-        elif chNumber == 2:
-            chName += "EOG"
-        elif chNumber == 3:
-            chName += "A1"
-        elif chNumber == 4:
-            chName += "A2"
-        elif chNumber == 5:
-            chName += "C3"
-        elif chNumber == 6:
-            chName += "C4"
-        elif chNumber == 7:
-            chName += "Trigger"
-        elif chNumber == 8:
-            chName += "ECG"
-        elif chNumber == 9:
-            chName += "F3"
-        elif chNumber == 10:
-            chName += "Fz"
-        elif chNumber == 11:
-            chName += "F4"
-        elif chNumber == 12:
-            chName += "P3"
-        elif chNumber == 13:
-            chName += "Pz"
-        elif chNumber == 14:
-            chName += "P4"
-        elif chNumber == 15:
-            chName += "O1"
-        elif chNumber == 16:
-            chName += "O2"
+        chName += self.montage.getChannelLabelByChannelNumber(chNumber)
+        # if chNumber == 1:
+        #     chName += "EMG"
+        # elif chNumber == 2:
+        #     chName += "EOG"
+        # elif chNumber == 3:
+        #     chName += "A1"
+        # elif chNumber == 4:
+        #     chName += "A2"
+        # elif chNumber == 5:
+        #     chName += "C3"
+        # elif chNumber == 6:
+        #     chName += "C4"
+        # elif chNumber == 7:
+        #     chName += "Trigger"
+        # elif chNumber == 8:
+        #     chName += "ECG"
+        # elif chNumber == 9:
+        #     chName += "F3"
+        # elif chNumber == 10:
+        #     chName += "Fz"
+        # elif chNumber == 11:
+        #     chName += "F4"
+        # elif chNumber == 12:
+        #     chName += "P3"
+        # elif chNumber == 13:
+        #     chName += "Pz"
+        # elif chNumber == 14:
+        #     chName += "P4"
+        # elif chNumber == 15:
+        #     chName += "O1"
+        # elif chNumber == 16:
+        #     chName += "O2"
         if self.isChannelInverted(chNumber) and not self.correctInvertedChannels:
             chName += "_inverted"
         return chName
@@ -175,11 +178,10 @@ class OpenBCIcsvCollect(object):
                 self.edfWriter.setStartdatetime(datetime.datetime.now())
                 for iCh in range(0, self.nChannels):
                     self.edfWriter.setSignalHeader(iCh, channel_info.copy())
-                    if self.giveNameChannelsByMapping:
-                        self.edfWriter.setLabel(iCh, self.getChannelByNumber(iCh+1))
-
-                    else:
-                        self.edfWriter.setLabel(iCh, 'ch' + str(iCh+1))
+                    # if self.giveNameChannelsByMapping:
+                    self.edfWriter.setLabel(iCh, self.getChannelByNumber(iCh+1))
+                    # else:
+                    #     self.edfWriter.setLabel(iCh, 'ch' + str(iCh+1))
                 for iCh_acc in range(0, 3):
                     self.edfWriter.setSignalHeader(self.nChannels+iCh_acc, channel_info_accel.copy())
                     self.edfWriter.setLabel(self.nChannels+iCh_acc, 'acc' + str(iCh_acc+1))

@@ -67,8 +67,9 @@ class ShamCrypter(object):
             encryptedListFileHandle.close()
         return contained
 
-    def isStimOrShamCoinditionBySubjectConditionListWriteEcrypted(self, subject_to_be_checked, subjectConditionListFilePathEncrypted):
+    def isStimOrShamConditionBySubjectConditionListWriteEcrypted(self, subject_to_be_checked, subjectConditionListFilePathEncrypted):
         isStimOrSham = False
+        stimOrSham = ""
         with open(subjectConditionListFilePathEncrypted, 'rb', buffering=20000000)  as encryptedListFileHandle:
             reader = csv.reader(encryptedListFileHandle, delimiter=',')  # creates the reader object
 
@@ -85,9 +86,9 @@ class ShamCrypter(object):
                     if subject == subject_to_be_checked:
                         isStimOrSham = self.testCondtionIsStimOrSham(subject, subject_condition_code, condition_encoded)
                         if self.testConditionIsStim(subject, subject_condition_code, condition_encoded):
-                            isStimOrSham = "stim"
+                            stimOrSham = "stim"
                         elif self.testConditionIsSham(subject, subject_condition_code, condition_encoded):
-                            isStimOrSham = "sham"
+                            stimOrSham = "sham"
                         break
             encryptedListFileHandle.close()
-        return (isStimOrSham, subject_condition_code)
+        return (isStimOrSham, stimOrSham, subject_condition_code)
