@@ -24,6 +24,7 @@ Closed- and Open-loop (Slow Oscillations) sleep stimulation (auditory) or record
 * Obfuscate your Sham/Stim condition for blinding your experiment.
 * Realtime-view, scalable channels, with spindle highlighting.
 * Flexible re-referencing
+* Simulation of previous Recording for testing and trying things (even without an OpenBCI device)
 * Default settings for stimulation in healthy school children (5-12 yrs.) and adults (5-35 yrs.)
 * ... lots of stuff, see the poster:
 **[A poster with pictures and infographics, lists'n'stuff](https://drive.google.com/open?id=15XmB4hGwDl6L_oVv34uby7bRQaTBXUhu)**
