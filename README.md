@@ -2,6 +2,9 @@
  
 Closed- and Open-loop (Slow Oscillations) sleep stimulation (auditory) or recording in _full_-PSG using OpenBCI for sleep.
 
+**[A poster with pictures and infographics, lists'n'stuff](https://drive.google.com/open?id=15XmB4hGwDl6L_oVv34uby7bRQaTBXUhu)**
+
+
 * Its a **fun project**, but with hard science behind in hardware, software and concept, usable for research.
 * Different modes: e.g. Stimulation, Recording only (just PSG, no stimulation), record on SD card without real-time monitoring/stimulation
 * Setup for OpenBCI sleep recording (125 or 250 Hz sampling rate, 8 or 16 channels, incl. EEG, EOG, EMG and ECG) [here](https://www.spisop.org/openbci/)
@@ -26,8 +29,7 @@ Closed- and Open-loop (Slow Oscillations) sleep stimulation (auditory) or record
 * Flexible re-referencing
 * Simulation of previous Recording for testing and trying things (even without an OpenBCI device)
 * Default settings for stimulation in healthy school children (5-12 yrs.) and adults (5-35 yrs.)
-* ... lots of stuff, see the poster:
-**[A poster with pictures and infographics, lists'n'stuff](https://drive.google.com/open?id=15XmB4hGwDl6L_oVv34uby7bRQaTBXUhu)**
+* ... lots of other stuff
 
 **Tutorial in the making, otherwise ask the author.**
 # Source
