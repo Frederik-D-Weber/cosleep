@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<Epochsconfig version="0.0.1">
+	<Epoch Seconds="30"></Epoch>
+	<Page Seconds="30"></Page>
+	<Epochtypes>
+		<Epochtype Annotation="W"  Shortcut="W"></Epochtype>
+		<Epochtype Annotation="S1" Shortcut="1"></Epochtype>
+		<Epochtype Annotation="S2" Shortcut="2"></Epochtype>
+		<Epochtype Annotation="S3" Shortcut="3"></Epochtype>
+		<Epochtype Annotation="S4" Shortcut="4"></Epochtype>
+		<Epochtype Annotation="R" Shortcut="R"></Epochtype>
+		<Epochtype Annotation="A" Shortcut="A"></Epochtype>
+		<Epochtype Annotation="MA" Shortcut="M"></Epochtype>
+	</Epochtypes>
+</Epochsconfig>

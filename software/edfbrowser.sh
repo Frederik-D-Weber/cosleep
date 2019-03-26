@@ -1,3 +1,3 @@
 #!/bin/bash
-cd ${PWD}/data
+cd ${PWD}/rec-stim/data/rec
 edfbrowser

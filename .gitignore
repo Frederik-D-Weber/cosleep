@@ -1,3 +1,8 @@
 /cosleep_RAM
-/releases
+/software/installation/source_python/data/rec/
+/software/installation/source_python/data/log/
+/software/installation/source_python/data/subject/
+/software/installation/source_python/log_terminal/
 *.zip
+*.spec
+

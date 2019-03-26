@@ -84,6 +84,7 @@ if __name__ == '__main__':
     togglePlay = True
 
 
+    pygame.mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=soundBufferSize)
     pygame.init()
     screen_width = 800
     screen = pygame.display.set_mode((screen_width, 600))
@@ -96,10 +97,12 @@ if __name__ == '__main__':
 
     # reduce the buffer from 4096 to 1024 (32 does not work properly on thinkpad x220 to be below 100 ms buffer delay
     # pygame.mixer.pre_init(frequency=441000, size=-16, channels=1, buffer=4096)
-    pygame.mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=soundBufferSize)
+    ## the pygame mixer needs pre_init BEFORE pygame.init(), then needs to be quit and normally init with the same parameters, otherwise only works if pygame is never inited.
+    pygame.mixer.quit()
+
+    pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=soundBufferSize)
     # init() and pre_init() channels refers to mono vs stereo, not playback Channel object
 
-    pygame.mixer.init()
 
 
     # create separate Channel objects for simultaneous playback
