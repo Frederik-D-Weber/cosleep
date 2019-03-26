@@ -10,7 +10,8 @@ Closed- and Open-loop (Slow Oscillations) sleep stimulation (auditory) or record
 * Setup for OpenBCI sleep recording (125 or 250 Hz sampling rate, 8 or 16 channels, incl. EEG, EOG, EMG and ECG) [here](https://www.spisop.org/openbci/)
 * Build your own sleep lab for under a $1000 and do research-grade recording and reactivation protocols.
 * Its free, its open and its closed-loop too, at least for slow waves/slow oscillations.
-* Use your own Electrode Montage stored in a *.tsv to change channel setup, display in the GUI and algorithm
+* Works and tested with all Firmwares for OpenBCI device: v1 v2 v3
+* Use your own Electrode Montage (for 8 and 16 channel) stored in a *.tsv to change channel setup, display in the GUI and algorithm
 * Targeted & Untargeted Auditory Stimuli Presentation using Configurable Stimuli Playlists (easy to create and mix).
 * Reproduce all the published research in this area, e.g. Targeted Memory Reactivation (TMR, e.g Rudoy et al. 2009) during sleep, or Slow wave enhancement (Ngo et al. 2013)
 * Stimulate during a specific time point of a slow oscillation, and trigger another stimuli after that.
@@ -43,10 +44,10 @@ Closed- and Open-loop (Slow Oscillations) sleep stimulation (auditory) or record
 
 # Requirements
 ## EEG
-1. OpenBCI Cyton board (optionally a daisy module)
+1. OpenBCI Cyton board (optionally a daisy module) v1 v2 v3
 1. EEG electrodes
 1. Battery/Power pack
-1. Other stuff to record polysomnography
+1. Other 'stuff' to record polysomnography
 1. Motivation to built a little (you can do it!)
 ...see tutorial [here](https://www.spisop.org/openbci/)
 
@@ -55,14 +56,23 @@ Closed- and Open-loop (Slow Oscillations) sleep stimulation (auditory) or record
 * 1.5 GB RAM
 * 5 GByte free disk space
 * USB 2.0 port
-* Audio jack (wireless audio due to delay not recommended)
+* Audio jack (wireless audio for stimulation not recommended, due to delay)
 (e.g. a Rasperry Pi3, Pine64, Rock64, etc. are fine too)
 
-## OS (preferred)
-* Linux, e.g. Ubuntu 12.XX and newer versions it was **tested** under Ubunutu 14.04 LTS and 18.04 LTS) 
-* _low-latency_ kernel preferred (will automatically installed with the _deploy_ scripts)
+## OS requirement
+* Linux
+    * Ubuntu 18.04 LTS (**tested**), recompiled also tested under Ubunutu 14.04 LTS
+    * Debian 9 if source code is recompiled (**tested**)
+* (optional, but recommended) _low-latency_ kernel preferred (will automatically installed with the _deploy_ scripts)
+* (soon) READY ON THE STICK: setup free USB stick image for bootup in custom Debian live version on any PC soon to follow.
 
-## Tested PCs, deploy, run and compiled (pyinstaller)
+## Tested PCs, compiled (pyinstaller)
 * Lenovo Thinkpad X220, Intel Core i7-2640M, 16 GByte RAM, fast SSD, Ubuntu 18.04 LTS
 * Lenovo Thinkpad X220, Intel Core i5-2520M, 16 GByte RAM, fast SSD, Ubuntu 14.04 LTS
 * Dell Laptitude, Ubuntu 18.04 LTS
+
+## Tested PCs, deployed (recompiled (pyinstaller))
+* Lenovo Thinkpad X220, Intel Core i7-2640M, 16 GByte RAM, fast SSD, Ubuntu 18.04 LTS
+* Lenovo Thinkpad X220, Intel Core i5-2520M, 16 GByte RAM, fast SSD, Ubuntu 14.04 LTS
+* Dell Laptitude, Ubuntu 18.04 LTS
+* Debian stretch (9, stable)

@@ -132,7 +132,7 @@ class QWidget2(QtGui.QWidget):
 
     def closeEvent(self, event):
         print("attempt to close...if confirmed...")
-        quit_msg = "Are you sure you want to quit?\n\nIf you still want to record on the SD card of the device\nthen plug out the dongle BEFORE you press \"Yes\" to exit."
+        quit_msg = "Are you sure you want to quit?\n\nIf you still want to continue recording on the SD card of the device\nthen plug out the dongle BEFORE you press \"Yes\" to exit."
         reply = QtGui.QMessageBox.question(self, 'Quit?',
                                            quit_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 
@@ -1011,13 +1011,14 @@ if __name__ == "__main__":
     app = QtGui.QApplication([])
 
     saveSD = True
-    saveSD_sendChar = 'J'
+    #saveSD_sendChar = 'J'
+    saveSD_sendChar = 'no'
     doTesting = False
     simulateFromCSV = False
     #baudrate_serial = 115200
     #baudrate_serial = 230400
     baudrate_serial = 921600
-    nChannels = 16
+    nChannels = 8
     FS = 250.0
     FS_SD = 250.0
     FS_SD_char = b'6'
@@ -1085,7 +1086,7 @@ if __name__ == "__main__":
     useOpenGL = False
     doDownSamplingForPlot = False
 
-    prefilterEDF_hp = None
+    prefilterEDF_hp = 0.16
     correctInvertedChannels = True
 
     playListStartIndex = 0
@@ -1162,7 +1163,7 @@ if __name__ == "__main__":
     nChannel_options = ("16","8")
     nChannel_res, okpressed = main.getChoice("#Channels", "Number of channels:",
                                              nChannel_options,
-                                             current_item_int=0)
+                                             current_item_int=1)
     if not okpressed:
         sys.exit(0)
 
@@ -1232,7 +1233,7 @@ if __name__ == "__main__":
         SDcard_option_dict_byte = collections.OrderedDict()
 
         SDcard_option_dict_byte[b'no'] = "no recording"
-        SDcard_option_dict_byte[b'G'] = "1 hours (67MB)"
+        SDcard_option_dict_byte[b'G'] = "1 hour (67MB)"
         SDcard_option_dict_byte[b'H'] = "2 hours (134MB)"
         SDcard_option_dict_byte[b'J'] = "4 hours (267MB)"
         SDcard_option_dict_byte[b'K'] = "12 hours (800MB)"
@@ -1341,7 +1342,7 @@ if __name__ == "__main__":
 
                 EDFformat_option = ("BDF (unfiltered)", "EDF (pre-filtered)")
                 EDFformat_option_res, okpressed = main.getChoice("write Format BDF or EDF?", "write format", EDFformat_option,
-                                                                          current_item_int=0)
+                                                                          current_item_int=1)
 
                 if not okpressed:
                     sys.exit(0)
@@ -1831,7 +1832,7 @@ if __name__ == "__main__":
                 sys.exit(0)
 
             if not simulateFromCSV:
-                options = ("115200 Hz", "230400 Hz", "921600 Hz")
+                options = ("115200 Hz (Firmware v1 above)", "230400 Hz (only Firmware v2 above)", "921600 Hz (only Firmware v2 above)")
                 res, okpressed = main.getChoice("Baudrate FTDI", "Baudrate: ",
                                                                 options,
                                                                 current_item_int=2)
@@ -1846,16 +1847,22 @@ if __name__ == "__main__":
     ConnectDeviceText = \
         "<br/>" \
         "<b>Now trying to connect to the DEVICE over DONGLE</b>" \
+        "<br/>" \
+        "Firmware v1 (before 2016) devices will take longer to connect!<br/>" \
         "<br/> " \
-        "If it does not connect within 30 seconds, please:<br/>" \
+        "If it does not connect within 60 seconds, please:<br/>" \
         "  1. PLUG OUT the DONGLE<br/>" \
         "  2. PLUG IN the DONGLE<br/>" \
         "  wait, if not working after 20 seconds try...<br/>" \
         "  3. Turn the OpenBCI DEVICE OFF <br/>" \
         "  4. Turn the OpenBCI DEVICE ON <br/>" \
-        "  5. Wait another 30 seconds, or repeat<br/>" \
+        "  5. Wait another 60 seconds, or repeat<br/>" \
+        "  (6. Firmware v1, please TURN OFF/RESET OpenBCI DEVICE <br/>" \
+        "      AND PLUG OUT and IN dongle.<br/>" \
+        "      THEN a red light on dongle should flash shortly.<br/>" \
         "<br/>" \
         "Press OK to try to connect, or abort<br/>"
+
     if simulateFromCSV:
         ConnectDeviceText = \
             "<br/>" \
@@ -1938,24 +1945,47 @@ if __name__ == "__main__":
 
                 if nChannels == 16:
                     board.ser.write(b'C')
-                    time.sleep(0.2500)
                     initSendBoardByteString += b'C'
                 elif nChannels == 8:
                     board.ser.write(b'c')
-                    time.sleep(0.2500)
                     initSendBoardByteString += b'c'
+                print("channel number (8/16) sent to device")
+
+                if board.openBCIFirmwareVersion != "v1":
+                    time.sleep(0.2500)
+                else:
+                    time.sleep(1)
 
                 if not doRealTimeStreaming:
                     board.ser.write(FS_SD_char)
-                    time.sleep(0.2500)
                     initSendBoardByteString += FS_SD_char
+                    if board.openBCIFirmwareVersion != "v1":
+                        time.sleep(0.500)
+                    else:
+                        time.sleep(1)
+                    print("SD card save sent to device")
 
                 # configure pins
                 for chNum in range(1,nChannels+1):
                     send = montage.getOpenBCIChannelSetupSendStringByChannelNumber(chNum)
-                    board.ser.write(send)
+                    if board.openBCIFirmwareVersion != "v1":
+                        board.ser.write(send)
+                    else:
+                        #legacy for firmware version 1
+                        for iChar in range(0,send.__len__()):
+                            board.ser.write(send[iChar])
+                            time.sleep(0.09)
                     initSendBoardByteString += send
-                    time.sleep(0.2500)
+                    print("channel " + str(chNum) + " sent to device, response: ...")
+                    if board.openBCIFirmwareVersion != "v1":
+                        time.sleep(0.2500)
+                    else:
+                        time.sleep(1.1)
+                        temp_line_read = ""
+                        while temp_line_read != "No Message":
+                            temp_line_read = board.print_incoming_text()
+
+                print("all channel setup was sent to device")
 
                 # board.ser.write(b'x1060000X')  # EMG on the first pins
                 # time.sleep(0.2500)
@@ -2013,8 +2043,13 @@ if __name__ == "__main__":
 
                 if saveSD:
                     board.ser.write(saveSD_sendChar_byte)  # record on SD card
-                    time.sleep(0.500)
                     initSendBoardByteString += saveSD_sendChar_byte
+                    print("SD card save sent to device")
+                    if board.openBCIFirmwareVersion != "v1":
+                        time.sleep(0.500)
+                    else:
+                        time.sleep(1)
+
 
                 board.initSendBoardByteString = initSendBoardByteString
                 #board.ser.write(initSendBoardByteString)
@@ -2063,9 +2098,10 @@ if __name__ == "__main__":
                     if not okpressed:
                         sys.exit(0)
 
-                    time.sleep(8.0)
+                    time.sleep(10.0)
                     sys.exit(app.exec_())
 
+    print("Read serial last response of OpenBCI device:")
     temp_line_read = ""
     while temp_line_read != "No Message" and not(simulateFromCSV):
         temp_line_read = board.print_incoming_text()
@@ -2075,6 +2111,8 @@ if __name__ == "__main__":
                                             True, False, True, isOKbuttonDefault=False)
             if not okpressed:
                 sys.exit(0)
+    print("Read serial last response of OpenBCI device done.")
+
 
 
 
@@ -2082,7 +2120,10 @@ if __name__ == "__main__":
         try:
             csvCollectData.activate()
             time.sleep(0.1)
+            print('start streaming')
             board.ser.write(b'b')
+            if board.openBCIFirmwareVersion == "v1":
+                time.sleep(0.011)
             csvCollectData.fireStreamingStarted()
             csvCollectData.flush()
             messageText = "<br/>" \

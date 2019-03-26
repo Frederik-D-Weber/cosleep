@@ -96,14 +96,25 @@ class OpenBCIBoard(object):
         time.sleep(1)
 
         temp_line_read = ""
+        self.openBCIFirmwareVersion = "v1"
         while temp_line_read != "No Message":
             temp_line_read = self.print_incoming_text()
+            if "Firmware: v2." in temp_line_read:
+                self.openBCIFirmwareVersion = "v2"
+            if "Firmware: v3" in temp_line_read:
+                self.openBCIFirmwareVersion = "v3"
+            if "Firmware: v4" in temp_line_read:
+                self.openBCIFirmwareVersion = "v4"
+        print("OpenBCI Firmware " + self.openBCIFirmwareVersion + " detected")
 
 
-        self.ser.write(self.baudrate_serial_code)
-        self.ser.baudrate = self.baudrate
+        if  self.openBCIFirmwareVersion != "v1":
+            self.ser.write(self.baudrate_serial_code)
+            self.ser.baudrate = self.baudrate
 
-        print("Serial reconfigured to baud rate of " + str(baud) + " on port " + port)
+            print("Serial reconfigured to baud rate of " + str(baud) + " on port " + port)
+        else:
+            print("Serial baud rate of " + str(baud) + " on port " + port + " NOT supported by " + self.openBCIFirmwareVersion + " switching to default baud rate of " + str(baud) )
 
         # wait for device to be ready
 
@@ -207,6 +218,7 @@ class OpenBCIBoard(object):
       Incoming Packet Structure:
       Start Byte(1)|Sample ID(1)|Channel Data(24)|Aux Data(6)|End Byte(1)
       0xA0|0-255|8, 3-byte signed ints|3 2-byte signed ints|0xC0
+      33 bytes
     """
 
     def _read_serial_binary(self, max_bytes_to_skip=5000):
@@ -334,21 +346,34 @@ class OpenBCIBoard(object):
         When starting the connection, print all the debug data until
         we get to a line with the end sequence '$$$'.
         """
+        self.ser.timeout = 1.0 #wait for 1 s for each character in read
         line = ''
         # Wait for device to send data
-        time.sleep(0.2)
+        if self.openBCIFirmwareVersion == 'v1':
+            time.sleep(2)
+        else:
+            time.sleep(0.2)
 
         if self.ser.inWaiting():
             #while self.ser.inWaiting():
             # Look for end sequence $$$
-            while '$$$' not in line:
-                c = self.ser.read().decode('utf-8')
-                line += c
-            print(line);
-            return line
+            c = ''
+            timeouted = False
+            while ('$$$' not in line) and not timeouted:
+                c = self.ser.read()
+                if c == '':
+                    timeouted = True
+                line += c.decode('utf-8')
+            print(line)
         else:
             self.warn("No Message")
-            return "No Message"
+            line = "No Message"
+
+        self.ser.timeout = self.timeout #reset timeout to default
+        return line
+
+
+
 
     def openbci_id(self, serial):
         """
@@ -357,17 +382,24 @@ class OpenBCIBoard(object):
         line = ''
         # Wait for device to send data
         time.sleep(2)
+        serial.timeout = 1.0 #wait for 1 s for each character in read
+
+        res = False
 
         if serial.inWaiting():
             line = ''
             c = ''
             # Look for end sequence $$$
-            while '$$$' not in line:
-                c = serial.read().decode('utf-8')
-                line += c
+            timeouted = False
+            while ('$$$' not in line) and not timeouted:
+                c = serial.read()
+                if c == '':
+                    timeouted = True
+                line += c.decode('utf-8')
             if "OpenBCI" in line:
-                return True
-        return False
+                res = True
+        serial.timout = self.timeout #reset timeout to default
+        return res
 
     def print_register_settings(self):
         self.ser.write(b'?')

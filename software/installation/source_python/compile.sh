@@ -25,8 +25,16 @@ mkdir rec_stim
 mv dist/hearing_threshold rec_stim/hearing_threshold
 mv dist/recording_stimulator rec_stim/recording_stimulator
 mv dist/obfuscate_conditions rec_stim/obfuscate_conditions
-cp -r data rec_stim/
-cp -r log_terminal rec_stim/
+#cp -r data rec_stim/
+#rsync -av -f"+ */" -f"- *" "data" "rec_stim/"
+mkdir rec_stim/data
+mkdir rec_stim/data/rec
+mkdir rec_stim/data/log
+mkdir rec_stim/data/subject
+mkdir rec_stim/log_terminal
+cp -r data/experiment rec_stim/data/experiment
+#cp -r log_terminal rec_stim/
+#rsync -av -f"+ */" -f"- *" "log_terminal" "rec_stim/"
 cp -r montages rec_stim/
 cp -r stimulations rec_stim/
 cp -r stimuli rec_stim/
