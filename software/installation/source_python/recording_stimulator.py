@@ -1010,7 +1010,7 @@ if __name__ == "__main__":
 
     app = QtGui.QApplication([])
 
-    saveSD = True
+    saveSD = False
     #saveSD_sendChar = 'J'
     saveSD_sendChar = 'no'
     doTesting = False
@@ -1206,7 +1206,7 @@ if __name__ == "__main__":
     SDcard_option_dict = collections.OrderedDict()
 
     if nChannels == 16:
-        SDcard_option_dict['no'] = "no recording"
+        SDcard_option_dict['no'] = "do not record on SD"
         SDcard_option_dict['G'] = "37 min (67MB)"
         SDcard_option_dict['H'] = "1.25 hours (134MB)"
         SDcard_option_dict['J'] = "2.5 hours (267MB)"
@@ -1215,7 +1215,7 @@ if __name__ == "__main__":
 
         SDcard_option_dict_byte = collections.OrderedDict()
 
-        SDcard_option_dict_byte[b'no'] = "no recording"
+        SDcard_option_dict_byte[b'no'] = "do not record on SD"
         SDcard_option_dict_byte[b'G'] = "37 min (67MB)"
         SDcard_option_dict_byte[b'H'] = "1.25 hours (134MB)"
         SDcard_option_dict_byte[b'J'] = "2.5 hours (267MB)"
@@ -1223,7 +1223,7 @@ if __name__ == "__main__":
         SDcard_option_dict_byte[b'L'] = "15 hours (1600MB)"
 
     elif nChannels == 8:
-        SDcard_option_dict['no'] = "no recording"
+        SDcard_option_dict['no'] = "do not record on SD"
         SDcard_option_dict['G'] = "1 hour (67MB)"
         SDcard_option_dict['H'] = "2 hours (134MB)"
         SDcard_option_dict['J'] = "4 hours (267MB)"
@@ -1232,7 +1232,7 @@ if __name__ == "__main__":
 
         SDcard_option_dict_byte = collections.OrderedDict()
 
-        SDcard_option_dict_byte[b'no'] = "no recording"
+        SDcard_option_dict_byte[b'no'] = "do not record on SD"
         SDcard_option_dict_byte[b'G'] = "1 hour (67MB)"
         SDcard_option_dict_byte[b'H'] = "2 hours (134MB)"
         SDcard_option_dict_byte[b'J'] = "4 hours (267MB)"
@@ -1427,14 +1427,14 @@ if __name__ == "__main__":
         # if ((channelEEG == 7) or (channelEEG == 8)):
         #     channelEEGrefs = None
 
-        stimulation_option = ("Do stimulation", "Only Recording")
+        stimulation_option = ("Do a Stimulation", "Only view Recording")
         stim_condition, okpressed = main.getChoice("Stimulation?", "Stimulation option:", stimulation_option,
                                                        current_item_int=1)
         if not okpressed:
             sys.exit(0)
-        if stim_condition == "Do stimulation":
+        if stim_condition == "Do a Stimulation":
             isStimulationTurnedOn = True
-        elif stim_condition == "Only Recording":
+        elif stim_condition == "Only view Recording":
             isStimulationTurnedOn = False
         else:
             print("stimulation option " + stim_condition + " not handled yet")
@@ -2111,6 +2111,13 @@ if __name__ == "__main__":
                                             True, False, True, isOKbuttonDefault=False)
             if not okpressed:
                 sys.exit(0)
+        if ("daisy removed" in temp_line_read) and nChannels > 8:
+            print('NO daisy module detected')
+            okpressed = main.showMessageBox("Daisy module missing", "The OpenBCI device cannot find the daisy module, though " +str(nChannels)+ " are requested!\nPlease check the module.\n\nTry the following:\n  1. restart again device and software\n  2. check if the daisy module is firmly connected\n  3. check if it is damaged\n (6. Don't use the daisy module choose 8 channels)\n\n Abort? or is it OK to ignore?",
+                                            True, False, True, isOKbuttonDefault=False)
+            if not okpressed:
+                sys.exit(0)
+
     print("Read serial last response of OpenBCI device done.")
 
 
