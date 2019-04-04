@@ -346,7 +346,8 @@ class OpenBCIBoard(object):
         When starting the connection, print all the debug data until
         we get to a line with the end sequence '$$$'.
         """
-        self.ser.timeout = 1.0 #wait for 1 s for each character in read
+        if self.openBCIFirmwareVersion == 'v1':
+            self.ser.timeout = 1.0 #wait for 1 s for each character in read
         line = ''
         # Wait for device to send data
         if self.openBCIFirmwareVersion == 'v1':
@@ -369,7 +370,8 @@ class OpenBCIBoard(object):
             self.warn("No Message")
             line = "No Message"
 
-        self.ser.timeout = self.timeout #reset timeout to default
+        if self.openBCIFirmwareVersion == 'v1':
+            self.ser.timeout = self.timeout #reset timeout to default
         return line
 
 
@@ -380,9 +382,11 @@ class OpenBCIBoard(object):
         When automatically detecting port, parse the serial return for the "OpenBCI" ID.
         """
         line = ''
-        # Wait for device to send data
+        # # Wait for device to send data
+        # if self.openBCIFirmwareVersion == 'v1':
+        #     serial.timeout = 1.0 #wait for 1 s for each character in read
+
         time.sleep(2)
-        serial.timeout = 1.0 #wait for 1 s for each character in read
 
         res = False
 
@@ -398,7 +402,9 @@ class OpenBCIBoard(object):
                 line += c.decode('utf-8')
             if "OpenBCI" in line:
                 res = True
-        serial.timout = self.timeout #reset timeout to default
+
+        # if self.openBCIFirmwareVersion == 'v1':
+        #     serial.timeout = self.timeout  # reset timeout to default
         return res
 
     def print_register_settings(self):
@@ -623,7 +629,7 @@ class OpenBCIBoard(object):
         openbci_port = ''
         for port in ports:
             try:
-                s = serial.Serial(port=port, baudrate=self.baudrate_default, timeout=self.timeout)
+                s = serial.Serial(port=port, baudrate=self.baudrate_default, timeout=1)
                 s.write(b'v')
                 openbci_serial = self.openbci_id(s)
                 s.close()

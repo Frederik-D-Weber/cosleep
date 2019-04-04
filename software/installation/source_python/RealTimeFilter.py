@@ -45,12 +45,15 @@ class RealTimeFilterHighPassButter(object):
         self.fs = fs
         self.filter_order = filter_order
         self.hp_3dBHz = hp_3dBHz
-        b, a = butter_highpass(self.hp_3dBHz, self.fs, self.filter_order)
-        self.a = a
-        self.b = b
-        self.zi = signal.lfiltic(self.b, self.a, [0])
+        if (self.hp_3dBHz >= 0) and (self.filter_order >= 0) and (self.hp_3dBHz is not None) and (self.filter_order is not None):
+            b, a = butter_highpass(self.hp_3dBHz, self.fs, self.filter_order)
+            self.a = a
+            self.b = b
+            self.zi = signal.lfiltic(self.b, self.a, [0])
 
     def fitlerNextSample(self,value):
+        if (not (self.hp_3dBHz >= 0)) or (not (self.filter_order >= 0)) or (self.hp_3dBHz is None) or (self.filter_order is None):
+            return value
         y, zf = signal.lfilter(self.b, self.a, [value], zi=self.zi)
         self.zi = zf
         return y[0]
@@ -61,13 +64,16 @@ class RealTimeFilterLowPassButter(object):
         self.fs = fs
         self.filter_order = filter_order
         self.lp_3dBHz = lp_3dBHz
-        b, a = butter_lowpass(self.lp_3dBHz, self.fs, self.filter_order)
-        self.a = a
-        self.b = b
+        if (self.lp_3dBHz >= 0) and (self.filter_order >= 0) and (self.lp_3dBHz is not None) and (self.filter_order is not None):
+            b, a = butter_lowpass(self.lp_3dBHz, self.fs, self.filter_order)
+            self.a = a
+            self.b = b
 
-        self.zi = signal.lfiltic(self.b, self.a, [0] * (max(len(self.a), len(self.b))-1))
+            self.zi = signal.lfiltic(self.b, self.a, [0] * (max(len(self.a), len(self.b))-1))
 
     def fitlerNextSample(self, value):
+        if (not (self.lp_3dBHz >= 0)) or (not (self.filter_order >= 0)) or (self.lp_3dBHz is None) or (self.filter_order is None):
+            return value
         y, zf = signal.lfilter(self.b, self.a, [value], zi=self.zi)
         self.zi = zf
         return y[0]

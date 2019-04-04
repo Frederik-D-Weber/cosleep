@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 #sys.path.append('..')  # help python find open_bci_v3.py relative to scripts folder
-from PyQt4 import QtGui, QtCore, Qt
+from PyQt4 import QtGui, QtCore, Qt, QtOpenGL
 import pyqtgraph as pg
 import open_bci_v3 as bci
 import logging
@@ -18,6 +18,8 @@ import csv
 import collections
 import alsaaudio
 import Montage
+from vispychannelview import ChannelView
+
 
 
 class StreamToLogger(object):
@@ -144,6 +146,330 @@ class QWidget2(QtGui.QWidget):
             event.ignore()
             print(" ignored")
 
+
+class DisplaySignalFullViewWidget(QtCore.QThread):
+    keyPressed = QtCore.pyqtSignal(int)
+    def __init__(self, t, ys, ca, montage, board,updateSendOutDelaySeconds,doAntiAlias=True,useOpenGL=True,doDownSamplingForPlot=False,useVispyPlot=False):
+        QtCore.QThread.__init__(self)
+        self.updateSendOutDelaySeconds = updateSendOutDelaySeconds
+        self.updateSendOutDelaySecondsAdjusted = updateSendOutDelaySeconds
+        # self.lastUpdateTime = None
+
+        self.montage = montage
+        self.useVispyPlot = useVispyPlot
+
+        self.doAntiAlias = doAntiAlias
+        self.useOpenGL = useOpenGL
+        self.doDownSamplingForPlot = doDownSamplingForPlot
+
+        self.win = QWidget2()
+
+        self.win.setAutoFillBackground(True)
+        self.palette = self.win.palette()
+        self.palette.setColor(self.win.backgroundRole(), QtCore.Qt.black)
+        self.win.setPalette(self.palette)
+
+        self.win.setWindowTitle('Extended GUI signal viewer - by Frederik D. Weber')
+
+        self.layout = QtGui.QGridLayout(self.win)
+        self.win.setLayout(self.layout)
+
+        self.nDisplayChannels = len(self.montage.GUI_signalviewer_order_channelNumbers)
+        self.displayChannels = self.montage.GUI_signalviewer_order_channelNumbers
+
+        self.LabelPlots = []
+        smallfont = QtGui.QFont()
+        smallfont.setPointSize(6)
+
+        for iPlot in range(0, self.nDisplayChannels):
+            label = QtGui.QLabel()
+            label.setFont(smallfont)
+            channelNumber = self.displayChannels[iPlot]
+            label.setText(self.montage.getChannelDescriptionByChannelNumber(channelNumber, ca.realTimeFilterOrder, wrap=True))
+            label.setAlignment(QtCore.Qt.AlignVCenter)
+            label.setStyleSheet('QLabel {background-color: #000000; color: gray;}')
+            self.LabelPlots.append(label)
+
+        if not self.useVispyPlot:
+
+            try:
+                pg.PlotWidget(useOpenGL=self.useOpenGL)
+            except Exception as e:
+                print('OpenGL cannot be assured to be loaded problem')
+                print(e.message)
+                okpressed = main.showMessageBox("OpenGL problem",
+                                                "Your System does not support OpenGL yet.\nMaybe install your graphics card driver (if available)\nError message:\n\n" + e.message + "\n\nContinue anyway or abort?",
+                                                True, False, True, isOKbuttonDefault=False)
+                if not okpressed:
+                    sys.exit(0)
+
+            self.plotWidgets = []
+            for iPlot in range(0,self.nDisplayChannels):
+                self.plotWidgets.append(pg.PlotWidget(useOpenGL=self.useOpenGL))
+
+            for iPlot in range(0, self.nDisplayChannels):
+                self.plotWidgets[iPlot].setMinimumHeight(30 if iPlot < self.nDisplayChannels-1 else 50)
+
+
+
+            self.plots = []
+            for iPlot in range(0, self.nDisplayChannels):
+                self.plots.append(self.plotWidgets[iPlot].getPlotItem())
+
+
+
+            for iPlot in range(0, self.nDisplayChannels):
+                self.plots[iPlot].setDownsampling(ds=self.doDownSamplingForPlot)
+
+            for iPlot in range(0, self.nDisplayChannels):
+                # self.plots[iPlot].setTitle(title=self.montage.getChannelDescriptionByChannelNumber(channelNumber,ca.realTimeFilterOrder))
+
+                # titleTextItem = pg.TextItem(text=self.montage.getChannelDescriptionByChannelNumber(channelNumber, ca.realTimeFilterOrder),
+                #                         color=(128, 128, 128, 92),
+                #                         html=None, anchor=(0, 0), border=None,
+                #                         fill=None, angle=0, rotateAxis=None)
+                # self.plots[iPlot].addItem(titleTextItem)
+                # titleTextItem.setPos(0, 0.0)
+
+
+                # legend = self.plots[iPlot].addLegend()
+                # legend.addItem(None,"test")
+                self.plots[iPlot].showGrid(x=True, y=True, alpha=0.30)
+                self.plots[iPlot].getAxis("bottom").setTickSpacing(5.0, 1.0)
+
+                mediumfont = QtGui.QFont()
+                mediumfont.setPointSize(8)
+
+                if iPlot != self.nDisplayChannels-1:
+                    self.plots[self.nDisplayChannels-1].setXLink(self.plots[iPlot])
+                    self.plots[iPlot].getAxis("bottom").setStyle(showValues=False)
+                    self.plots[iPlot].getAxis("left").setStyle(tickFont=mediumfont)
+                    # self.plots[iPlot].hideAxis('bottom')
+                    self.plots[iPlot].hideAxis('top')
+                else:
+                    self.plots[iPlot].getAxis("bottom").setStyle(showValues=True)
+
+                self.plots[iPlot].getAxis("bottom").showLabel(show=False)
+                self.plots[iPlot].getAxis("top").showLabel(show=False)
+                self.plots[iPlot].getAxis("right").showLabel(show=False)
+                self.plots[iPlot].getAxis("left").showLabel(show=False)
+                self.plots[iPlot].getAxis("left").setTickSpacing(50.0, 25.0)
+                # self.plots[iPlot].getAxis("left").setLabel(axis="left", text="Filtered(Signal) [uV]")
+                self.plots[iPlot].getAxis("left").getViewBox().setAutoPan(x=False, y=False)
+                self.plots[iPlot].getAxis("left").getViewBox().enableAutoRange(x=False, y=False)
+                self.plots[iPlot].showButtons()
+
+
+
+            self.curves = []
+            for iPlot in range(0, self.nDisplayChannels):
+                self.curves.append(self.plots[iPlot].plot(pen=pg.mkPen(color=(255, 255, 255)), clear=False))
+
+        else:
+            self.channelRanges = []
+            for iCh in range(0, self.nDisplayChannels):
+                self.channelRanges.append((-100.0, 100.0))
+            self.plot = ChannelView(self.win, self.nDisplayChannels, 30, self.channelRanges, clipChannelView=True,useAntialias=self.doAntiAlias,useOpenGL=self.useOpenGL)
+
+        self.btnsetRangeFixedHigher = []
+        self.btnsetRangeFixedLower = []
+        for iPlot in range(0, self.nDisplayChannels):
+            self.btnsetRangeFixedHigher.append(QtGui.QPushButton('-'))
+            self.btnsetRangeFixedLower.append(QtGui.QPushButton('+'))
+
+
+        temp_button_width = 20
+        temp_button_heigth = 10
+
+        for iPlot in range(0, self.nDisplayChannels):
+            self.btnsetRangeFixedHigher[iPlot].setFixedWidth(temp_button_width)
+            self.btnsetRangeFixedLower[iPlot].setFixedWidth(temp_button_width)
+            self.btnsetRangeFixedHigher[iPlot].setMinimumHeight(temp_button_heigth)
+            self.btnsetRangeFixedLower[iPlot].setMinimumHeight(temp_button_heigth)
+            self.btnsetRangeFixedHigher[iPlot].setStyleSheet('QPushButton {background-color: #000000; color: rgb(255,255,255);}')
+            self.btnsetRangeFixedLower[iPlot].setStyleSheet('QPushButton {background-color: #000000; color: rgb(255,255,255);}')
+
+
+        self.isRangeAuto = False
+        self.btnsetRangeFixedOrAuto = QtGui.QPushButton("[F")
+        self.btnsetRangeFixedOrAuto.setFixedWidth(temp_button_width)
+        self.btnsetRangeFixedOrAuto.setStyleSheet('QPushButton {background-color: #000000; color: white;}')
+        self.btnsetRangeFixedOrAuto.setMinimumHeight(temp_button_heigth)
+
+
+        temp_height_plot = 3
+        temp_width_plot = 20
+        temp_height_zoom = 1
+        temp_width_zoom = 1
+        temp_width_label = 3
+
+        for iPlot in range(0, self.nDisplayChannels):
+            self.layout.addWidget(self.btnsetRangeFixedHigher[iPlot], iPlot * temp_height_plot, 0, temp_height_zoom, temp_width_zoom)
+            self.layout.addWidget(self.btnsetRangeFixedLower[iPlot], (iPlot+1) * temp_height_plot-temp_height_zoom,0, temp_height_zoom, temp_width_zoom)
+            if not self.useVispyPlot:
+                self.layout.addWidget(self.plotWidgets[iPlot], iPlot * temp_height_plot, temp_width_zoom, temp_height_plot,1)
+            self.layout.addWidget(self.LabelPlots[iPlot], iPlot * temp_height_plot, temp_width_zoom+temp_width_plot, temp_height_plot,temp_width_label)
+
+        if self.useVispyPlot:
+            self.layout.addWidget(self.plot.native, 0, temp_width_zoom, temp_height_plot*self.nDisplayChannels,1)
+
+        self.layout.addWidget(self.btnsetRangeFixedOrAuto,1,0,1,1)
+
+        self.layout.setColumnStretch(1, temp_width_plot)
+
+         # for iColumn in range(0, temp_width_plot+temp_width_zoom):
+         #     self.layout.setColumnStretch(iColumn, 1)
+
+        for iRow in range(0, self.nDisplayChannels*temp_height_plot):
+            self.layout.setRowStretch(iRow, 10)
+
+        self.layout.setVerticalSpacing(1)
+
+
+
+        self.win.resize(800, 600)
+
+        self.EEGstartRangeExtension = 100.0
+
+        self.RangeFixed = []
+        for iPlot in range(0, self.nDisplayChannels):
+            self.RangeFixed.append(np.array([-self.EEGstartRangeExtension, self.EEGstartRangeExtension]))
+
+
+
+        self.win.show()
+
+        self.connect(self.btnsetRangeFixedOrAuto, QtCore.SIGNAL('clicked()'), self.setRangeToggle)
+
+        for iPlot in range(0, self.nDisplayChannels):
+            self.connect(self.btnsetRangeFixedHigher[iPlot], QtCore.SIGNAL('clicked()'), self.setRangeFixedHigher)
+            self.connect(self.btnsetRangeFixedLower[iPlot], QtCore.SIGNAL('clicked()'), self.setRangeFixedLower)
+
+        self.setRangeFixed()
+
+        self.connect(self.win, QtCore.SIGNAL("keyPressedEvent"), self.on_key, QtCore.Qt.QueuedConnection)
+
+    def on_key(self, event):
+        if event.key() == QtCore.Qt.Key_7:
+            self.setRangeToggle()
+        event.accept()
+
+    def sendUpdateIntervalIncrease(self):
+        self.updateSendOutDelaySecondsAdjusted = self.updateSendOutDelaySecondsAdjusted * 1.5
+        if self.updateSendOutDelaySecondsAdjusted > 30.0:
+            self.updateSendOutDelaySecondsAdjusted = 30
+        self.sendUpdateIntervalAdjusted()
+
+    def sendUpdateIntervalDecrease(self):
+        self.updateSendOutDelaySecondsAdjusted = self.updateSendOutDelaySecondsAdjusted * 1.0 / 1.5
+        if self.updateSendOutDelaySecondsAdjusted < self.updateSendOutDelaySeconds:
+            self.updateSendOutDelaySecondsAdjusted = self.updateSendOutDelaySeconds
+        self.sendUpdateIntervalAdjusted()
+
+    def sendUpdateIntervalAdjusted(self):
+        self.emit(QtCore.SIGNAL("sendMainUpdateIntervalChange"), ["update-view-refresh-interval", self.updateSendOutDelaySecondsAdjusted])
+
+    def updateReceive(self, msg):
+
+        self.win.setWindowTitle(
+            'Extended GUI signal viewer - by Frederik D. Weber' + '  --- refresh data every ' + str(msg[19]) + ' s')
+
+        self.updatePlots(np.array(msg[0]), msg[16])
+
+        nowtime = timeit.default_timer()
+        sendDelay = nowtime - msg[18]
+
+        # time_sended = msg[17]
+        # print("Signal Viewer Full: delay "+str(nowtime-time_sended)+" time sended "+str(time_sended)+" time received "+str(nowtime))
+
+        # if self.lastUpdateTime is not None:
+        if sendDelay > (1.1 * self.updateSendOutDelaySecondsAdjusted):
+            self.sendUpdateIntervalIncrease()
+        elif sendDelay < (0.95 * self.updateSendOutDelaySecondsAdjusted):
+            self.sendUpdateIntervalDecrease()
+        # else:
+        #     self.sendUpdateIntervalDecrease()
+
+    def updatePlots(self, t, signals_allChannels):
+        if not self.useVispyPlot:
+            if self.isRangeAuto:
+                for iPlot in range(0, self.nDisplayChannels):
+                    self.plots[iPlot].getAxis("left").getViewBox().setYRange(min(signals_allChannels[self.displayChannels[iPlot]]), max(signals_allChannels[self.displayChannels[iPlot]]), update=False)
+
+            mint = min(t)
+            maxt = max(t)
+
+            for iPlot in range(0, self.nDisplayChannels):
+                self.plots[iPlot].getAxis("bottom").getViewBox().setXRange(mint, maxt, padding=0, update=(False if iPlot < (self.nDisplayChannels-1) else True))
+
+            for iPlot in range(0, self.nDisplayChannels):
+                self.curves[iPlot].setData(t, np.array(signals_allChannels[self.displayChannels[iPlot]])[0:len(t)], antialias=self.doAntiAlias)
+
+        else:
+            # if self.nDisplayChannels > 0:
+            #     t = np.linspace(max(t[len(t)-1]-30,0), t[len(t)-1], len(signals_allChannels[self.displayChannels[0]]))
+            #
+            signals = []
+            for iPlot in range(0, self.nDisplayChannels):
+                signals.append(np.array(signals_allChannels[self.displayChannels[iPlot]]))
+
+            self.plot.updateChannelData(t,signals)
+
+
+
+    def setRangeToggle(self):
+        if self.isRangeAuto:
+            self.setRangeFixed()
+            self.btnsetRangeFixedOrAuto.setText("[F")
+        else:
+            self.setRangeAuto()
+            self.btnsetRangeFixedOrAuto.setText("[A")
+
+    def setRangeAuto(self):
+        if not self.useVispyPlot:
+            for iPlot in range(0, self.nDisplayChannels):
+                self.plots[iPlot].getAxis("left").setTickSpacing()
+            self.isRangeAuto = True
+
+    def setRangeFixed(self):
+        if not self.useVispyPlot:
+            self.isRangeAuto = False
+            for iPlot in range(0, self.nDisplayChannels):
+                self.plots[iPlot].getAxis("left").getViewBox().enableAutoRange(axis=pg.ViewBox.YAxis, enable=False)
+                self.updateRanges(iPlot)
+
+    def updateRanges(self,iPlot):
+        if not self.useVispyPlot:
+            self.plots[iPlot].getAxis("left").getViewBox().setRange(yRange=self.RangeFixed[iPlot], padding=None, update=True, disableAutoRange=True)
+            self.plots[iPlot].getAxis("left").getViewBox().setLimits(yMin=self.RangeFixed[iPlot][0], yMax=self.RangeFixed[iPlot][1])
+            self.plots[iPlot].getAxis("left").setTickSpacing(max(self.RangeFixed[iPlot]) / 2.0, max(self.RangeFixed[iPlot]) / 4.0)
+            # self.plots[iPlot].getAxis("left").setStyle(tickTextWidth=1)
+            # self.plots[iPlot].getAxis("left").setStyle(autoExpandTextSpace=True)
+        else:
+            self.plot.setChannelRange(iPlot,(self.RangeFixed[iPlot]))
+
+
+    def getPlotNumberBySenderButton(self,sender):
+        for iPlot in range(0, self.nDisplayChannels):
+            if (self.btnsetRangeFixedHigher[iPlot] == sender) or (self.btnsetRangeFixedLower[iPlot] == sender):
+                return iPlot
+
+    def setRangeFixedHigher(self):
+        if not self.isRangeAuto:
+            sender = self.sender()
+            iPlot = self.getPlotNumberBySenderButton(sender)
+            self.RangeFixed[iPlot] = np.array(self.RangeFixed[iPlot] * 1.25)
+            self.updateRanges(iPlot)
+
+
+    def setRangeFixedLower(self):
+        if not self.isRangeAuto:
+            sender = self.sender()
+            iPlot = self.getPlotNumberBySenderButton(sender)
+            self.RangeFixed[iPlot] = np.array([min(self.RangeFixed[iPlot][0] * 0.8, -self.EEGstartRangeExtension * 0.8 ** 12),
+                                           max(self.RangeFixed[iPlot][1] * 0.8, self.EEGstartRangeExtension * 0.8 ** 12)])
+            self.updateRanges(iPlot)
+
 class DisplaySignalViewWidget(QtCore.QThread):
     keyPressed = QtCore.pyqtSignal(int)
     def __init__(self, t, y1, y2, y3, ca, montage, board, isStimulationTurnedOn, sound_base_level_dB, sound_rise_from_base_level_db,soundlatency_seconds,filterdelay_seconds, updateSendOutDelaySeconds, language,
@@ -151,15 +477,17 @@ class DisplaySignalViewWidget(QtCore.QThread):
         QtCore.QThread.__init__(self)
         self.updateSendOutDelaySeconds = updateSendOutDelaySeconds
         self.updateSendOutDelaySecondsAdjusted = updateSendOutDelaySeconds
-        self.lastUpdateTime = None
+        # self.lastUpdateTime = None
 
         self.montage = montage
+        self.ca = ca
 
         self.soundlatency_seconds = soundlatency_seconds
         self.filterdelay_seconds = filterdelay_seconds
 
         self.doAntiAlias = doAntiAlias
         self.useOpenGL = useOpenGL
+
         self.doDownSamplingForPlot = doDownSamplingForPlot
 
         self.doSpindleHighlight = doSpindleHighlight
@@ -180,10 +508,21 @@ class DisplaySignalViewWidget(QtCore.QThread):
         self.palette.setColor(self.win.backgroundRole(), QtCore.Qt.black)
         self.win.setPalette(self.palette)
 
-        self.win.setWindowTitle('OpenBCI sleep signal viewer and stimulator - by Frederik D. Weber')
+        self.win.setWindowTitle('Main GUI signal viewer and stimulator - by Frederik D. Weber')
 
         self.layout = QtGui.QGridLayout(self.win)
         self.win.setLayout(self.layout)
+
+        try:
+            pg.PlotWidget(useOpenGL=self.useOpenGL)
+        except Exception as e:
+            print('OpenGL cannot be assured to be loaded problem')
+            print(e.message)
+            okpressed = main.showMessageBox("OpenGL problem",
+                                            "Your System does not support OpenGL yet.\nMaybe install your graphics card driver (if available)\nError message:\n\n" + e.message + "\n\nContinue anyway or abort?",
+                                            True, False, True, isOKbuttonDefault=False)
+            if not okpressed:
+                sys.exit(0)
 
         if self.isStimulationTurnedOn:
             self.pw0 = pg.PlotWidget(useOpenGL=self.useOpenGL)
@@ -204,14 +543,45 @@ class DisplaySignalViewWidget(QtCore.QThread):
         self.p2.setDownsampling(ds=self.doDownSamplingForPlot)
         self.p3.setDownsampling(ds=self.doDownSamplingForPlot)
 
+        smallfont = QtGui.QFont()
+        smallfont.setPointSize(6)
 
-        if self.isStimulationTurnedOn:
-            self.p0.setTitle(title="ERP (Brain) last")
-            self.p0avg.setTitle(title="ERP (Brain) avg 0")
+        # if self.isStimulationTurnedOn:
+        #     # self.p0.setTitle(title="ERP (Brain) last")
+        #     # self.p0avg.setTitle(title="ERP (Brain) avg 0")
+        #     self.Label_p0 = QtGui.QLabel()
+        #     self.Label_p0.setFont(smallfont)
+        #     self.Label_p0.setText("ERP (EEG) last")
+        #     self.Label_p0.setAlignment(QtCore.Qt.AlignRight)
+        #     self.Label_p0avg = QtGui.QLabel()
+        #     self.Label_p0avg.setFont(smallfont)
+        #     self.Label_p0avg.setText("ERP (EEG) avg 0")
+        #     self.Label_p0avg.setAlignment(QtCore.Qt.AlignRight)
 
-        self.p1.setTitle(title="EEG (Brain)" + " HP " + "{:.2f}".format(round(ca.filterHP_EEG_freq, 2)) + " LP " + "{:.1f}".format(round(ca.filterLP_EEG_freq, 1)) + " Hz, Butterworth order = " + str(int(ca.realTimeFilterOrder)))
-        self.p2.setTitle(title="EOG (Eyes)" + " HP " + "{:.2f}".format(round(ca.filterHP_EOG_freq, 2)) + " LP " + "{:.1f}".format(round(ca.filterLP_EOG_freq, 1)) + " Hz, Butterworth order = " + str(int(ca.realTimeFilterOrder)))
-        self.p3.setTitle(title="EMG (Muscles)" + " HP " + "{:.2f}".format(round(ca.filterHP_EMG_freq, 2)) + " Hz, Butterworth order = " + str(int(ca.realTimeFilterOrder)))
+
+
+        # self.p1.setTitle(title="EEG (Brain) " + self.montage.getChannelDescriptionByChannelNumber(ca.channelEEG,ca.realTimeFilterOrder))
+        # self.p2.setTitle(title="EOG (Eyes) " + self.montage.getChannelDescriptionByChannelNumber(ca.channelEOG,ca.realTimeFilterOrder))
+        # self.p2.setTitle(title="EMG (Muscles) " + self.montage.getChannelDescriptionByChannelNumber(ca.channelEMG,ca.realTimeFilterOrder))
+
+        # self.Label_p1 = QtGui.QLabel()
+        # self.Label_p1.setFont(smallfont)
+        # self.Label_p1.setText("EEG\n" + self.montage.getChannelDescriptionByChannelNumber(self.ca.channelEEG,self.ca.realTimeFilterOrder,wrap=True))
+        # self.Label_p1.setAlignment(QtCore.Qt.AlignRight)
+        # self.Label_p1.setAlignment(QtCore.Qt.AlignVCenter)
+        #
+        # self.Label_p2 = QtGui.QLabel()
+        # self.Label_p2.setFont(smallfont)
+        # self.Label_p2.setText("EOG\n" + self.montage.getChannelDescriptionByChannelNumber(self.ca.channelEOG,self.ca.realTimeFilterOrder,wrap=True))
+        # self.Label_p2.setAlignment(QtCore.Qt.AlignRight)
+        # self.Label_p2.setAlignment(QtCore.Qt.AlignVCenter)
+        #
+        # self.Label_p3 = QtGui.QLabel()
+        # self.Label_p3.setFont(smallfont)
+        # self.Label_p3.setText("EMG\n" + self.montage.getChannelDescriptionByChannelNumber(self.ca.channelEMG,self.ca.realTimeFilterOrder,wrap=True))
+        # self.Label_p3.setAlignment(QtCore.Qt.AlignRight)
+        # self.Label_p3.setAlignment(QtCore.Qt.AlignVCenter)
+
 
         self.btnReconnect = QtGui.QPushButton('[R]')
         self.btnReconnect.setEnabled(False)
@@ -226,14 +596,14 @@ class DisplaySignalViewWidget(QtCore.QThread):
 
 
         self.SpBx_updateView = QtGui.QDoubleSpinBox()
-        self.SpBx_updateView.setRange(0.01, 30.0)
+        self.SpBx_updateView.setRange(0.05, 30.0)
         self.SpBx_updateView.setSingleStep(0.05)
         self.SpBx_updateView.setDecimals(2)
         self.SpBx_updateView.setValue(self.updateSendOutDelaySeconds)
 
         self.Label_EEGchan = QtGui.QPushButton()
         self.Label_EEGchan.setFlat(True)
-        self.Label_EEGchan.setText("EEG (" + self.montage.getChannelLabelByChannelNumber(ca.channelEEG) + ")")
+        self.Label_EEGchan.setText("EEG (" + self.montage.getChannelLabelReRefByChannelNumber(ca.channelEEG) + ")")
         #self.Label_EEGchan.setAlignment(QtCore.Qt.AlignRight)
         self.Label_EEGchan_clickcounter = 0
 
@@ -317,6 +687,11 @@ class DisplaySignalViewWidget(QtCore.QThread):
 
         self.Label_lastLightsOff.setStyleSheet('QLabel {background-color: #000000; color: gray;}')
 
+        # self.Label_p1.setStyleSheet('QLabel {background-color: #000000; color: gray;}')
+        # self.Label_p2.setStyleSheet('QLabel {background-color: #000000; color: gray;}')
+        # self.Label_p3.setStyleSheet('QLabel {background-color: #000000; color: gray;}')
+
+
         self.Label_updateView.setStyleSheet('QLabel {background-color: #000000; color: gray;}')
         self.SpBx_updateView.setStyleSheet('QDoubleSpinBox {background-color: #000000; color: white; border: 1px solid gray;}')
 
@@ -342,12 +717,15 @@ class DisplaySignalViewWidget(QtCore.QThread):
 
 
         self.layout.addWidget(self.btnsetRangeFixedHigherEEG, 0, 0, 1, 1)
+        # self.layout.addWidget(self.Label_p1, 1, 0, 1, 1)
         self.layout.addWidget(self.btnsetRangeFixedLowerEEG, 2, 0, 1, 1)
 
         self.layout.addWidget(self.btnsetRangeFixedHigherEOG, 3, 0, 1, 1)
+        # self.layout.addWidget(self.Label_p2, 4, 0, 1, 1)
         self.layout.addWidget(self.btnsetRangeFixedLowerEOG, 5, 0, 1, 1)
 
         self.layout.addWidget(self.btnsetRangeFixedHigherEMG, 6, 0, 1, 1)
+        # self.layout.addWidget(self.Label_p3, 7, 0, 1, 1)
         self.layout.addWidget(self.btnsetRangeFixedLowerEMG, 8, 0, 1, 1)
 
         self.layout.addWidget(self.btnsetRangeFixedOrAuto, 9, 0, 1, 1)
@@ -407,7 +785,11 @@ class DisplaySignalViewWidget(QtCore.QThread):
         for iRow in range(0, 10):
             self.layout.setRowStretch(iRow, 1)
 
-        self.layout.setColumnStretch(0, 3)
+        self.layout.setColumnStretch(0, 1)
+
+        self.layout.setVerticalSpacing(2)
+        self.layout.setHorizontalSpacing(2)
+
 
         self.win.resize(1200, 600)
 
@@ -445,12 +827,22 @@ class DisplaySignalViewWidget(QtCore.QThread):
         self.RangeEOGfixed = np.array([-self.EOGstartRangeExtension, self.EOGstartRangeExtension])
         self.RangeEMGfixed = np.array([-self.EMGstartRangeExtension, self.EMGstartRangeExtension])
 
+        self.plotsYLabelStyle = {'font-size': '6pt'}
+
         if self.isStimulationTurnedOn:
-            self.p0.getAxis("left").setLabel(axis="left", text="Filtered(Signal) [uV]")
-            self.p0avg.getAxis("left").setLabel(axis="left", text="Filtered(Signal) [uV]")
-        self.p1.getAxis("left").setLabel(axis="left", text="Filtered(Signal) [uV]")
-        self.p2.getAxis("left").setLabel(axis="left", text="Filtered(Signal) [uV]")
-        self.p3.getAxis("left").setLabel(axis="left", text="Filtered(Signal) [uV]")
+            self.p0.getAxis("left").setLabel(axis="left", text="ERP (EEG) last", **self.plotsYLabelStyle)
+            self.p0avg.getAxis("left").setLabel(axis="left", text="ERP (EEG) avg 0", **self.plotsYLabelStyle)
+        self.p1.getAxis("left").setLabel(axis="left", text="EEG " + self.montage.getChannelDescriptionByChannelNumber(self.ca.channelEEG,self.ca.realTimeFilterOrder,wrap=False), **self.plotsYLabelStyle)
+        self.p2.getAxis("left").setLabel(axis="left", text="EOG " + self.montage.getChannelDescriptionByChannelNumber(self.ca.channelEOG,self.ca.realTimeFilterOrder,wrap=False), **self.plotsYLabelStyle)
+        self.p3.getAxis("left").setLabel(axis="left", text="EMG " + self.montage.getChannelDescriptionByChannelNumber(self.ca.channelEMG,self.ca.realTimeFilterOrder,wrap=False), **self.plotsYLabelStyle)
+
+        if self.isStimulationTurnedOn:
+            self.p0.getAxis("left").showLabel(show=False)
+            self.p0avg.getAxis("left").showLabel(show=False)
+        self.p1.getAxis("left").showLabel(show=False)
+        self.p2.getAxis("left").showLabel(show=False)
+        self.p3.getAxis("left").showLabel(show=False)
+
 
         if self.isStimulationTurnedOn:
             self.p0.getAxis("left").getViewBox().setAutoPan(x=False, y=False)
@@ -458,6 +850,14 @@ class DisplaySignalViewWidget(QtCore.QThread):
         self.p1.getAxis("left").getViewBox().setAutoPan(x=False, y=False)
         self.p2.getAxis("left").getViewBox().setAutoPan(x=False, y=False)
         self.p3.getAxis("left").getViewBox().setAutoPan(x=False, y=False)
+
+        if self.isStimulationTurnedOn:
+            self.p0.getAxis("top").showLabel(show=False)
+            self.p0avg.getAxis("top").showLabel(show=False)
+        self.p1.getAxis("top").showLabel(show=False)
+        self.p2.getAxis("top").showLabel(show=False)
+        self.p3.getAxis("top").showLabel(show=False)
+
 
         if self.isStimulationTurnedOn:
             self.p0.getAxis("left").getViewBox().enableAutoRange(x=False, y=False)
@@ -547,7 +947,9 @@ class DisplaySignalViewWidget(QtCore.QThread):
             l0avg_v_audio = self.p0avg.addLine(x=0.0 + self.soundlatency_seconds)
             l0avg_v_audio.setPen(color=(0, 255, 0), style=QtCore.Qt.DotLine)
 
-            self.p0avg.setTitle("ERP (Brain) avg " + str(0))
+            # self.p0avg.setTitle("ERP (EEG) avg " + str(0))
+            self.p0avg.getAxis("left").setLabel(axis="left", text="ERP (EEG) avg 0")
+
 
         l_SO_up = self.p1.addLine(y=37.5)
         l_SO_down = self.p1.addLine(y=-37.5)
@@ -709,25 +1111,28 @@ class DisplaySignalViewWidget(QtCore.QThread):
             self.Label_EEGchan.setStyleSheet('QPushButton {background-color: #000000; color: grey; border: 0px solid black;}')
             self.SpBx_EEGchan.setStyleSheet('QSpinBox {background-color: #000000; color: white; border: 1px solid gray;}')
             self.SpBx_EEGchan.setEnabled(True)
-            self.Label_EEGchan.setText("EEG (" + self.montage.getChannelLabelByChannelNumber(self.SpBx_EEGchan.value()) + ")")
+            self.Label_EEGchan.setText("EEG (" + self.montage.getChannelLabelReRefByChannelNumber(self.SpBx_EEGchan.value()) + ")")
         else:
-            self.Label_EEGchan.setText("EEG (" + self.montage.getChannelLabelByChannelNumber(self.SpBx_EEGchan.value()) + ")<"+str(10-self.Label_EEGchan_clickcounter))
+            self.Label_EEGchan.setText("EEG (" + self.montage.getChannelLabelReRefByChannelNumber(self.SpBx_EEGchan.value()) + ")<"+str(10-self.Label_EEGchan_clickcounter))
 
     def sendViewEEGchannelChanged(self):
         print("clicked EEG channel changed send to main ...")
         if self.isStimulationTurnedOn:
             self.sendPauseStim()
-        self.Label_EEGchan.setText("EEG (" + self.montage.getChannelLabelByChannelNumber(self.SpBx_EEGchan.value()) + ")")
+        self.Label_EEGchan.setText("EEG (" + self.montage.getChannelLabelReRefByChannelNumber(self.SpBx_EEGchan.value()) + ")")
+        # self.Label_p1.setText(title="EEG\n" + self.montage.getChannelDescriptionByChannelNumber(self.SpBx_EEGchan.value(),self.ca.realTimeFilterOrder,wrap=True))
+        self.p1.getAxis("left").setLabel(axis="left", text="EEG " + self.montage.getChannelDescriptionByChannelNumber(self.SpBx_EEGchan.value(),self.ca.realTimeFilterOrder,wrap=False), **self.plotsYLabelStyle)
         self.emit(QtCore.SIGNAL("sendMainEEGchannelChange"), ["EEG-channel-change", self.SpBx_EEGchan.value()])
 
+
     def sendUpdateIntervalIncrease(self):
-        self.updateSendOutDelaySecondsAdjusted = self.updateSendOutDelaySecondsAdjusted * 1.5
+        self.updateSendOutDelaySecondsAdjusted = self.updateSendOutDelaySecondsAdjusted * 1.3
         if self.updateSendOutDelaySecondsAdjusted > 30.0:
             self.updateSendOutDelaySecondsAdjusted = 30
         self.sendUpdateIntervalAdjusted()
 
     def sendUpdateIntervalDecrease(self):
-        self.updateSendOutDelaySecondsAdjusted = self.updateSendOutDelaySecondsAdjusted * 1.0 / 1.5
+        self.updateSendOutDelaySecondsAdjusted = self.updateSendOutDelaySecondsAdjusted * 1.0 / 1.3
         if self.updateSendOutDelaySecondsAdjusted < self.updateSendOutDelaySeconds:
             self.updateSendOutDelaySecondsAdjusted = self.updateSendOutDelaySeconds
         self.sendUpdateIntervalAdjusted()
@@ -736,28 +1141,45 @@ class DisplaySignalViewWidget(QtCore.QThread):
         self.emit(QtCore.SIGNAL("sendMainUpdateIntervalChange"), ["update-view-refresh-interval", self.updateSendOutDelaySecondsAdjusted])
 
     def updateReceive(self, msg):
-        nowtime = timeit.default_timer()
-
-        if self.lastUpdateTime is not None:
-            if (nowtime - self.lastUpdateTime) > (1.1 * self.updateSendOutDelaySecondsAdjusted):
-                self.sendUpdateIntervalIncrease()
-            elif (nowtime - self.lastUpdateTime) > (1.1 * self.updateSendOutDelaySeconds):
-                self.sendUpdateIntervalDecrease()
-
-        self.lastUpdateTime = nowtime
 
         self.win.setWindowTitle(
-            'OpenBCI sleep signal viewer and stimulator - by Frederik D. Weber' + '  --- refresh data every ' + str(self.updateSendOutDelaySecondsAdjusted) + ' s')
+            'Main GUI signal viewer and stimulator - by Frederik D. Weber' + '  --- refresh data every ' + str(msg[19]) + ' s')
 
-        self.updatePlots(np.array(msg[0]), np.array(msg[1]), np.array(msg[2]), np.array(msg[3]), msg[4], np.array(msg[5]), np.array(msg[6]), np.array(msg[7]), msg[8], msg[9], list(msg[10]), msg[11], msg[12], msg[13], msg[14], msg[15])
+        self.updatePlots(np.array(msg[0]), np.array(msg[1]), np.array(msg[2]), np.array(msg[3]), msg[4], np.array(msg[5]), np.array(msg[6]), np.array(msg[7]), msg[8], msg[9],
+                         list(msg[10]), msg[11], msg[12], msg[13], msg[14], msg[15])
+
+        nowtime = timeit.default_timer()
+        sendDelay = nowtime - msg[18]
+
+        # time_sended = msg[17]
+        # print("Signal Viewer     : delay " + str(nowtime - time_sended) + " time sended " + str(time_sended) + " time received " + str(nowtime))
+
+        # if self.lastUpdateTime is not None:
+        if sendDelay > (1.1 * self.updateSendOutDelaySecondsAdjusted):
+            self.sendUpdateIntervalIncrease()
+        elif sendDelay < (0.95 * self.updateSendOutDelaySecondsAdjusted):
+            self.sendUpdateIntervalDecrease()
+        # else:
+        #     self.sendUpdateIntervalDecrease()
+
+        # self.lastUpdateTime = nowtime
+
 
     def reinitiateERPPlots(self):
         self.p0.clear()
         self.p0avg.clear()
 
     def updatePlots(self, t, y1, y2, y3, stimEvents, tERP, y0, y0avg, ERPavgCount, spindles_signalTimesIndices,y1_spindles,threshold_winsample_samplesago,threshold_EMGSignal_from_away_zero_disengage_algo,nextPlaylistItem,PlayListItemsPlayed,timeSinceLastStimulusPlayedSeconds):
-
+        # start = timeit.default_timer()
         # self.reinitiateERPPlots()
+
+        # timeEndwindow = self.timeSinceStart()
+        # timeStartwindow = timeEndwindow - len(self.signalEEG) / self.fs
+        # self.signalTime = np.linspace(timeStartwindow, timeEndwindow, len(self.signalEEG))
+        # tempNSamples = len(self.signalEEG)
+
+        # t = np.linspace(max(t[len(t)-1]-30,0), t[len(t)-1], len(y1))
+
         if self.threshold_EMGSignal_from_away_zero_disengage_algo != threshold_EMGSignal_from_away_zero_disengage_algo:
             self.threshold_EMGSignal_from_away_zero_disengage_algo = threshold_EMGSignal_from_away_zero_disengage_algo
             self.l_EMG_up.setValue(self.threshold_EMGSignal_from_away_zero_disengage_algo)
@@ -783,6 +1205,8 @@ class DisplaySignalViewWidget(QtCore.QThread):
         mintERP = min(tERP)
         maxtERP = max(tERP)
 
+        # print(maxt - mint)
+
         if self.isStimulationTurnedOn:
             self.p0.getAxis("bottom").getViewBox().setXRange(mintERP, maxtERP, padding=0, update=False)
             self.p0avg.getAxis("bottom").getViewBox().setXRange(mintERP, maxtERP, padding=0, update=False)
@@ -803,7 +1227,8 @@ class DisplaySignalViewWidget(QtCore.QThread):
 
 
         if self.isStimulationTurnedOn:
-            self.p0avg.setTitle("ERP (Brain) avg " + str(ERPavgCount))
+            # self.Label_p0avg.setText("ERP (EEG) avg " + str(ERPavgCount))
+            self.p0avg.getAxis("left").setLabel(axis="left", text="ERP (EEG) avg " + str(ERPavgCount))
 
         if self.isStimulationTurnedOn:
             self.Label_nextPlayListItem.setText("next item: "+str(nextPlaylistItem+1))
@@ -842,12 +1267,14 @@ class DisplaySignalViewWidget(QtCore.QThread):
 
         self.removeAllSpindleLine(self.stimsLinesQueueSpindle, self.p1)
         for sptp in spindles_signalTimesIndices:
-            l1_sp = self.p1.plot(x=t[sptp], y=np.repeat(np.mean(y1[sptp]),len(sptp)), pen=pg.mkPen(color=(255, 255, 0, 192),style=QtCore.Qt.DotLine,width=3), clear=False, style=QtCore.Qt.DotLine)
+            l1_sp = self.p1.plot(x=t[sptp], y=np.repeat(np.mean(y1[sptp]),len(sptp)), pen=pg.mkPen(color=(255, 255, 0, 192),style=QtCore.Qt.DotLine,width=1), clear=False, style=QtCore.Qt.DotLine)
             self.stimsLinesQueueSpindle.append(l1_sp)
 
 
         self.removeStimLine(self.stimsLinesQueue1, self.p1, t[0])
         self.removeStimText(self.stimsLinesQueue1Text, self.p1, t[0])
+
+        # print(timeit.default_timer()-start)
 
     def removeAllSpindleLine(self, dq, p):
         for iPop in range(0, len(dq)):
@@ -1083,7 +1510,7 @@ if __name__ == "__main__":
     realTimeFilterOrderSpindles = 250
 
     doAntiAlias = True
-    useOpenGL = False
+    useOpenGL = True
     doDownSamplingForPlot = False
 
     prefilterEDF_hp = 0.16
@@ -1093,11 +1520,14 @@ if __name__ == "__main__":
 
     doOutputFileLogging = True
 
+
     playBackgroundNoise = False
 
     useDefaultSettings = True
 
+    extendedDisplayProcessing = False
 
+    useVispyPlot = False
 
 
     main = MainWindow()
@@ -1149,7 +1579,6 @@ if __name__ == "__main__":
             print("loging option " + res + " not handled yet")
             sys.exit(0)
 
-
     if doOutputFileLogging:
         stdout_logger = logging.getLogger('STDOUT')
         sl = StreamToLogger(stdout_logger, logging.INFO)
@@ -1178,7 +1607,31 @@ if __name__ == "__main__":
     if not useDefaultSettings:
         montage_filepath = main.getFile("Montage File", initFolder=montage_filepath, filterList='TSV (*.tsv)')
 
-    montage = Montage.Montage(filepath=montage_filepath, nChannels=nChannels)
+    try:
+        montage = Montage.Montage(filepath=montage_filepath, nChannels=nChannels)
+    except:
+        okpressed = main.showMessageBox("Montage invalid", "the montage in file\n" + montage_filepath + "\nis invalid or insufficient for the current setup!",
+                                        True, False, True, isOKbuttonDefault=True)
+        sys.exit(0)
+
+    if len(montage.rerefchannelLabelsOrderedByChannelNumber) > 0:
+
+        options = ("Full Signal Viewer (slow refresh rate)", "Only Recording View (fast refresh rate)")
+        res, okpressed = main.getChoice("Use Full Signal Viewer?", "Use:",
+                                              options,
+                                              current_item_int=1)
+
+        if not okpressed:
+            sys.exit(0)
+
+        if res == "Full Signal Viewer (slow refresh rate)":
+            extendedDisplayProcessing = True
+        elif res == "Only Recording View (fast refresh rate)":
+            extendedDisplayProcessing = False
+        else:
+            print("Full Signal Viewer option " + res + " not handled yet")
+            sys.exit(0)
+
 
     if useDaisyModule:
         FS = FS / 2.0
@@ -1794,19 +2247,37 @@ if __name__ == "__main__":
                 print("Anti-aliasing option " + alias_option + " not handled yet")
                 sys.exit(0)
 
-            OpenGL_option = ("OpenGL", "Standard")
+            OpenGL_option = ("OpenGL (pyqtgraph)", "OpenGL (vispy)", "Standard")
+            # OpenGL_option = ("OpenGL",)
             opengl_option, okpressed = main.getChoice("Use OpenGL?", "View processing:", OpenGL_option,
-                                                     current_item_int=1)
+                                                     current_item_int=0)
             if not okpressed:
                 sys.exit(0)
 
-            if opengl_option == "OpenGL":
+            if opengl_option == "OpenGL (pyqtgraph)":
                 useOpenGL = True
+                useVispyPlot = False
+            elif opengl_option == "OpenGL (vispy)":
+                useOpenGL = True
+                useVispyPlot = True
             elif opengl_option == "Standard":
                 useOpenGL = False
+                useVispyPlot = False
             else:
                 print("OpenGL option " + opengl_option + " not handled yet")
                 sys.exit(0)
+
+        if useOpenGL:
+            try:
+                pg.setConfigOptions(useOpenGL=useOpenGL)
+            except Exception as e:
+                print('OpenGL cannot be assured to be loaded problem')
+                print(e.message)
+                okpressed = main.showMessageBox("OpenGL problem",
+                                                "Your System does not support OpenGL yet.\nMaybe install your graphics card driver (if available)\nError message:\n\n" + e.message + "\n\nContinue anyway or abort?",
+                                                True, False, True, isOKbuttonDefault=False)
+                if not okpressed:
+                    sys.exit(0)
 
 
         languages = ("en", "zh")
@@ -1817,20 +2288,20 @@ if __name__ == "__main__":
             sys.exit(0)
         language = languages_res
 
-        if not useDefaultSettings:
-            run_types = ("Device", "CSV")
-            run_type_res, okpressed = main.getChoice("Run from Device or CSV (Simulation)", "Device or CSV-Simulation:", run_types,
-                                                     current_item_int=0)
-            if not okpressed:
-                sys.exit(0)
-            if run_type_res == "Device":
-                simulateFromCSV = False
-            elif run_type_res == "CSV":
-                simulateFromCSV = True
-            else:
-                print("Run type  " + run_type_res + " not handled yet")
-                sys.exit(0)
+        run_types = ("OpenBCI Device", "Simulation (CSV)")
+        run_type_res, okpressed = main.getChoice("Run from Device or Simulate", "Device or CSV-Simulation:", run_types,
+                                                 current_item_int=0)
+        if not okpressed:
+            sys.exit(0)
+        if run_type_res == "OpenBCI Device":
+            simulateFromCSV = False
+        elif run_type_res == "Simulation (CSV)":
+            simulateFromCSV = True
+        else:
+            print("Run type  " + run_type_res + " not handled yet")
+            sys.exit(0)
 
+        if not useDefaultSettings:
             if not simulateFromCSV:
                 options = ("115200 Hz (Firmware v1 above)", "230400 Hz (only Firmware v2 above)", "921600 Hz (only Firmware v2 above)")
                 res, okpressed = main.getChoice("Baudrate FTDI", "Baudrate: ",
@@ -1868,7 +2339,7 @@ if __name__ == "__main__":
             "<br/>" \
             "<b>Now Starting simulation...</b>" \
             "<br/> " \
-            "<b>Choose a ***.collect.csv from a previous recording</b>" \
+            "<b>Choose a ***.raw.rec.csv from a previous recording</b>" \
             "<br/> " \
             "<b>(e.g. from the data/rec/ folder)</b>" \
             "<br/> " \
@@ -1884,7 +2355,7 @@ if __name__ == "__main__":
     if not okpressed:
         sys.exit(0)
 
-    csvCollectData = OBCIcsv.OpenBCIcsvCollect(FS,FS_ds,nChannels,montage,file_name=subject + "_" + temp_time_stamp + '.collect', subfolder="data/rec/", delim=";", verbose=False,simulateFromCSV=simulateFromCSV, doRealTimeStreaming=doRealTimeStreaming,writeEDF=writeEDF,subject=subject,prefilterEDF_hp=prefilterEDF_hp,correctInvertedChannels=correctInvertedChannels)
+    csvCollectData = OBCIcsv.OpenBCIcsvCollect(FS,FS_ds,nChannels,montage,file_name=subject + "_" + temp_time_stamp + "." + str(nChannels) + "channels" + "." + str(FS) + "HzSampling" + (".downsampled" if FS_ds else "") + ".raw.rec", subfolder="data/rec/", delim=";", verbose=False,simulateFromCSV=simulateFromCSV, doRealTimeStreaming=doRealTimeStreaming,writeEDF=writeEDF,subject=subject,prefilterEDF_hp=prefilterEDF_hp,correctInvertedChannels=correctInvertedChannels)
 
     soundlatency_seconds = soundBufferSize / float(soundFrequency)
     soundlatency_rec_samples = int(math.ceil(soundlatency_seconds * float(FS)))
@@ -1896,11 +2367,12 @@ if __name__ == "__main__":
     flog = open("data/log/" + subject + "_" + temp_time_stamp + '.recording_stimulator.log' + '.csv', 'a', buffering=500000)
     flog.write('subject;saveSD;saveSD_sendChar;saveSD_hours;'
                'writeEDF;correctInvertedChannels;prefilterEDF_hp;'
+               'display_montage;extendedDisplayProcessing;'
                'doTesting;simulateFromCSV;nChannels;'
                'condition;doSham;doShamObfuscation;shamObfuscationCode;subject_condition_encoded_file_path;ThresholdDownStateDetectionPassBelow;waitForFurtherDipInThreshold;ThresholdUpStateDetectionPassAbove;ThresholdUpStateDetectionPassBelow;playBackgroundNoise;'
                'doClosedLoopNotOpenLoop;doClosedLoopRepeatSequence;isStimulationTurnedOn;'
                'doSpindleHighlight;filterHP_EEG_spindle_freq;filterLP_EEG_spindle_freq;realTimeFilterOrder;realTimeFilterOrderSpindles;spindle_amplitude_threshold_detect_microVolts;spindle_amplitude_threshold_begin_end_microVolts;'
-               'doAntiAlias;doDownSamplingForPlot;'
+               'doAntiAlias;doDownSamplingForPlot;useOpenGL;useVispyPlot;'
                'stimuliListFilePath;stimuliPlayListFilePath;'
                'sound_base_level_dB;soundVolume;masterVolumePercent;'
                'sound_rise_from_base_level_db_initial_value;'
@@ -1911,11 +2383,12 @@ if __name__ == "__main__":
 
     flog.write(subject + ";" + str(saveSD) + ";" + saveSD_sendChar + ";" + SDcard_option_dict[saveSD_sendChar] + ";" + \
                str(writeEDF) + ";" + str(correctInvertedChannels) + ";" + str(prefilterEDF_hp) + ";" + \
+               str(montage.filepath) + ";" +  str(extendedDisplayProcessing) + ";" +\
                str(doTesting) + ";" + str(simulateFromCSV) + ";" + str(nChannels) + ";" + \
                str(condition) + ";" + str(doSham_str) + ";" + str(doShamObfuscation) + ";" + str(shamObfuscationCode) + ";" + str(subject_condition_encoded_file_path) + ";" + str(ThresholdDownStateDetectionPassBelow) + ";" + str(waitForFurtherDipInThreshold) + ";" + str(ThresholdUpStateDetectionPassAbove) + ";" + str(ThresholdUpStateDetectionPassBelow) + ";" + str(playBackgroundNoise) + ";"  +\
                str(doClosedLoopNotOpenLoop) + ";" + str(doClosedLoopRepeatSequence) + ";" + str(isStimulationTurnedOn) + ";" + \
                str(doSpindleHighlight) + ";" + str(filterHP_EEG_spindle_freq) + ";" + str(filterLP_EEG_spindle_freq) + ";" + str(realTimeFilterOrder) + ";" + str(realTimeFilterOrderSpindles) + ";" + str(spindle_amplitude_threshold_detect_microVolts) + ";" + str(spindle_amplitude_threshold_begin_end_microVolts) + ";" + \
-               str(doAntiAlias) + ";" + str(doDownSamplingForPlot) + ";" + \
+               str(doAntiAlias) + ";" + str(doDownSamplingForPlot) + ";" + str(useOpenGL) + ";" + str(useVispyPlot) + ";" + \
                str(stimuliListFilePath) + ";" + str(stimuliPlayListFilePath) + ";" + \
                str(sound_base_level_dB) + ";" + str(soundVolume) + ";" + str(masterVolumePercent) + ";" + \
                str(sound_rise_from_base_level_db) + ";" + \
@@ -1952,7 +2425,7 @@ if __name__ == "__main__":
                 print("channel number (8/16) sent to device")
 
                 if board.openBCIFirmwareVersion != "v1":
-                    time.sleep(0.2500)
+                    time.sleep(0.500)
                 else:
                     time.sleep(1)
 
@@ -2044,7 +2517,7 @@ if __name__ == "__main__":
                 if saveSD:
                     board.ser.write(saveSD_sendChar_byte)  # record on SD card
                     initSendBoardByteString += saveSD_sendChar_byte
-                    print("SD card save sent to device")
+                    print("SD card saving instruction sent to device")
                     if board.openBCIFirmwareVersion != "v1":
                         time.sleep(0.500)
                     else:
@@ -2180,7 +2653,8 @@ if __name__ == "__main__":
                                spindle_amplitude_threshold_begin_end_microVolts=spindle_amplitude_threshold_begin_end_microVolts,
                                spindle_amplitude_max_microVolts=spindle_amplitude_max_microVolts,
                                spindle_min_duration_seconds=spindle_min_duration_seconds,
-                               spindle_max_duration_seconds=spindle_max_duration_seconds
+                               spindle_max_duration_seconds=spindle_max_duration_seconds,
+                               extendedDisplayProcessing=extendedDisplayProcessing
                                )
         else:
             ca = clsa.CLSalgo1(fs=FS,
@@ -2199,7 +2673,7 @@ if __name__ == "__main__":
                                spindle_amplitude_max_microVolts=spindle_amplitude_max_microVolts,
                                spindle_min_duration_seconds=spindle_min_duration_seconds,
                                spindle_max_duration_seconds=spindle_max_duration_seconds,
-                               )
+                               extendedDisplayProcessing=extendedDisplayProcessing)
 
         ca.doTracking()
         # ca.doStimulation()
@@ -2227,21 +2701,25 @@ if __name__ == "__main__":
         temp_soundlatency_seconds = 0
         if isStimulationTurnedOn:
             temp_soundlatency_seconds = stimulusPlayer.soundlatency_seconds
-        ## Define a top-level widget to hold everything
-        dsvw = DisplaySignalViewWidget([0], [0], [0], [0], ca, montage, None, isStimulationTurnedOn, sound_base_level_dB, sound_rise_from_base_level_db, temp_soundlatency_seconds, (realTimeFilterOrder*0.5)/FS, updateSendOutDelaySeconds, language,
-                                       threshold_EEGSignal_from_away_zero_disengage_algo, threshold_EOGSignal_from_away_zero_disengage_algo,
-                                       threshold_EMGSignal_from_away_zero_disengage_algo,doSpindleHighlight=doSpindleHighlight,doAntiAlias = doAntiAlias,useOpenGL=useOpenGL,doDownSamplingForPlot = doDownSamplingForPlot)
-
-        app.connect(main, QtCore.SIGNAL("updateSignalViewerSendViewer"), dsvw.updateReceive, QtCore.Qt.QueuedConnection)
-        print("connected signal viewer receive from main")
 
         app.connect(ca, QtCore.SIGNAL("updateSignalViewerSendMain"), main.CAtoMain, QtCore.Qt.QueuedConnection)
         print("connected ca algo send to main")
 
-        app.connect(dsvw, QtCore.SIGNAL("sendMainCheckEEG"), main.DSVWtoMain, QtCore.Qt.QueuedConnection)
-        app.connect(dsvw, QtCore.SIGNAL("sendMainLightsOff"), main.DSVWtoMain, QtCore.Qt.QueuedConnection)
-        app.connect(dsvw, QtCore.SIGNAL("sendMainLightsOn"), main.DSVWtoMain, QtCore.Qt.QueuedConnection)
-        app.connect(dsvw, QtCore.SIGNAL("sendMainReconnect"), main.DSVWtoMain, QtCore.Qt.QueuedConnection)
+        ## Define a top-level widget to hold everything
+        dsvw = DisplaySignalViewWidget([0], [0], [0], [0], ca, montage, None, isStimulationTurnedOn, sound_base_level_dB, sound_rise_from_base_level_db, temp_soundlatency_seconds, (realTimeFilterOrder*0.5)/FS, updateSendOutDelaySeconds, language,
+                                       threshold_EEGSignal_from_away_zero_disengage_algo, threshold_EOGSignal_from_away_zero_disengage_algo,
+                                       threshold_EMGSignal_from_away_zero_disengage_algo,doSpindleHighlight=doSpindleHighlight,doAntiAlias = doAntiAlias,useOpenGL=useOpenGL,doDownSamplingForPlot = doDownSamplingForPlot)
+        app.connect(main, QtCore.SIGNAL("updateSignalViewerSendViewer"), dsvw.updateReceive, QtCore.Qt.QueuedConnection)
+        print("connected signal viewer receive from main")
+
+        if extendedDisplayProcessing:
+            dsfvw = DisplaySignalFullViewWidget([0], [0], ca, montage, None, updateSendOutDelaySeconds, doAntiAlias=doAntiAlias, useOpenGL=useOpenGL, doDownSamplingForPlot=doDownSamplingForPlot)
+            app.connect(main, QtCore.SIGNAL("updateSignalViewerSendViewer"), dsfvw.updateReceive, QtCore.Qt.QueuedConnection)
+            print("connected signal full viewer receive from main")
+
+
+
+        app.connect(dsvw, QtCore.SIGNAL("sendMainUpdateIntervalChange"), main.DSVWtoMain, QtCore.Qt.QueuedConnection)
 
 
 
@@ -2249,7 +2727,6 @@ if __name__ == "__main__":
         app.connect(dsvw, QtCore.SIGNAL("sendMainPauseStim"), main.DSVWtoMain, QtCore.Qt.QueuedConnection)
         app.connect(dsvw, QtCore.SIGNAL("sendMainTestStim"), main.DSVWtoMain, QtCore.Qt.QueuedConnection)
 
-        app.connect(dsvw, QtCore.SIGNAL("sendMainUpdateIntervalChange"), main.DSVWtoMain, QtCore.Qt.QueuedConnection)
 
         app.connect(dsvw, QtCore.SIGNAL("sendMainAutoStim"), main.DSVWtoMain, QtCore.Qt.QueuedConnection)
         app.connect(dsvw, QtCore.SIGNAL("sendMainForcedStim"), main.DSVWtoMain, QtCore.Qt.QueuedConnection)
@@ -2258,15 +2735,15 @@ if __name__ == "__main__":
 
         app.connect(dsvw, QtCore.SIGNAL("sendMainEEGchannelChange"), main.DSVWtoMain, QtCore.Qt.QueuedConnection)
 
+        app.connect(dsvw, QtCore.SIGNAL("sendMainCheckEEG"), main.DSVWtoMain, QtCore.Qt.QueuedConnection)
+        app.connect(dsvw, QtCore.SIGNAL("sendMainLightsOff"), main.DSVWtoMain, QtCore.Qt.QueuedConnection)
+        app.connect(dsvw, QtCore.SIGNAL("sendMainLightsOn"), main.DSVWtoMain, QtCore.Qt.QueuedConnection)
+        app.connect(dsvw, QtCore.SIGNAL("sendMainReconnect"), main.DSVWtoMain, QtCore.Qt.QueuedConnection)
 
 
         print("connected dsvw send to main")
 
-        app.connect(main, QtCore.SIGNAL("sendCACheckEEG"), ca.handleCheckEEG, QtCore.Qt.QueuedConnection)
-        app.connect(main, QtCore.SIGNAL("sendCALightsOff"), ca.handleLightsOff, QtCore.Qt.QueuedConnection)
-        app.connect(main, QtCore.SIGNAL("sendCALightsOn"), ca.handleLightsOn, QtCore.Qt.QueuedConnection)
-        app.connect(main, QtCore.SIGNAL("sendCAReconnect"), ca.handleReconnect, QtCore.Qt.QueuedConnection)
-
+        app.connect(main, QtCore.SIGNAL("sendCAUpdateIntervalChange"), ca.changeUpdateViewInterval, QtCore.Qt.QueuedConnection)
 
         app.connect(main, QtCore.SIGNAL("sendCAStartStim"), ca.doStimulation, QtCore.Qt.QueuedConnection)
         app.connect(main, QtCore.SIGNAL("sendCAPauseStim"), ca.pauseStimulation, QtCore.Qt.QueuedConnection)
@@ -2275,14 +2752,25 @@ if __name__ == "__main__":
         app.connect(main, QtCore.SIGNAL("sendCAAutoStim"), ca.setAutoStimEngaged, QtCore.Qt.QueuedConnection)
         app.connect(main, QtCore.SIGNAL("sendCAForcedStim"), ca.setForcedStimEngaged, QtCore.Qt.QueuedConnection)
         app.connect(main, QtCore.SIGNAL("sendCASoundRiseLevel"), ca.changeSoundRiseFromBaseLeveldB, QtCore.Qt.QueuedConnection)
+
+        app.connect(main, QtCore.SIGNAL("sendCACheckEEG"), ca.handleCheckEEG, QtCore.Qt.QueuedConnection)
+        app.connect(main, QtCore.SIGNAL("sendCALightsOff"), ca.handleLightsOff, QtCore.Qt.QueuedConnection)
+        app.connect(main, QtCore.SIGNAL("sendCALightsOn"), ca.handleLightsOn, QtCore.Qt.QueuedConnection)
+        app.connect(main, QtCore.SIGNAL("sendCAReconnect"), ca.handleReconnect, QtCore.Qt.QueuedConnection)
+
         app.connect(main, QtCore.SIGNAL("sendCAEEGchannel"), ca.changeEEGchannel, QtCore.Qt.QueuedConnection)
 
-        app.connect(main, QtCore.SIGNAL("sendCAUpdateIntervalChange"), ca.changeUpdateViewInterval, QtCore.Qt.QueuedConnection)
 
         print("connected ca algo recieve from main")
 
+        if extendedDisplayProcessing:
+            dsfvw.start()
+            print("started extended signal viewer")
+
         dsvw.start()
         print("started signal viewer")
+
+
 
         ca.start()
         print("started ca algo")

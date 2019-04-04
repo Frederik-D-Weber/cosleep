@@ -1,18 +1,18 @@
-channelnumber	label	status	connect	isref	GUI
-1	EMG	on	bimodal	no	EMG
-2	EOG	on	bimodal	no	EOG
-3	A1	on	ref	yes	no
-4	A2	on	ref	yes	no
-5	C3	on	ref	no	no
-6	C4	on	ref	no	no
-7	Trigger	on	bimodal	no	no
-8	ECG	on	bimodal	no	ECG
-9	F3	on	ref	no	no
-10	Fz	on	ref	no	no
-11	F4	on	ref	no	no
-12	P3	on	ref	no	no
-13	Pz	on	ref	no	no
-14	P4	on	ref	no	no
-15	O1	on	ref	no	no
-16	O2	on	ref	no	no
-ref	Cz	NA	NA	no	EEG
+channelnumber	label	status	connect	rerefchannels	GUI	GUI_HP_f	GUI_LP_f	GUI_signalviewer_order
+1	EMG	on	bimodal	no	EMG	10	-1	default	default	15
+2	EOG	on	bimodal	no	EOG	0.16	30	default	default	1
+3	A1	on	ref	no	no	0.16	30	default	default	13
+4	A2	on	ref	no	no	0.16	30	default	default	14
+5	C3	on	ref	3,4	no	0.16	30	default	default	5
+6	C4	on	ref	3,4	no	0.16	30	default	default	7
+7	Trigger	on	bimodal	no	no	0.16	40	default	default	17
+8	ECG	on	bimodal	no	ECG	0.16	40	default	default	16
+9	F3	on	ref	3,4	no	0.16	30	default	default	2
+10	Fz	on	ref	3,4	no	0.16	30	default	default	3
+11	F4	on	ref	3,4	no	0.16	30	default	default	4
+12	P3	on	ref	3,4	no	0.16	30	default	default	8
+13	Pz	on	ref	3,4	no	0.16	30	default	default	9
+14	P4	on	ref	3,4	no	0.16	30	default	default	10
+15	O1	on	ref	3,4	no	0.16	30	default	default	11
+16	O2	on	ref	3,4	no	0.16	30	default	default	12
+ref	Cz	NA	NA	3,4	EEG	0.16	30	default	default	6

@@ -17,6 +17,9 @@ import Dialogs
 import threading
 import os.path
 import Montage
+from open_bci_v3 import OpenBCISample
+import copy
+
 
 
 class CLSalgo1(QtCore.QThread):
@@ -50,7 +53,8 @@ class CLSalgo1(QtCore.QThread):
                  spindle_amplitude_threshold_begin_end_microVolts=10,
                  spindle_amplitude_max_microVolts=120,
                  spindle_min_duration_seconds=0.5,
-                 spindle_max_duration_seconds=2):
+                 spindle_max_duration_seconds=2,
+                 extendedDisplayProcessing=False):
 
         QtCore.QThread.__init__(self)
 
@@ -82,7 +86,7 @@ class CLSalgo1(QtCore.QThread):
         self.useDaisy = useDaisy
         self.FS_ds = FS_ds
 
-        self.channelEEGrefs = self.montage.getRerefChannelNumbers()
+        # self.channelEEGrefs = self.montage.getRerefChannelNumbers()
 
         self.channelEEG = self.montage.getGUIchannelNumber("EEG")
         self.channelEMG = self.montage.getGUIchannelNumber("EMG")
@@ -90,9 +94,12 @@ class CLSalgo1(QtCore.QThread):
 
         self.data_ring_buffer_length_seconds = 600.0
         self.data_ring_buffer_length_samples = int(round(self.data_ring_buffer_length_seconds * self.fs))
-        self.dataEEG = collections.deque(maxlen=self.data_ring_buffer_length_seconds)
-        self.dataEOG = collections.deque(maxlen=self.data_ring_buffer_length_seconds)
-        self.dataEMG = collections.deque(maxlen=self.data_ring_buffer_length_seconds)
+        # self.dataEEG = collections.deque(maxlen=self.data_ring_buffer_length_seconds)
+        # self.dataEOG = collections.deque(maxlen=self.data_ring_buffer_length_seconds)
+        # self.dataEMG = collections.deque(maxlen=self.data_ring_buffer_length_seconds)
+
+        self.data = collections.deque(maxlen=self.data_ring_buffer_length_seconds)
+
 
         self.signal_ring_buffer_length_seconds = 30.0
         self.signal_ring_buffer_length_samples = int(round(self.signal_ring_buffer_length_seconds * self.fs))
@@ -100,6 +107,10 @@ class CLSalgo1(QtCore.QThread):
         self.signalEMG = collections.deque(maxlen=self.signal_ring_buffer_length_samples)
         self.signalEOG = collections.deque(maxlen=self.signal_ring_buffer_length_samples)
         self.signalEEG_spindles = collections.deque(maxlen=self.signal_ring_buffer_length_samples)
+
+        self.signals = []
+        for iCh in range(0,self.montage.nChannels+1):
+            self.signals.append(collections.deque(maxlen=self.signal_ring_buffer_length_samples))
 
         self.signalTrackingEEG = collections.deque(maxlen=self.signal_ring_buffer_length_samples)
         self.signalTrackingEMG = collections.deque(maxlen=self.signal_ring_buffer_length_samples)
@@ -129,7 +140,9 @@ class CLSalgo1(QtCore.QThread):
         self.spindle_max_duration_samples = int(round(self.fs * spindle_max_duration_seconds))
 
         self.startTime = timeit.default_timer()
-        self.signalTime = np.linspace(0, self.startTime + self.signal_ring_buffer_length_seconds, self.signal_ring_buffer_length_samples)
+        # self.signalTime = np.linspace(0, self.startTime + self.signal_ring_buffer_length_seconds, self.signal_ring_buffer_length_samples)
+        self.signalTime = collections.deque(maxlen=self.signal_ring_buffer_length_samples)
+
         self.lastSampleTime = 0.0
 
         self.lastStimSample = 1
@@ -223,18 +236,38 @@ class CLSalgo1(QtCore.QThread):
         self.ERPcaptureIsComplete = True
         self.ERPcapturePrematureFired = False
 
-        self.filterHP_EEG_freq = 0.16
-        self.filterHP_EOG_freq = 0.16
-        self.filterHP_EMG_freq = 10
 
-        self.filterLP_EEG_freq = 30.0
-        self.filterLP_EOG_freq = 30.0
+        # self.filterHP_EEG_freq = 0.16
+        # self.filterHP_EOG_freq = 0.16
+        # self.filterHP_EMG_freq = 10
+        #
+        # self.filterLP_EEG_freq = 30.0
+        # self.filterLP_EOG_freq = 30.0
 
-        self.filterHP_EEG = rtf.RealTimeFilterHighPassButter(self.filterHP_EEG_freq, self.fs, self.realTimeFilterOrder)
-        self.filterLP_EEG = rtf.RealTimeFilterLowPassButter(self.filterLP_EEG_freq, self.fs, self.realTimeFilterOrder)
-        self.filterHP_EOG = rtf.RealTimeFilterHighPassButter(self.filterHP_EOG_freq, self.fs, self.realTimeFilterOrder)
-        self.filterLP_EOG = rtf.RealTimeFilterLowPassButter(self.filterLP_EOG_freq, self.fs, self.realTimeFilterOrder)
-        self.filterHP_EMG = rtf.RealTimeFilterHighPassButter(self.filterHP_EMG_freq, self.fs, self.realTimeFilterOrder)
+        self.extendedDisplayProcessing = extendedDisplayProcessing
+        if self.extendedDisplayProcessing:
+            self.filterHPbyChannelNumber = []
+            self.filterLPbyChannelNumber = []
+            for channelNumber in range(0,self.montage.nChannels+1):
+                self.filterHPbyChannelNumber.append(rtf.RealTimeFilterHighPassButter(self.montage.getHPfilterFreqByChannelNumber(channelNumber), self.fs, (self.realTimeFilterOrder if self.montage.getHPfilterOrderByChannelNumber(channelNumber) < 0 else self.montage.getHPfilterOrderByChannelNumber(channelNumber))))
+                self.filterLPbyChannelNumber.append(rtf.RealTimeFilterLowPassButter(self.montage.getLPfilterFreqByChannelNumber(channelNumber), self.fs, (self.realTimeFilterOrder if self.montage.getLPfilterOrderByChannelNumber(channelNumber) < 0 else self.montage.getLPfilterOrderByChannelNumber(channelNumber))))
+
+
+
+        self.filterHP_EEG = rtf.RealTimeFilterHighPassButter(self.montage.getHPfilterFreqByChannelNumber(self.channelEEG), self.fs, (
+            self.realTimeFilterOrder if self.montage.getHPfilterOrderByChannelNumber(self.channelEEG) < 0 else self.montage.getHPfilterOrderByChannelNumber(self.channelEEG)))
+        self.filterLP_EEG = rtf.RealTimeFilterLowPassButter(self.montage.getLPfilterFreqByChannelNumber(self.channelEEG), self.fs, (
+            self.realTimeFilterOrder if self.montage.getLPfilterOrderByChannelNumber(self.channelEEG) < 0 else self.montage.getLPfilterOrderByChannelNumber(self.channelEEG)))
+
+        self.filterHP_EOG = rtf.RealTimeFilterHighPassButter(self.montage.getHPfilterFreqByChannelNumber(self.channelEOG), self.fs, (
+            self.realTimeFilterOrder if self.montage.getHPfilterOrderByChannelNumber(self.channelEOG) < 0 else self.montage.getHPfilterOrderByChannelNumber(self.channelEOG)))
+        self.filterLP_EOG = rtf.RealTimeFilterLowPassButter(self.montage.getLPfilterFreqByChannelNumber(self.channelEOG), self.fs, (
+            self.realTimeFilterOrder if self.montage.getLPfilterOrderByChannelNumber(self.channelEOG) < 0 else self.montage.getLPfilterOrderByChannelNumber(self.channelEOG)))
+
+        self.filterHP_EMG = rtf.RealTimeFilterHighPassButter(self.montage.getHPfilterFreqByChannelNumber(self.channelEMG), self.fs, (
+            self.realTimeFilterOrder if self.montage.getHPfilterOrderByChannelNumber(self.channelEMG) < 0 else self.montage.getHPfilterOrderByChannelNumber(self.channelEMG)))
+        self.filterLP_EMG = rtf.RealTimeFilterLowPassButter(self.montage.getLPfilterFreqByChannelNumber(self.channelEMG), self.fs, (
+            self.realTimeFilterOrder if self.montage.getLPfilterOrderByChannelNumber(self.channelEMG) < 0 else self.montage.getLPfilterOrderByChannelNumber(self.channelEMG)))
 
         self.filterBP_EEG_spindle = rtf.RealTimeFilterBandPassFIR(self.filterHP_EEG_spindle_freq, self.filterLP_EEG_spindle_freq, self.fs, self.realTimeFilterOrderSpindles)
         self.filterBP_EEG_spindle_delayInSamples = self.filterBP_EEG_spindle.getDelayInSamples()
@@ -379,7 +412,7 @@ class CLSalgo1(QtCore.QThread):
 
     def changeEEGchannel(self,new_channelEEG):
         self.channelEEG = new_channelEEG
-        self.EventFired.appendEvent("Channel-EEG-changed-to-" + str(new_channelEEG) + "-" + self.montage.getChannelLabelByChannelNumber(new_channelEEG), self.currentSampleID, self.currentSampleWriteIndex)
+        self.EventFired.appendEvent("Channel-EEG-changed-to-" + str(new_channelEEG) + "-" + self.montage.getChannelLabelReRefByChannelNumber(new_channelEEG), self.currentSampleID, self.currentSampleWriteIndex)
 
     def changeSoundRiseFromBaseLeveldB(self, new_sound_rise_from_base_level_db):
         self.stimulusPlayer.changeSoundRiseFromBaseLeveldB(new_sound_rise_from_base_level_db)
@@ -551,11 +584,61 @@ class CLSalgo1(QtCore.QThread):
                     self.testing_trigger_ready = True
         return
 
-    def input(self, eegsample, emgsample, eogsample):
+    def applyMontageToSample(self,sample):
+
+        channel_data_new = []
+        for channelNumber in range(0,self.montage.nChannels+1):
+            v = None
+            if channelNumber != 0:
+                v = sample.channel_data[channelNumber - 1]
+            v = self.correctSignal(v, channelNumber)
+            v = self.adjustRefs(channelNumber, v, sample)
+            v = self.filterHPbyChannelNumber[channelNumber].fitlerNextSample(v)
+            v = self.filterLPbyChannelNumber[channelNumber].fitlerNextSample(v)
+            channel_data_new.append(v)
+
+        sample.channel_data = channel_data_new
+
+        return sample
+
+
+    def input(self, sample):
         self.iSample += 1
-        self.dataEEG.append(eegsample)
-        self.dataEOG.append(eogsample)
-        self.dataEMG.append(emgsample)
+        self.data.append(sample)
+        self.signalTime.append(sample.time)
+
+        if self.extendedDisplayProcessing:
+
+            sample_copy = OpenBCISample(copy.deepcopy(sample.id),
+                                   copy.deepcopy(sample.channel_data),
+                                   copy.deepcopy(sample.aux_data),
+                                   copy.deepcopy(sample.time))
+
+            sample_copy_extended = self.applyMontageToSample(sample_copy)
+
+            for channelNumber in range(0, self.montage.nChannels+1):
+                self.signals[channelNumber].append(sample_copy_extended.channel_data[channelNumber])
+
+        # Cz is reference
+        # Fz = self.correctEEGsignalPolarity(sample.channel_data[6])
+        # A1 = self.correctEEGsignalPolarity(sample.channel_data[2])
+        # A2 = self.correctEEGsignalPolarity(sample.channel_data[3])
+
+        eegsample = self.correctSignal(sample.channel_data[self.channelEEG - 1], self.channelEEG)
+        eogsample = self.correctSignal(sample.channel_data[self.channelEOG - 1], self.channelEOG)
+        emgsample = self.correctSignal(sample.channel_data[self.channelEMG - 1], self.channelEMG)
+
+        eegsample = self.adjustRefs(self.channelEEG, eegsample, sample)
+        eogsample = self.adjustRefs(self.channelEOG, eogsample, sample)
+        emgsample = self.adjustRefs(self.channelEMG, emgsample, sample)
+
+        if self.isTesting():
+            eegsample = self.correctEEGsignalPolarity(sample.channel_data[7 - 1])
+            feedback = sample.channel_data[8 - 1]
+
+        # self.dataEEG.append(eegsample)
+        # self.dataEOG.append(eogsample)
+        # self.dataEMG.append(emgsample)
 
         eegsample_filt = self.filterHP_EEG.fitlerNextSample(eegsample)
         eegsample_filt = self.filterLP_EEG.fitlerNextSample(eegsample_filt)
@@ -564,12 +647,14 @@ class CLSalgo1(QtCore.QThread):
         eogsample_filt = self.filterLP_EOG.fitlerNextSample(eogsample_filt)
 
         emgsample_filt = self.filterHP_EMG.fitlerNextSample(emgsample)
+        emgsample_filt = self.filterLP_EMG.fitlerNextSample(emgsample_filt)
+
 
         # self.data_filtered.append(eegsample)
 
         self.signalEEG.append(eegsample_filt)
-        self.signalEMG.append(emgsample_filt)
         self.signalEOG.append(eogsample_filt)
+        self.signalEMG.append(emgsample_filt)
 
         if self.doSpindleHighlight:
             eegsample_filt_spindle = self.filterBP_EEG_spindle.fitlerNextSample(eegsample_filt)
@@ -651,7 +736,7 @@ class CLSalgo1(QtCore.QThread):
                     tempdiff = tempdiff / 2
                     if (tempdiff - 1) <= 4:
                         for i in range(0, tempdiff):
-                            self.input(self.dataEEG[len(self.dataEEG) - 1], self.dataEMG[len(self.dataEMG) - 1], self.dataEOG[len(self.dataEOG) - 1])
+                            self.input(self.data[len(self.data) - 1])
                         print('WARNING at least %d samples dropped and handled now!' % (tempdiff - 1))
                     else:
                         if not self.simulateFromCSV:
@@ -670,7 +755,7 @@ class CLSalgo1(QtCore.QThread):
                         tempdiff = abs((self.OBCI_sampleid - 256) - id)
                     if (tempdiff - 1) <= 4:
                         for i in range(0, tempdiff):
-                            self.input(self.dataEEG[len(self.dataEEG) - 1], self.dataEMG[len(self.dataEMG) - 1], self.dataEOG[len(self.dataEOG) - 1])
+                            self.input(self.data[len(self.data) - 1])
                         print('WARNING at least %d samples dropped and handled now!' % (tempdiff - 1))
                     else:
                         if not self.simulateFromCSV:
@@ -736,10 +821,19 @@ class CLSalgo1(QtCore.QThread):
 
     def updateSendSignalView(self):
         if (self.updateViewSampleCounter % self.updateViewSampleUpdate) == 0:
-            timeEndwindow = self.timeSinceStart()
-            timeStartwindow = timeEndwindow - len(self.signalEEG) / self.fs
-            self.signalTime = np.linspace(timeStartwindow, timeEndwindow, len(self.signalEEG))
-            tempNSamples = len(self.signalEEG)
+            start = timeit.default_timer()
+
+            # timeEndwindow = self.timeSinceStart()
+            # timeStartwindow = timeEndwindow - len(self.signalEEG) / self.fs
+            # self.signalTime = np.linspace(timeStartwindow, timeEndwindow, len(self.signalEEG))
+            # tempNSamples = len(self.signalEEG)
+
+            # timeEndwindow = self.signalTime[len(self.signalTime)-1]
+            # timeStartwindow = timeEndwindow - len(self.signalEEG) / self.fs
+            # signalTime = np.linspace(timeStartwindow, timeEndwindow, len(self.signalEEG))
+            # tempNSamples = len(self.signalEEG)
+            # signalTime = signalTime[0:tempNSamples]
+
             spindles_signalTimesIndices = []
 
             if self.doSpindleHighlight:
@@ -781,25 +875,68 @@ class CLSalgo1(QtCore.QThread):
                 if not self.stimulusPlayer.playedAtLeastOnce:
                     timeSinceLastStimulusPlayedSeconds = None
 
-            msg = [self.signalTime[0:tempNSamples],
-                   list(self.signalEEG),
-                   list(self.signalEOG),
-                   list(self.signalEMG),
-                   self.EventFired.getNewEvents().__copy__(),
-                   self.ERPtime,
-                   list(self.signalERP),
-                   list(self.signalERPavg),
-                   self.signalERPavgCount,
-                   spindles_signalTimesIndices,
-                   temp_signalEEG_spindles_adapted,
-                   temp_threshold_winsample_samplesago,
-                   self.threshold_EMGSignal_from_away_zero_disengage_algo,
-                   indexPlayedItem,
-                   itemsPlayed,
-                   timeSinceLastStimulusPlayedSeconds]
+            # signals_allChannels_copy = []
+            # if self.extendedDisplayProcessing:
+            #     signals_allChannels_copy = copy.deepcopy(self.signals)
+
+            # signals_allChannels_copy = []
+            # if self.extendedDisplayProcessing:
+            #     signals_allChannels_copy = copy.deepcopy(self.signals)
+
+            msg = [ \
+                list(self.signalTime),
+                # copy.deepcopy(self.signalTime[0:tempNSamples]),
+                # list(copy.deepcopy(self.signalEEG)),
+                # list(copy.deepcopy(self.signalEOG)),
+                # list(copy.deepcopy(self.signalEMG)),
+                # list(copy.deepcopy(self.signalEEG)),
+                # list(copy.deepcopy(self.signalEOG)),
+                # list(copy.deepcopy(self.signalEMG)),
+                list(self.signalEEG),
+                list(self.signalEOG),
+                list(self.signalEMG),
+                self.EventFired.getNewEvents().__copy__(),
+                self.ERPtime,
+                list(self.signalERP),
+                list(self.signalERPavg),
+                self.signalERPavgCount,
+                spindles_signalTimesIndices,
+                temp_signalEEG_spindles_adapted,
+                temp_threshold_winsample_samplesago,
+                self.threshold_EMGSignal_from_away_zero_disengage_algo,
+                indexPlayedItem,
+                itemsPlayed,
+                timeSinceLastStimulusPlayedSeconds,
+                # self.signals,
+                # signals_allChannels_copy,
+                self.signals,
+                timeit.default_timer(),
+                start,
+            self.updateSendOutDelaySeconds]
             self.emit(QtCore.SIGNAL("updateSignalViewerSendMain"), msg)
             self.EventFired.resetNewEvents()
+            # print (timeit.default_timer() - start)
         self.updateViewSampleCounter += 1
+
+
+    def correctSignal(self, value, channelNumber):
+        if (channelNumber == 0):
+            return None  # to be see below.
+        elif self.montage.channelNumberConnectIsBimodal(channelNumber):
+            return value
+        return self.correctEEGsignalPolarity(value)
+
+    def adjustRefs(self,channelNumber,signal,sample):
+        refs = self.montage.rerefchannelNumbersOrderedByChannelNumber[channelNumber]
+        if refs is not None:
+            nRefs = len(refs)
+            RefsAVG = np.mean(self.correctEEGsignalPolarity([sample.channel_data[i - 1] for i in refs[0:nRefs]]))
+            # if not self.montage.channelNumberConnectIsBimodal(self.channelEEG):
+            if (channelNumber == 0):
+                signal = RefsAVG * -1.0
+            else:
+                signal = signal - RefsAVG
+        return signal
 
     def input_OpenBCI(self, sample):
         # temptime = timeit.default_timer()
@@ -821,63 +958,11 @@ class CLSalgo1(QtCore.QThread):
 
         self.checkSampleID(sample.id)
 
-        # Cz is reference
-        # Fz = self.correctEEGsignalPolarity(sample.channel_data[6])
-        # A1 = self.correctEEGsignalPolarity(sample.channel_data[2])
-        # A2 = self.correctEEGsignalPolarity(sample.channel_data[3])
 
-        if (self.channelEEG == 0):   # the reference channel (e.g. Cz)
-            TrackingEEG = None  # to be see below.
-        elif self.montage.channelNumberConnectIsBimodal(self.channelEEG):
-            TrackingEEG = sample.channel_data[self.channelEEG - 1]
-        else:
-            TrackingEEG = self.correctEEGsignalPolarity(sample.channel_data[self.channelEEG - 1])
-
-        if (self.channelEOG == 0):
-            TrackingEOG = None  # to be see below.
-        elif self.montage.channelNumberConnectIsBimodal(self.channelEOG):
-            TrackingEOG = sample.channel_data[self.channelEOG - 1]
-        else:
-            TrackingEOG = self.correctEEGsignalPolarity(sample.channel_data[self.channelEOG - 1])
-
-        if (self.channelEMG == 0):
-            TrackingEMG = None  # to be see below.
-        elif self.montage.channelNumberConnectIsBimodal(self.channelEMG):
-            TrackingEMG = sample.channel_data[self.channelEMG - 1]
-        else:
-            TrackingEMG = self.correctEEGsignalPolarity(sample.channel_data[self.channelEMG - 1])
-
-        if self.channelEEGrefs is not None:
-            nRefs = len(self.channelEEGrefs)
-            # print nRefs
-            RefsAVG = np.mean(self.correctEEGsignalPolarity([sample.channel_data[i - 1] for i in self.channelEEGrefs[0:nRefs]]))
-            # print RefsAVG
-            if not self.montage.channelNumberConnectIsBimodal(self.channelEEG):
-                if (self.channelEEG == 0):
-                    TrackingEEG = RefsAVG * -1.0
-                else:
-                    TrackingEEG = TrackingEEG - RefsAVG
-
-            if not self.montage.channelNumberConnectIsBimodal(self.channelEOG):
-                if (self.channelEOG == 0):
-                    TrackingEOG = RefsAVG * -1.0
-                else:
-                    TrackingEOG = TrackingEOG - RefsAVG
-
-            if not self.montage.channelNumberConnectIsBimodal(self.channelEMG):
-                if (self.channelEMG == 0):
-                    TrackingEMG = RefsAVG * -1.0
-                else:
-                    TrackingEMG = TrackingEMG - RefsAVG
-
-
-        if self.isTesting():
-            TrackingEEG = self.correctEEGsignalPolarity(sample.channel_data[7 - 1])
-            feedback = sample.channel_data[8 - 1]
         # print("time: %f -> sample: %10d -> read id: %3d -> channel: %s -> value: %10.2f %10.2f" % (timeit.default_timer() , self.iSample, sample.id, "TestChannel", TrackingEEG, feedback))
         # else:
         #     print("time: %f -> sample: %10d -> read id: %3d -> channels: %s %10.2f %s %10.2f %s %10.2f" % (timeit.default_timer() , self.iSample, sample.id, "EEG", TrackingEEG, "EOG", TrackingEOG, "EMG", TrackingEMG))
-        res = self.input(TrackingEEG, TrackingEMG, TrackingEOG)
+        res = self.input(sample)
         # delay = timeit.default_timer() - temptime
         # if delay > 1/250.0:
         #     print "loop too slow 250 Hz: " + str(delay*1000) + " ms"
