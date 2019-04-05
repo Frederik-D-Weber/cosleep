@@ -370,22 +370,34 @@ class DisplaySignalFullViewWidget(QtCore.QThread):
         self.emit(QtCore.SIGNAL("sendMainUpdateIntervalChange"), ["update-view-refresh-interval", self.updateSendOutDelaySecondsAdjusted])
 
     def updateReceive(self, msg):
-
-        self.win.setWindowTitle(
-            'Extended GUI signal viewer - by Frederik D. Weber' + '  --- refresh data every ' + str(msg[19]) + ' s')
+        prePlotTime = timeit.default_timer()
+        viewSendingDelay = prePlotTime - msg[17]
 
         self.updatePlots(np.array(msg[0]), msg[16])
 
-        nowtime = timeit.default_timer()
-        sendDelay = nowtime - msg[18]
+        internalSendLoopduration = (msg[17]-msg[18])
+        postPlotTime = timeit.default_timer()
+
+        updateDelay = postPlotTime - msg[18]
+
+        plottingTime = (postPlotTime - prePlotTime)
+
+        refreshInterval = msg[19]
+
+        self.win.setWindowTitle(
+            'Extended GUI signal viewer - by Frederik D. Weber  ---' + \
+            " refresh rate: {:.2f}".format(round(refreshInterval * 1000, 2)) + ' ms' + \
+            " send GUI: {:.2f}".format(round(viewSendingDelay * 1000, 2)) + ' ms' + \
+            " plotting: {:.2f}".format(round(plottingTime * 1000, 2)) + ' ms' + \
+            " algo stuck: {:.2f}".format(round(internalSendLoopduration * 1000, 2)) + ' ms')
 
         # time_sended = msg[17]
         # print("Signal Viewer Full: delay "+str(nowtime-time_sended)+" time sended "+str(time_sended)+" time received "+str(nowtime))
 
         # if self.lastUpdateTime is not None:
-        if sendDelay > (1.1 * self.updateSendOutDelaySecondsAdjusted):
+        if updateDelay > (1.1 * self.updateSendOutDelaySecondsAdjusted):
             self.sendUpdateIntervalIncrease()
-        elif sendDelay < (0.95 * self.updateSendOutDelaySecondsAdjusted):
+        elif updateDelay < (0.8 * self.updateSendOutDelaySecondsAdjusted):
             self.sendUpdateIntervalDecrease()
         # else:
         #     self.sendUpdateIntervalDecrease()
@@ -1142,27 +1154,38 @@ class DisplaySignalViewWidget(QtCore.QThread):
 
     def updateReceive(self, msg):
 
-        self.win.setWindowTitle(
-            'Main GUI signal viewer and stimulator - by Frederik D. Weber' + '  --- refresh data every ' + str(msg[19]) + ' s')
+        prePlotTime = timeit.default_timer()
+        viewSendingDelay = prePlotTime - msg[17]
 
         self.updatePlots(np.array(msg[0]), np.array(msg[1]), np.array(msg[2]), np.array(msg[3]), msg[4], np.array(msg[5]), np.array(msg[6]), np.array(msg[7]), msg[8], msg[9],
                          list(msg[10]), msg[11], msg[12], msg[13], msg[14], msg[15])
 
-        nowtime = timeit.default_timer()
-        sendDelay = nowtime - msg[18]
+        internalSendLoopduration = (msg[17] - msg[18])
+        postPlotTime = timeit.default_timer()
+
+        updateDelay = postPlotTime - msg[18]
+
+        plottingTime = (postPlotTime - prePlotTime)
+
+        refreshInterval = msg[19]
+
+        self.win.setWindowTitle(
+            'Extended GUI signal viewer - by Frederik D. Weber  ---' + \
+            " refresh rate: {:.2f}".format(round(refreshInterval * 1000, 2)) + ' ms' + \
+            " send GUI: {:.2f}".format(round(viewSendingDelay * 1000, 2)) + ' ms' + \
+            " plotting: {:.2f}".format(round(plottingTime * 1000, 2)) + ' ms' + \
+            " algo stuck: {:.2f}".format(round(internalSendLoopduration * 1000, 2)) + ' ms')
 
         # time_sended = msg[17]
-        # print("Signal Viewer     : delay " + str(nowtime - time_sended) + " time sended " + str(time_sended) + " time received " + str(nowtime))
+        # print("Signal Viewer Full: delay "+str(nowtime-time_sended)+" time sended "+str(time_sended)+" time received "+str(nowtime))
 
         # if self.lastUpdateTime is not None:
-        if sendDelay > (1.1 * self.updateSendOutDelaySecondsAdjusted):
+        if updateDelay > (1.1 * self.updateSendOutDelaySecondsAdjusted):
             self.sendUpdateIntervalIncrease()
-        elif sendDelay < (0.95 * self.updateSendOutDelaySecondsAdjusted):
+        elif updateDelay < (0.8 * self.updateSendOutDelaySecondsAdjusted):
             self.sendUpdateIntervalDecrease()
         # else:
         #     self.sendUpdateIntervalDecrease()
-
-        # self.lastUpdateTime = nowtime
 
 
     def reinitiateERPPlots(self):
@@ -2713,7 +2736,7 @@ if __name__ == "__main__":
         print("connected signal viewer receive from main")
 
         if extendedDisplayProcessing:
-            dsfvw = DisplaySignalFullViewWidget([0], [0], ca, montage, None, updateSendOutDelaySeconds, doAntiAlias=doAntiAlias, useOpenGL=useOpenGL, doDownSamplingForPlot=doDownSamplingForPlot)
+            dsfvw = DisplaySignalFullViewWidget([0], [0], ca, montage, None, updateSendOutDelaySeconds, doAntiAlias=doAntiAlias, useOpenGL=useOpenGL, doDownSamplingForPlot=doDownSamplingForPlot, useVispyPlot=useVispyPlot)
             app.connect(main, QtCore.SIGNAL("updateSignalViewerSendViewer"), dsfvw.updateReceive, QtCore.Qt.QueuedConnection)
             print("connected signal full viewer receive from main")
 

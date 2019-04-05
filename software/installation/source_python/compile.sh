@@ -11,12 +11,19 @@ sudo pip install pyinstaller
 sudo pip2.7 install pyinstaller
 sudo pip2 install pyinstaller
 
+#sudo pip install cx_Freeze
+#sudo pip2.7 install cx_Freeze
+#sudo pip2 install cx_Freeze
+
 #files must reside in a linux file system... so copy the code directory to a linux folder (not NTFS)
 rm -r dist
+rm -r dist_cx
 pyinstaller --noconfirm --onefile hearing_threshold.py
 #chmod a+x dist/hearing_threshold/hearing_threshold
 #pyinstaller recording_stimulator.py
-pyinstaller --noconfirm --hidden-import scipy._lib.messagestream --onefile recording_stimulator.py
+#pyinstaller --noconfirm --hidden-import scipy._lib.messagestream --onefile recording_stimulator.py
+pyinstaller --noconfirm --hidden-import scipy._lib.messagestream --hidden-import vispy --add-data /usr/local/lib/python2.7/dist-packages/vispy:vispy --onefile recording_stimulator.py
+#cxfreeze recording_stimulator.py --target-dir dist_cx
 #chmod a+x dist/recording_stimulator/recording_stimulator
 pyinstaller --noconfirm --onefile obfuscate_conditions.py
 mkdir rec_stim
