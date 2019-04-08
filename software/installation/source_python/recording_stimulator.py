@@ -848,12 +848,12 @@ class DisplaySignalViewWidget(QtCore.QThread):
         self.p2.getAxis("left").setLabel(axis="left", text="EOG " + self.montage.getChannelDescriptionByChannelNumber(self.ca.channelEOG,self.ca.realTimeFilterOrder,wrap=False), **self.plotsYLabelStyle)
         self.p3.getAxis("left").setLabel(axis="left", text="EMG " + self.montage.getChannelDescriptionByChannelNumber(self.ca.channelEMG,self.ca.realTimeFilterOrder,wrap=False), **self.plotsYLabelStyle)
 
-        if self.isStimulationTurnedOn:
-            self.p0.getAxis("left").showLabel(show=False)
-            self.p0avg.getAxis("left").showLabel(show=False)
-        self.p1.getAxis("left").showLabel(show=False)
-        self.p2.getAxis("left").showLabel(show=False)
-        self.p3.getAxis("left").showLabel(show=False)
+        # if self.isStimulationTurnedOn:
+        #     self.p0.getAxis("left").showLabel(show=False)
+        #     self.p0avg.getAxis("left").showLabel(show=False)
+        # self.p1.getAxis("left").showLabel(show=False)
+        # self.p2.getAxis("left").showLabel(show=False)
+        # self.p3.getAxis("left").showLabel(show=False)
 
 
         if self.isStimulationTurnedOn:
@@ -1533,7 +1533,7 @@ if __name__ == "__main__":
     realTimeFilterOrderSpindles = 250
 
     doAntiAlias = True
-    useOpenGL = True
+    useOpenGL = False
     doDownSamplingForPlot = False
 
     prefilterEDF_hp = 0.16
@@ -2273,7 +2273,7 @@ if __name__ == "__main__":
             OpenGL_option = ("OpenGL (pyqtgraph)", "OpenGL (vispy)", "Standard")
             # OpenGL_option = ("OpenGL",)
             opengl_option, okpressed = main.getChoice("Use OpenGL?", "View processing:", OpenGL_option,
-                                                     current_item_int=0)
+                                                     current_item_int=2)
             if not okpressed:
                 sys.exit(0)
 

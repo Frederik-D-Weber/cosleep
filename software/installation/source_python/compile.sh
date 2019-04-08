@@ -22,7 +22,7 @@ pyinstaller --noconfirm --onefile hearing_threshold.py
 #chmod a+x dist/hearing_threshold/hearing_threshold
 #pyinstaller recording_stimulator.py
 #pyinstaller --noconfirm --hidden-import scipy._lib.messagestream --onefile recording_stimulator.py
-pyinstaller --noconfirm --hidden-import scipy._lib.messagestream --hidden-import vispy --add-data /usr/local/lib/python2.7/dist-packages/vispy:vispy --onefile recording_stimulator.py
+pyinstaller --noconfirm --hidden-import scipy._lib.messagestream --hidden-import vispy --hidden-import six --add-data /usr/local/lib/python2.7/dist-packages/vispy:vispy --onefile recording_stimulator.py
 #cxfreeze recording_stimulator.py --target-dir dist_cx
 #chmod a+x dist/recording_stimulator/recording_stimulator
 pyinstaller --noconfirm --onefile obfuscate_conditions.py
