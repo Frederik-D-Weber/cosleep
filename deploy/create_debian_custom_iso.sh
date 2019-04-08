@@ -147,7 +147,7 @@ bash install_edfView.sh
 chmod -R a+rwx /cosleep
 
 cd /home
-# ArmA -r cleaner
+# ArmA -r USERFOLDER
 
 
 
@@ -591,4 +591,4 @@ xorriso \
 
 # Now burn the ISO to a CD or dd to an USB stick and you should be ready to boot from it using either a UEFI or a BIOS system.
 # (sudo) dd if=debian-custom.iso of=/dev/sdX bs=1M
-# unmount and remove previous partition table then: sudo dd if=debian-custom-cosleep.iso of=/dev/sdc bs=1M; sync
+# unmount and remove previous partition table then: sudo dd if=debian-custom-cosleep.iso of=/dev/sdc bs=4M; sync
