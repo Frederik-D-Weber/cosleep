@@ -24,12 +24,13 @@
 echo "KERNEL==\"ttyUSB[0-9]*\",MODE=\"0666\"" | sudo tee /etc/udev/rules.d/50-ttyusb.rules
 
 ## to have near-realtime responses and stricter time management
+sudo apt-get update
 sudo apt-get -y install linux-lowlatency
 
 ## to create audio files for stimulation you need sox
 sudo apt-get -y install sox
 ## and if you want to work with mp3-based files you need this for sox
-sudo apt-get -yes install libsox-fmt-mp3
+sudo apt-get -y install libsox-fmt-mp3
 
 ## recommended setup to make selection of the low-latency kernel easier, and if you run other OS in parallel
 sudo add-apt-repository ppa:danielrichter2007/grub-customizer
