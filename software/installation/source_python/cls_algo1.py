@@ -421,11 +421,11 @@ class CLSalgo1(QtCore.QThread):
 
         sound_rise_from_base_level_db_str = str(abs(self.stimulusPlayer.sound_rise_from_base_level_db))
         if self.stimulusPlayer.sound_rise_from_base_level_db < 0:
-            sound_rise_from_base_level_db_str = "minus" + sound_rise_from_base_level_db_str
+            sound_rise_from_base_level_db_str = "-" + sound_rise_from_base_level_db_str
         else:
-            sound_rise_from_base_level_db_str = "plus" + sound_rise_from_base_level_db_str
+            sound_rise_from_base_level_db_str = "" + sound_rise_from_base_level_db_str
 
-        self.EventFired.appendEvent("Sound-Base-Level-Change_abs." + new_final_sound_base_level_db_str + "_rise." + str(sound_rise_from_base_level_db_str), self.currentSampleID,
+        self.EventFired.appendEvent("SBL-Change_abs." + new_final_sound_base_level_db_str + "_up." + str(sound_rise_from_base_level_db_str), self.currentSampleID,
                                     self.currentSampleWriteIndex)
 
     def checkStimulationConditions(self):

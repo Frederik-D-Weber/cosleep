@@ -1538,6 +1538,8 @@ if __name__ == "__main__":
 
     prefilterEDF_hp = 0.16
     correctInvertedChannels = True
+    edfAnnotationChannels = 7
+    exportEDFAnnotations = True;
 
     playListStartIndex = 0
 
@@ -1620,6 +1622,7 @@ if __name__ == "__main__":
         sys.exit(0)
 
     nChannels = int(nChannel_res)
+    edfAnnotationChannels = nChannels-1
 
     useDaisyModule = False
     if nChannels == 16:
@@ -1856,6 +1859,34 @@ if __name__ == "__main__":
                     print("EDF/BDF inversion option " + res + " not handled yet")
                     sys.exit(0)
 
+
+
+                edfAnnotationChannelsIndex, okpressed = main.getInteger("EDF/BDF", "#Annotation Chan.",
+                                                                 0, 64, 1, edfAnnotationChannels)
+                if not okpressed:
+                    sys.exit(0)
+                edfAnnotationChannels = edfAnnotationChannelsIndex
+
+                if edfAnnotationChannels > (nChannels-1):
+                    okpressed = main.showMessageBox("EDF/BDF # annotation channels",
+                                                    "EDF/BDF annotation channel set to " + str(edfAnnotationChannels) + "\nMore than " + (edfAnnotationChannels) + " time the seconds of the recording length can be stored.\n However if there are more annotations than channels\nthen there might be problems reading this in some software.",
+                                                    True, False, True, isOKbuttonDefault=True)
+                    if not okpressed:
+                        sys.exit(0)
+
+
+                exportEDFAnnotation_option = ("export", "no")
+                exportEDFAnnotation_res, okpressed = main.getChoice("Export EDF+/BDF+ annotation", "Export EDF/BDF annotation:", exportEDFAnnotation_option, current_item_int=0)
+
+                if not okpressed:
+                    sys.exit(0)
+                if exportEDFAnnotation_res == "export":
+                    exportEDFAnnotations = True
+                elif exportEDFAnnotation_res == "no":
+                    exportEDFAnnotations = False
+                else:
+                    print("EDF/BDF, export annotation option " + exportEDFAnnotation_res + " not handled yet")
+                    sys.exit(0)
 
         # eegchannels_dict = collections.OrderedDict()
         #
@@ -2378,7 +2409,7 @@ if __name__ == "__main__":
     if not okpressed:
         sys.exit(0)
 
-    csvCollectData = OBCIcsv.OpenBCIcsvCollect(FS,FS_ds,nChannels,montage,file_name=subject + "_" + temp_time_stamp + "." + str(nChannels) + "channels" + "." + str(FS) + "HzSampling" + (".downsampled" if FS_ds else "") + ".raw.rec", subfolder="data/rec/", delim=";", verbose=False,simulateFromCSV=simulateFromCSV, doRealTimeStreaming=doRealTimeStreaming,writeEDF=writeEDF,subject=subject,prefilterEDF_hp=prefilterEDF_hp,correctInvertedChannels=correctInvertedChannels)
+    csvCollectData = OBCIcsv.OpenBCIcsvCollect(FS,FS_ds,nChannels,montage,file_name=subject + "_" + temp_time_stamp + "." + str(nChannels) + "channels" + "." + str(FS) + "HzSampling" + (".downsampled" if FS_ds else "") + ".raw.rec", subfolder="data/rec/", delim=";", verbose=False,simulateFromCSV=simulateFromCSV, doRealTimeStreaming=doRealTimeStreaming,writeEDF=writeEDF,subject=subject,prefilterEDF_hp=prefilterEDF_hp,correctInvertedChannels=correctInvertedChannels,edfAnnotationChannels=edfAnnotationChannels, exportEDFAnnotations=exportEDFAnnotations)
 
     soundlatency_seconds = soundBufferSize / float(soundFrequency)
     soundlatency_rec_samples = int(math.ceil(soundlatency_seconds * float(FS)))
@@ -2389,7 +2420,7 @@ if __name__ == "__main__":
 
     flog = open("data/log/" + subject + "_" + temp_time_stamp + '.recording_stimulator.log' + '.csv', 'a', buffering=500000)
     flog.write('subject;saveSD;saveSD_sendChar;saveSD_hours;'
-               'writeEDF;correctInvertedChannels;prefilterEDF_hp;'
+               'writeEDF;correctInvertedChannels;prefilterEDF_hp;edfAnnotationChannels;exportEDFAnnotations;'
                'display_montage;extendedDisplayProcessing;'
                'doTesting;simulateFromCSV;nChannels;'
                'condition;doSham;doShamObfuscation;shamObfuscationCode;subject_condition_encoded_file_path;ThresholdDownStateDetectionPassBelow;waitForFurtherDipInThreshold;ThresholdUpStateDetectionPassAbove;ThresholdUpStateDetectionPassBelow;playBackgroundNoise;'
@@ -2405,7 +2436,7 @@ if __name__ == "__main__":
 
 
     flog.write(subject + ";" + str(saveSD) + ";" + saveSD_sendChar + ";" + SDcard_option_dict[saveSD_sendChar] + ";" + \
-               str(writeEDF) + ";" + str(correctInvertedChannels) + ";" + str(prefilterEDF_hp) + ";" + \
+               str(writeEDF) + ";" + str(correctInvertedChannels) + ";" + str(prefilterEDF_hp) + ";" + str(edfAnnotationChannels) + ";" + str(exportEDFAnnotations) + ";" +\
                str(montage.filepath) + ";" +  str(extendedDisplayProcessing) + ";" +\
                str(doTesting) + ";" + str(simulateFromCSV) + ";" + str(nChannels) + ";" + \
                str(condition) + ";" + str(doSham_str) + ";" + str(doShamObfuscation) + ";" + str(shamObfuscationCode) + ";" + str(subject_condition_encoded_file_path) + ";" + str(ThresholdDownStateDetectionPassBelow) + ";" + str(waitForFurtherDipInThreshold) + ";" + str(ThresholdUpStateDetectionPassAbove) + ";" + str(ThresholdUpStateDetectionPassBelow) + ";" + str(playBackgroundNoise) + ";"  +\

@@ -22,7 +22,7 @@ class OpenBCIcsvCollect(object):
     def __del__(self):
         self.deactivate()
 
-    def __init__(self, FS, FS_ds, nChannels, montage, file_name="collect", subfolder="data/rec/", delim=";", verbose=False, simulateFromCSV=False, doRealTimeStreaming=False, writeEDF=False, subject="anonymous",prefilterEDF_hp=None, correctInvertedChannels=False):
+    def __init__(self, FS, FS_ds, nChannels, montage, file_name="collect", subfolder="data/rec/", delim=";", verbose=False, simulateFromCSV=False, doRealTimeStreaming=False, writeEDF=False, subject="anonymous",prefilterEDF_hp=None, correctInvertedChannels=False, edfAnnotationChannels=7, exportEDFAnnotations=True):
         now = datetime.datetime.now()
         self.time_stamp = '%d-%d-%d_%d-%d-%d' % (now.year, now.month, now.day, now.hour, now.minute, now.second)
         self.subfolder = subfolder
@@ -34,8 +34,12 @@ class OpenBCIcsvCollect(object):
         self.writeIndex = None
         self.writeIndexEvent = None
         self.edfWriter = None
+        self.writeEDFAnnotations = (edfAnnotationChannels > 0)
+        self.exportEDFAnnotations = exportEDFAnnotations
+        self.edfAnnotationChannels = edfAnnotationChannels
         self.f = None
         self.fevent = None
+        self.feventEDF = None
         self.isActivated = False
         self.doRealTimeStreaming=doRealTimeStreaming
         self.fs = FS
@@ -126,10 +130,14 @@ class OpenBCIcsvCollect(object):
         self.f = open(self.path_and_file_name, 'a', buffering=500000)
 
         if self.doRealTimeStreaming:
-            self.path_and_file_name_event = self.path_and_file_name_event + '.csv'
-            print "Will export Events CSV to:", self.path_and_file_name_event
+            self.path_and_file_name_event = self.path_and_file_name_event
+            print "Will export Events CSV to:", self.path_and_file_name_event + '.csv'
             # Open in append mode
-            self.fevent = open(self.path_and_file_name_event, 'a', buffering=100000)
+            self.fevent = open(self.path_and_file_name_event + '.csv', 'a', buffering=100000)
+            if self.exportEDFAnnotations:
+                print "Will export Events from EDF to CSV in:", self.path_and_file_name_event + '.edf' + '.csv'
+                self.feventEDF = open(self.path_and_file_name_event + '.edf' + '.csv', 'a', buffering=100000)
+                self.feventEDF.write('onset' + self.delim + 'annotation' + '\n')
             # if self.isActivated:
             #     self.fevent.write('#Streaming restarted at ' + self.time_stamp + '\n')
             # self.fevent.write('#Streaming started at ' + self.time_stamp + '\n')
@@ -146,7 +154,13 @@ class OpenBCIcsvCollect(object):
                     temp_filterStringHeader = 'none'
 
                 self.edfWriter = pyedflib.EdfWriter(self.path_and_file_name + "_missing_samples_corrected" + temp_filterStringFileIndicator + EDF_format_extention, self.nChannels+3, file_type=EDF_format_filetype)
-                self.edfWriter.set_number_of_annotation_signals(64)
+
+                """
+                 Only when the number of annotations you want to write is more than the number of seconds of the duration of the recording, you can use this function to increase the storage space for annotations */
+                /* Minimum is 1, maximum is 64 */
+                """
+                if self.writeEDFAnnotations:
+                    self.edfWriter.set_number_of_annotation_signals(self.edfAnnotationChannels) #7*60 = 420 annotations per minute on average
                 channel_info = {'label': 'ch', 'dimension': 'uV', 'sample_rate': int(round(self.fs)),
                                 'physical_max': self.EDF_Physical_max_microVolt, 'physical_min': self.EDF_Physical_min_microVolt,
                                 'digital_max': 32767, 'digital_min': -32767,
@@ -185,7 +199,7 @@ class OpenBCIcsvCollect(object):
                 for iCh_acc in range(0, 3):
                     self.edfWriter.setSignalHeader(self.nChannels+iCh_acc, channel_info_accel.copy())
                     self.edfWriter.setLabel(self.nChannels+iCh_acc, 'acc' + str(iCh_acc+1))
-                self.edfWriter.writeAnnotation(0, -1, u"signal_start")
+                self.edfWriteAnnotation(0, -1, u"signal_start")
 
         self.isActivated = True
 
@@ -197,6 +211,8 @@ class OpenBCIcsvCollect(object):
             self.f.flush()
             if self.doRealTimeStreaming:
                 self.fevent.flush()
+                if self.exportEDFAnnotations:
+                    self.feventEDF.flush()
 
     def deactivate(self):
         if self.isActivated:
@@ -207,6 +223,10 @@ class OpenBCIcsvCollect(object):
             if self.doRealTimeStreaming:
                 self.fevent.flush()
                 self.fevent.close()
+                if self.exportEDFAnnotations:
+                    self.feventEDF.flush()
+                    self.feventEDF.close()
+
             print "Closing, CSV saved to:", self.path_and_file_name
 
     def getCSVfileName(self):
@@ -223,6 +243,7 @@ class OpenBCIcsvCollect(object):
                 if self.doRealTimeStreaming:
                     self.fevent.write('#Streaming started at ' + temp_time_stamp + '\n')
                     self.fevent.write('index_event' + self.delim + 'datetime' + self.delim + 'index_write_sample' + self.delim + 'index_write_sample_input'  + self.delim + 'index_write_sample_input_second' + self.delim + 'time_since_start' + self.delim + 'sample_id' + self.delim + 'event' + '\n')
+
 
     def writeStimulusEvent(self,stimulusEvent):
         if self.doRealTimeStreaming:
@@ -254,11 +275,11 @@ class OpenBCIcsvCollect(object):
 
             if self.writeEDF:
                 if self.simulateFromCSV:
-                    self.edfWriter.writeAnnotation((self.writeIndex+self.nNumberCorrectedSamples+stimulusEvent.sampleWriteIndexOffset)/self.fs, -1, stimulusEvent.getString().encode("utf-8"))
+                    self.edfWriteAnnotation((self.writeIndex+self.nNumberCorrectedSamples+stimulusEvent.sampleWriteIndexOffset)/self.fs, -1, stimulusEvent.getString().encode("utf-8"))
                 else:
-                    self.edfWriter.writeAnnotation((stimulusEvent.getSampleWriteIndex()+self.nNumberCorrectedSamples)/self.fs, -1, stimulusEvent.getString().encode("utf-8"))
-                #self.edfWriter.writeAnnotation((stimulusEvent.getSampleWriteIndex()+self.nNumberCorrectedSamples)/self.fs, -1, u"bla")
-                #self.edfWriter.writeAnnotation(1, -1, u"bla1")
+                    self.edfWriteAnnotation((stimulusEvent.getSampleWriteIndex()+self.nNumberCorrectedSamples)/self.fs, -1, stimulusEvent.getString().encode("utf-8"))
+                #self.edfWriteAnnotation((stimulusEvent.getSampleWriteIndex()+self.nNumberCorrectedSamples)/self.fs, -1, u"bla")
+                #self.edfWriteAnnotation(1, -1, u"bla1")
 
 
 
@@ -350,6 +371,14 @@ class OpenBCIcsvCollect(object):
             sample.channel_data[iCh] = sample.channel_data[iCh]*self.getChannelInversionMultiplicatorByChannelNumber(iCh + 1)
         return sample
 
+    def edfWriteAnnotation(self, onset_in_seconds, duration_in_seconds, description, str_format='utf-8'):
+        if self.writeEDF:
+            if self.writeEDFAnnotations:
+                self.edfWriter.writeAnnotation(onset_in_seconds, duration_in_seconds, description, str_format)
+            if self.exportEDFAnnotations:
+                self.feventEDF.write(str(onset_in_seconds) + self.delim + description + '\n')
+                self.feventEDF.flush()
+
     def checkAndWriteEDF(self, sample):
         # sample = copy.deepcopy(sample)
         sample = OpenBCISample(copy.deepcopy(sample.id),
@@ -359,7 +388,7 @@ class OpenBCIcsvCollect(object):
         #sample.channel_data[0] = 14;
         tempdiff = self.diffSampleApprox(self.tempLastSampleID, sample.id, self.tempLastSample.time, sample.time, self.fs)
         if tempdiff > 1:
-            self.edfWriter.writeAnnotation((self.writeIndex + self.nNumberCorrectedSamples) / self.fs, -1,
+            self.edfWriteAnnotation((self.writeIndex + self.nNumberCorrectedSamples) / self.fs, -1,
                                            "interpolated_samples:" + str(tempdiff - 1))
             for iX in range(1, tempdiff):
                 self.edfSampleBuffer.append(self.tempLastSample)
