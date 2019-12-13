@@ -2,6 +2,8 @@
  
 Closed- and Open-loop (Slow Oscillations) sleep stimulation (auditory) or recording in _full_-PSG using OpenBCI for sleep.
 
+see more **[infos for settings here]**(https://www.spisop.org/cosleep/)
+
 **[A poster with pictures and infographics, lists'n'stuff](https://drive.google.com/open?id=15XmB4hGwDl6L_oVv34uby7bRQaTBXUhu)**
 
 
