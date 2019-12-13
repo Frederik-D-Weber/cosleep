@@ -87,6 +87,9 @@ apt-get -y install ssh rsync nano vim tmux p7zip wget htop audacity curl
 apt-get -y install wicd net-tools wireless-tools wpagui
 #apt-get install network-manager net-tools wireless-tools wpagui wicd
 
+apt-get update
+apt-get -y install exfat-fuse exfat-utils
+
 
 ## apt-get -y install --no-install-recommends \
 #apt-get install \

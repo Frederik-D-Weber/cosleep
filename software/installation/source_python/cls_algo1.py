@@ -54,7 +54,9 @@ class CLSalgo1(QtCore.QThread):
                  spindle_amplitude_max_microVolts=120,
                  spindle_min_duration_seconds=0.5,
                  spindle_max_duration_seconds=2,
-                 extendedDisplayProcessing=False):
+                 extendedDisplayProcessing=False,
+                 updateThresholdIntervalSec=0.0,
+                 updateThresholdTimeWindowSec=5.0):
 
         QtCore.QThread.__init__(self)
 
@@ -168,10 +170,10 @@ class CLSalgo1(QtCore.QThread):
                 self.maxFreqDelayInSample = self.fs / self.maxFreqDelayInHz
 
                 self.postMarkerDelaySample = int(round(self.fs * self.PostMakerDelayInSec))
-                self.updateThresholdIntervalSec = 2.0
-                self.updateThresholdIntervalSample = int(round(self.fs * self.updateThresholdIntervalSec))
-                self.updateThresholdTimeWindowSec = 5.0
-                self.updateThresholdTimeWindowSample = int(round(self.fs * self.updateThresholdTimeWindowSec))
+                self.updateThresholdIntervalSec = updateThresholdIntervalSec
+                self.updateThresholdIntervalSample = max(1,int(round(self.fs * self.updateThresholdIntervalSec)))
+                self.updateThresholdTimeWindowSec = updateThresholdTimeWindowSec
+                self.updateThresholdTimeWindowSample = max(1,int(round(self.fs * self.updateThresholdTimeWindowSec)))
 
                 self.tempMinVal = self.threshold
                 self.tempMinValSample = 1

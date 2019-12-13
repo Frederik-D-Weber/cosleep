@@ -68,6 +68,10 @@ sudo add-apt-repository ppa:cpug-devs/ppa
 sudo apt-get update
 sudo apt-get -y install cpu-g # might not work
 
+sudo add-apt-repository universe
+sudo apt-get update
+sudo apt-get -y install exfat-fuse exfat-utils
+
 echo ""
 echo ""
 echo "Restart your computer For changes to take effect"

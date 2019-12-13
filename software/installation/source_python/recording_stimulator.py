@@ -1488,6 +1488,8 @@ if __name__ == "__main__":
     waitForFurtherDipInThreshold = True
     ThresholdUpStateDetectionPassAbove = -60.0
     ThresholdUpStateDetectionPassBelow = 200.0
+    updateThresholdIntervalSec = 0.0
+    updateThresholdTimeWindowSec = 3.0
     isStimulationTurnedOn = False
     sound_base_level_dB = -60
     soundVolume = 0.50
@@ -1528,7 +1530,7 @@ if __name__ == "__main__":
     spindle_max_duration_seconds = 2.0
 
     # pick +12 dB louder of stimuli than base level for hearing threshold volume
-    sound_rise_from_base_level_db = 12
+    sound_rise_from_base_level_db = 18
 
     realTimeFilterOrderSpindles = 250
 
@@ -2056,7 +2058,7 @@ if __name__ == "__main__":
                 soundBufferSize_options_display = ("8192 (186 ms)", "4096 (93 ms)", "2048 (46.4 ms)", "1024 (23.2 ms)", "512 (11.6 ms)", "256 (5.8 ms)", "128 (2.9 ms)", "64  (1.5 ms)", "32  (<1 ms)")
                 soundBufferSize_res, okpressed = main.getChoice("Sound buffer size", "sound buffer size: ",
                                                                 soundBufferSize_options_display,
-                                                                current_item_int=1)
+                                                                current_item_int=3)
                 if not okpressed:
                     sys.exit(0)
 
@@ -2214,6 +2216,19 @@ if __name__ == "__main__":
 
                 if not okpressed:
                     sys.exit(0)
+
+                updateThresholdIntervalSec, okpressed = main.getDouble("Threshold Update Interval", "threshold update (seconds):",
+                                                                         0.0, 1200.0, 3, updateThresholdIntervalSec)
+
+                if not okpressed:
+                    sys.exit(0)
+
+                updateThresholdTimeWindowSec, okpressed = main.getDouble("Threshold Update Window", "threshold update window (seconds):",
+                                                                       0.0, 1200.0, 3, updateThresholdTimeWindowSec)
+
+                if not okpressed:
+                    sys.exit(0)
+
 
                 # secondUpToUpstateDelayInSec, okpressed = main.getDouble("Down To Upstate Interval", "down to upsate (seconds):",
                 #                                                         0.5, 2, 3, secondUpToUpstateDelayInSec)
@@ -2423,7 +2438,7 @@ if __name__ == "__main__":
                'writeEDF;correctInvertedChannels;prefilterEDF_hp;edfAnnotationChannels;exportEDFAnnotations;'
                'display_montage;extendedDisplayProcessing;'
                'doTesting;simulateFromCSV;nChannels;'
-               'condition;doSham;doShamObfuscation;shamObfuscationCode;subject_condition_encoded_file_path;ThresholdDownStateDetectionPassBelow;waitForFurtherDipInThreshold;ThresholdUpStateDetectionPassAbove;ThresholdUpStateDetectionPassBelow;playBackgroundNoise;'
+               'condition;doSham;doShamObfuscation;shamObfuscationCode;subject_condition_encoded_file_path;ThresholdDownStateDetectionPassBelow;waitForFurtherDipInThreshold;ThresholdUpStateDetectionPassAbove;ThresholdUpStateDetectionPassBelow;updateThresholdIntervalSec;updateThresholdTimeWindowSec;playBackgroundNoise;'
                'doClosedLoopNotOpenLoop;doClosedLoopRepeatSequence;isStimulationTurnedOn;'
                'doSpindleHighlight;filterHP_EEG_spindle_freq;filterLP_EEG_spindle_freq;realTimeFilterOrder;realTimeFilterOrderSpindles;spindle_amplitude_threshold_detect_microVolts;spindle_amplitude_threshold_begin_end_microVolts;'
                'doAntiAlias;doDownSamplingForPlot;useOpenGL;useVispyPlot;'
@@ -2439,7 +2454,7 @@ if __name__ == "__main__":
                str(writeEDF) + ";" + str(correctInvertedChannels) + ";" + str(prefilterEDF_hp) + ";" + str(edfAnnotationChannels) + ";" + str(exportEDFAnnotations) + ";" +\
                str(montage.filepath) + ";" +  str(extendedDisplayProcessing) + ";" +\
                str(doTesting) + ";" + str(simulateFromCSV) + ";" + str(nChannels) + ";" + \
-               str(condition) + ";" + str(doSham_str) + ";" + str(doShamObfuscation) + ";" + str(shamObfuscationCode) + ";" + str(subject_condition_encoded_file_path) + ";" + str(ThresholdDownStateDetectionPassBelow) + ";" + str(waitForFurtherDipInThreshold) + ";" + str(ThresholdUpStateDetectionPassAbove) + ";" + str(ThresholdUpStateDetectionPassBelow) + ";" + str(playBackgroundNoise) + ";"  +\
+               str(condition) + ";" + str(doSham_str) + ";" + str(doShamObfuscation) + ";" + str(shamObfuscationCode) + ";" + str(subject_condition_encoded_file_path) + ";" + str(ThresholdDownStateDetectionPassBelow) + ";" + str(waitForFurtherDipInThreshold) + ";" + str(ThresholdUpStateDetectionPassAbove) + ";" + str(ThresholdUpStateDetectionPassBelow) + ";" + str(updateThresholdIntervalSec) + ";" + str(updateThresholdTimeWindowSec) + ";" + str(playBackgroundNoise) + ";" + \
                str(doClosedLoopNotOpenLoop) + ";" + str(doClosedLoopRepeatSequence) + ";" + str(isStimulationTurnedOn) + ";" + \
                str(doSpindleHighlight) + ";" + str(filterHP_EEG_spindle_freq) + ";" + str(filterLP_EEG_spindle_freq) + ";" + str(realTimeFilterOrder) + ";" + str(realTimeFilterOrderSpindles) + ";" + str(spindle_amplitude_threshold_detect_microVolts) + ";" + str(spindle_amplitude_threshold_begin_end_microVolts) + ";" + \
                str(doAntiAlias) + ";" + str(doDownSamplingForPlot) + ";" + str(useOpenGL) + ";" + str(useVispyPlot) + ";" + \
@@ -2708,8 +2723,9 @@ if __name__ == "__main__":
                                spindle_amplitude_max_microVolts=spindle_amplitude_max_microVolts,
                                spindle_min_duration_seconds=spindle_min_duration_seconds,
                                spindle_max_duration_seconds=spindle_max_duration_seconds,
-                               extendedDisplayProcessing=extendedDisplayProcessing
-                               )
+                               extendedDisplayProcessing=extendedDisplayProcessing,
+                               updateThresholdIntervalSec=updateThresholdIntervalSec,
+                               updateThresholdTimeWindowSec=updateThresholdTimeWindowSec)
         else:
             ca = clsa.CLSalgo1(fs=FS,
                                useDaisy=useDaisyModule,
