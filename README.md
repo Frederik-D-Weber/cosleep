@@ -66,7 +66,7 @@ see more **[infos for settings here](https://www.spisop.org/cosleep/)**
     * Ubuntu 18.04 LTS (**tested**), recompiled also tested under Ubunutu 14.04 LTS
     * Debian 9 if source code is recompiled (**tested**)
 * (optional, but recommended) _low-latency_ kernel preferred (will automatically installed with the _deploy_ scripts)
-* (soon) READY ON THE STICK: setup free USB stick image for bootup in custom Debian live version on any PC soon to follow.
+* [READY ON THE USB-STICK](https://github.com/Frederik-D-Weber/cosleep/releases/tag/v0.2.0-USB): setup free USB stick image for bootup in custom Debian live version on any PC soon to follow.
 
 ## Tested PCs, compiled (pyinstaller)
 * Lenovo Thinkpad X220, Intel Core i7-2640M, 16 GByte RAM, fast SSD, Ubuntu 18.04 LTS
