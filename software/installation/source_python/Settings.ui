@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>956</width>
+    <height>350</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Settings</string>
+  </property>
+  <widget class="QDialogButtonBox" name="buttonBox">
+   <property name="geometry">
+    <rect>
+     <x>720</x>
+     <y>310</y>
+     <width>191</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <property name="standardButtons">
+    <set>QDialogButtonBox::Close|QDialogButtonBox::Ok</set>
+   </property>
+  </widget>
+  <widget class="QTabWidget" name="tabWidget_main">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>10</y>
+     <width>911</width>
+     <height>291</height>
+    </rect>
+   </property>
+   <property name="currentIndex">
+    <number>0</number>
+   </property>
+   <widget class="QWidget" name="tab_basic">
+    <attribute name="title">
+     <string>basic</string>
+    </attribute>
+    <widget class="QLineEdit" name="lineEdit_subject">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>151</width>
+       <height>27</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>subj1</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_subject">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>151</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>subject name:</string>
+     </property>
+    </widget>
+    <widget class="QGroupBox" name="groupBox_channelnumber">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>81</width>
+       <height>71</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>#channels:</string>
+     </property>
+     <widget class="QRadioButton" name="radioButton_8ch">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>20</y>
+        <width>61</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>8</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+      <attribute name="buttonGroup">
+       <string notr="true">buttonGroup_channelnumber</string>
+      </attribute>
+     </widget>
+     <widget class="QRadioButton" name="radioButton_16ch">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>50</y>
+        <width>61</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>16</string>
+      </property>
+      <attribute name="buttonGroup">
+       <string notr="true">buttonGroup_channelnumber</string>
+      </attribute>
+     </widget>
+    </widget>
+    <widget class="QCheckBox" name="checkBox_signal_viewer_full">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>150</y>
+       <width>451</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>additional signal viewer of full montage (slower refresh rate)</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_sampling_rate">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>90</y>
+       <width>101</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>sampling rate:</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBox_sampling_rate">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>110</y>
+       <width>111</width>
+       <height>27</height>
+      </rect>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <item>
+      <property name="text">
+       <string>250 Hz (all)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>125 Hz (odd)</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QComboBox" name="comboBox_SDcardOption">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>210</y>
+       <width>181</width>
+       <height>27</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_SDcardOption">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>190</y>
+       <width>151</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>record on SD card:</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_advanced">
+    <attribute name="title">
+     <string>advanced</string>
+    </attribute>
+    <widget class="QComboBox" name="comboBox_logging">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>181</width>
+       <height>27</height>
+      </rect>
+     </property>
+     <property name="currentIndex">
+      <number>1</number>
+     </property>
+     <item>
+      <property name="text">
+       <string>terminal only</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>log file only</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QLabel" name="label_logging">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>66</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>logging:</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_montage_filepath">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>60</y>
+       <width>681</width>
+       <height>27</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>[DEFAULT]</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_montage_default">
+     <property name="geometry">
+      <rect>
+       <x>760</x>
+       <y>60</y>
+       <width>61</width>
+       <height>27</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Default</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_montage_open">
+     <property name="geometry">
+      <rect>
+       <x>820</x>
+       <y>60</y>
+       <width>51</width>
+       <height>27</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Open</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_montage">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>66</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>montage:</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab">
+    <attribute name="title">
+     <string>stimulation</string>
+    </attribute>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>Dialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>Dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>radioButton_16ch</sender>
+   <signal>clicked()</signal>
+   <receiver>Dialog</receiver>
+   <slot>update()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>62</x>
+     <y>161</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>477</x>
+     <y>315</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>radioButton_8ch</sender>
+   <signal>clicked()</signal>
+   <receiver>Dialog</receiver>
+   <slot>update()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>62</x>
+     <y>141</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>477</x>
+     <y>315</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <buttongroups>
+  <buttongroup name="buttonGroup_channelnumber"/>
+ </buttongroups>
+</ui>
